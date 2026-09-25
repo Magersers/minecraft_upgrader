@@ -3,7 +3,7 @@ plugins {
     id 'net.minecraftforge.gradle' version '6.0.54'
 }
 group = 'dev.upgrade'
-version = '0.1.1-alpha'
+version = '0.2.0-alpha'
 base { archivesName = 'upgrade' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 minecraft { mappings channel: 'official', version: '1.20.1' }
@@ -16,3 +16,25 @@ tasks.register('coreTest', JavaExec) {
     mainClass = 'dev.upgrade.core.CostEngineTest'
 }
 check.dependsOn coreTest
+
+sourceSets {
+    gametest {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+minecraft.runs {
+    gameTestServer {
+        workingDirectory project.file('run/gametest')
+        property 'forge.enabledGameTestNamespaces', 'upgrade'
+        mods { upgrade { source sourceSets.main; source sourceSets.gametest } }
+    }
+    client {
+        workingDirectory project.file('run/client')
+        property 'upgrade.uiSmoke', System.getProperty('upgrade.uiSmoke', 'false')
+        mods { upgrade { source sourceSets.main; source sourceSets.gametest } }
+    }
+}
+
+// The historical recovery archive is not an up-to-date source distribution.
+processResources { exclude 'META-INF/source-recovery.zip' }

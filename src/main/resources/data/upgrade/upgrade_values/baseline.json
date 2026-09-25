@@ -300,6 +300,1116 @@
       "gates": [
         "minecraft:story/enter_the_nether"
       ]
+    },
+    {
+      "item": "minecraft:grass_block",
+      "cost": 0.5,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:mycelium",
+      "cost": 0.5,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:podzol",
+      "cost": 0.5,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:rooted_dirt",
+      "cost": 0.5,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:mud",
+      "cost": 0.5,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:snowball",
+      "cost": 0.5,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:red_sand",
+      "cost": 0.7,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:clay_ball",
+      "cost": 0.7,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:andesite",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:diorite",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:granite",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:tuff",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:calcite",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:netherrack",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:blackstone",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:basalt",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:end_stone",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_end"
+      ]
+    },
+    {
+      "item": "minecraft:sandstone",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:red_sandstone",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:wheat_seeds",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:beetroot_seeds",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:melon_seeds",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:pumpkin_seeds",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:kelp",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:seagrass",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:vine",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:glow_lichen",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:moss_block",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:cactus",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:bamboo",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:sweet_berries",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:glow_berries",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:potato",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:carrot",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:beetroot",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:apple",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:brown_mushroom",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:red_mushroom",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:crimson_fungus",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:warped_fungus",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:nether_wart",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:lily_pad",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:ink_sac",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:glow_ink_sac",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:bone",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:rotten_flesh",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:feather",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:egg",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:dandelion",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:poppy",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:blue_orchid",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:allium",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:azure_bluet",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:red_tulip",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:orange_tulip",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:white_tulip",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:pink_tulip",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:oxeye_daisy",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:cornflower",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:lily_of_the_valley",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:sunflower",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:lilac",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:rose_bush",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:peony",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:dead_bush",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:fern",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:large_fern",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:grass",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:tall_grass",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:hanging_roots",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:oak_sapling",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:spruce_sapling",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:birch_sapling",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:jungle_sapling",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:acacia_sapling",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:dark_oak_sapling",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:cherry_sapling",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:mangrove_propagule",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:melon",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:pumpkin",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:cocoa_beans",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:spider_eye",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:rabbit_hide",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:honeycomb",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:pointed_dripstone",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:dripstone_block",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:glowstone_dust",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:prismarine_shard",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:amethyst_shard",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:beef",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:porkchop",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:chicken",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:mutton",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:rabbit",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:cod",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:salmon",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:tropical_fish",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:pufferfish",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:white_wool",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:sponge",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:gunpowder",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:soul_sand",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:soul_soil",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:crimson_roots",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:warped_roots",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:nether_sprouts",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:twisting_vines",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:weeping_vines",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:nautilus_shell",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:ice",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:packed_mud",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:prismarine_crystals",
+      "cost": 5,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:snow_block",
+      "cost": 5,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:honey_bottle",
+      "cost": 5,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:scute",
+      "cost": 5,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:packed_ice",
+      "cost": 8,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:magma_cream",
+      "cost": 8,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:rabbit_foot",
+      "cost": 8,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:phantom_membrane",
+      "cost": 8,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:shroomlight",
+      "cost": 8,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:blue_ice",
+      "cost": 12,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:ghast_tear",
+      "cost": 12,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:sea_pickle",
+      "cost": 12,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:sea_lantern",
+      "cost": 12,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:milk_bucket",
+      "cost": 20,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:water_bucket",
+      "cost": 20,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:lava_bucket",
+      "cost": 20,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:heart_of_the_sea",
+      "cost": 50,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:echo_shard",
+      "cost": 50,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:saddle",
+      "cost": 80,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:name_tag",
+      "cost": 80,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:netherite_upgrade_smithing_template",
+      "cost": 120,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:ancient_debris",
+      "cost": 240,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:totem_of_undying",
+      "cost": 300,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:trident",
+      "cost": 300,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:nether_star",
+      "cost": 600,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:elytra",
+      "cost": 1000,
+      "confidence": 0.9,
+      "reason": "Базовая цена добычи (настраивается сборкой)",
+      "gates": [
+        "minecraft:story/enter_the_end"
+      ]
+    },
+    {
+      "item": "minecraft:chorus_fruit",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Добыча в Крае",
+      "gates": [
+        "minecraft:story/enter_the_end"
+      ]
+    },
+    {
+      "item": "minecraft:shulker_shell",
+      "cost": 80,
+      "confidence": 0.9,
+      "reason": "Добыча в Крае",
+      "gates": [
+        "minecraft:story/enter_the_end"
+      ]
+    },
+    {
+      "tag": "minecraft:logs_that_burn",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы minecraft:logs_that_burn",
+      "gates": []
+    },
+    {
+      "tag": "forge:cobblestone",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы forge:cobblestone",
+      "gates": []
+    },
+    {
+      "tag": "forge:ingots/iron",
+      "cost": 8,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы forge:ingots/iron",
+      "gates": []
+    },
+    {
+      "tag": "forge:ingots/copper",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы forge:ingots/copper",
+      "gates": []
+    },
+    {
+      "tag": "forge:ingots/gold",
+      "cost": 20,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы forge:ingots/gold",
+      "gates": []
+    },
+    {
+      "tag": "forge:gems/diamond",
+      "cost": 120,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы forge:gems/diamond",
+      "gates": []
+    },
+    {
+      "tag": "forge:gems/emerald",
+      "cost": 30,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы forge:gems/emerald",
+      "gates": []
+    },
+    {
+      "tag": "forge:dusts/redstone",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы forge:dusts/redstone",
+      "gates": []
+    },
+    {
+      "tag": "forge:gems/lapis",
+      "cost": 6,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы forge:gems/lapis",
+      "gates": []
+    },
+    {
+      "tag": "forge:string",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы forge:string",
+      "gates": []
+    },
+    {
+      "tag": "forge:leather",
+      "cost": 6,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы forge:leather",
+      "gates": []
+    },
+    {
+      "tag": "forge:feathers",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы forge:feathers",
+      "gates": []
+    },
+    {
+      "tag": "forge:bones",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Базовая цена группы forge:bones",
+      "gates": []
     }
   ],
   "routes": [],
