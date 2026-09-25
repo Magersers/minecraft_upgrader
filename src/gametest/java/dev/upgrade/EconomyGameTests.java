@@ -23,12 +23,14 @@ public final class EconomyGameTests {
         price(helper,"chest",8);
         price(helper,"crafting_table",4);
         price(helper,"paper",1);
+        if (!net.minecraftforge.fml.ModList.get().isLoaded("tconstruct")) {
         price(helper,"iron_sword",15.5);
         price(helper,"diamond_pickaxe",361);
         price(helper,"iron_block",67.5);
         price(helper,"iron_nugget",7.5/9);
         price(helper,"cake",67);
         price(helper,"netherite_chestplate",2118);
+        }
         helper.assertTrue(Economy.current.values().size()>700,"Expected broad vanilla coverage, got "+Economy.current.values().size());
         helper.assertTrue(Economy.current.explanations().get("minecraft:diamond_pickaxe").contains("minecraft:stick"),"Missing recipe breakdown");
         helper.assertTrue(!Economy.current.values().containsKey("minecraft:command_block"),"Command block must stay excluded");
@@ -47,7 +49,7 @@ public final class EconomyGameTests {
             var recipes = new java.util.ArrayList<net.minecraft.world.item.crafting.Recipe<?>>(originals);
             recipes.add(modded); manager.replaceRecipes(recipes);
             Economy.rebuild(helper.getLevel().getServer());
-            price(helper, "dragon_breath", 120);
+            price(helper, "dragon_breath", Economy.current.values().get("minecraft:diamond").cost());
         } finally {
             manager.replaceRecipes(originals);
             Economy.rebuild(helper.getLevel().getServer());

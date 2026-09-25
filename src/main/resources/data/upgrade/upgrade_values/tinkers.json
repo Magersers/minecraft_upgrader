@@ -1,0 +1,34 @@
+{
+  "sources": [
+    {
+      "item": "tconstruct:raw_cobalt",
+      "cost": 36,
+      "confidence": 0.9,
+      "reason": "Кобальт: добыча в Незере инструментом нужного уровня"
+    },
+    {
+      "item": "tconstruct:earth_slime_ball",
+      "cost": 5,
+      "confidence": 0.9,
+      "reason": "Земляной слизень: базовая стоимость добычи"
+    },
+    {
+      "item": "tconstruct:sky_slime_ball",
+      "cost": 9,
+      "confidence": 0.9,
+      "reason": "Небесной слайм: поиск острова и добыча"
+    },
+    {
+      "item": "tconstruct:ender_slime_ball",
+      "cost": 18,
+      "confidence": 0.9,
+      "reason": "Эндер-слайм: добыча в Энде"
+    },
+    {
+      "item": "tconstruct:ichor_slime_ball",
+      "cost": 14,
+      "confidence": 0.9,
+      "reason": "Ихор: добыча в Незере"
+    }
+  ]
+}

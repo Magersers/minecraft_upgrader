@@ -19,23 +19,24 @@ import java.security.SecureRandom;
 import java.util.*;
 
 public final class Network {
-    private static final String PROTOCOL = "2";
+    private static final String PROTOCOL = "3";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation(Upgrade.ID,"main"),
             () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
     private static final SecureRandom RNG = new SecureRandom();
     private static final int CHUNK = 64;
     private static final String PENDING = "upgradePendingRoll";
-    private record Session(UUID token, UUID revision, int slot, ItemStack stake) {}
+    private record Session(UUID token, UUID revision, Map<Integer, ItemStack> inventory) {}
     private static final Map<UUID, Session> SESSIONS = new HashMap<>();
     private static final Map<UUID, Integer> QUERY_TICK = new HashMap<>();
     public record Query(boolean open) {}
-    public record Spin(UUID token, String target, int count) {}
+    public record Spin(UUID token, String target, int count, int slot, int rewardCount) {}
+    public record InventoryEntry(int slot, ItemStack stack, double value, String reason) {}
     public record Finish(UUID token) {}
     public record Entry(String id, double value, double confidence, String reason, boolean available) {}
     public record Catalog(UUID token, List<Entry> entries, int offset, int total, String stake,
-                          int count, double value, String reason, boolean open) {}
+                          int count, double value, String reason, boolean open, int selectedSlot, List<InventoryEntry> inventory) {}
     public record Outcome(UUID token, boolean accepted, boolean won, double chance, double roll, String message) {}
-    public record Settled(UUID token, boolean won, String target) {}
+    public record Settled(UUID token, boolean won, String target, int count) {}
 
     public static void clear() { SESSIONS.clear(); QUERY_TICK.clear(); }
     public static void forget(UUID id) { SESSIONS.remove(id); QUERY_TICK.remove(id); }
@@ -44,8 +45,8 @@ public final class Network {
                 .encoder((p,b) -> b.writeBoolean(p.open())).decoder(b -> new Query(b.readBoolean()))
                 .consumerMainThread((p,c) -> { var player=c.get().getSender(); if(player!=null) catalog(player,p.open()); }).add();
         CHANNEL.messageBuilder(Spin.class,1,NetworkDirection.PLAY_TO_SERVER)
-                .encoder((p,b) -> { b.writeUUID(p.token()); b.writeUtf(p.target(),256); b.writeVarInt(p.count()); })
-                .decoder(b -> new Spin(b.readUUID(),b.readUtf(256),b.readVarInt()))
+                .encoder((p,b) -> { b.writeUUID(p.token()); b.writeUtf(p.target(),256); b.writeVarInt(p.count()); b.writeVarInt(p.slot()); b.writeVarInt(p.rewardCount()); })
+                .decoder(b -> new Spin(b.readUUID(),b.readUtf(256),b.readVarInt(),b.readVarInt(),b.readVarInt()))
                 .consumerMainThread((p,c) -> { var player=c.get().getSender(); if(player!=null) spin(player,p); }).add();
         CHANNEL.messageBuilder(Catalog.class,2,NetworkDirection.PLAY_TO_CLIENT).encoder(Network::encodeCatalog).decoder(Network::decodeCatalog)
                 .consumerMainThread((p,c) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,() -> () -> UpgradeScreen.receive(p))).add();
@@ -63,13 +64,17 @@ public final class Network {
                     }
                 }).add();
         CHANNEL.messageBuilder(Settled.class,5,NetworkDirection.PLAY_TO_CLIENT)
-                .encoder((p,b) -> { b.writeUUID(p.token()); b.writeBoolean(p.won()); b.writeUtf(p.target(),256); })
-                .decoder(b -> new Settled(b.readUUID(),b.readBoolean(),b.readUtf(256)))
+                .encoder((p,b) -> { b.writeUUID(p.token()); b.writeBoolean(p.won()); b.writeUtf(p.target(),256); b.writeVarInt(p.count()); })
+                .decoder(b -> new Settled(b.readUUID(),b.readBoolean(),b.readUtf(256),b.readVarInt()))
                 .consumerMainThread((p,c) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,() -> () -> UpgradeScreen.receive(p))).add();
     }
     private static void encodeCatalog(Catalog p, FriendlyByteBuf b) {
         b.writeUUID(p.token()); b.writeVarInt(p.offset()); b.writeVarInt(p.total()); b.writeUtf(p.stake(),256);
         b.writeVarInt(p.count()); b.writeDouble(p.value()); b.writeUtf(p.reason(),2048); b.writeBoolean(p.open()); b.writeVarInt(p.entries().size());
+        b.writeVarInt(p.selectedSlot()); b.writeVarInt(p.inventory().size());
+        for (InventoryEntry e : p.inventory()) {
+            b.writeVarInt(e.slot()); b.writeItem(e.stack()); b.writeDouble(e.value()); b.writeUtf(e.reason(),2048);
+        }
         for (Entry e : p.entries()) {
             b.writeUtf(e.id(),256); b.writeDouble(e.value()); b.writeDouble(e.confidence()); b.writeUtf(e.reason(),2048); b.writeBoolean(e.available());
         }
@@ -78,9 +83,13 @@ public final class Network {
         UUID token=b.readUUID(); int offset=b.readVarInt(),total=b.readVarInt(); String stake=b.readUtf(256);
         int count=b.readVarInt(); double value=b.readDouble(); String reason=b.readUtf(2048); boolean open=b.readBoolean(); int n=b.readVarInt();
         if (n<0 || n>CHUNK || offset<0 || total<0 || total>100000 || offset+n>total) throw new IllegalArgumentException("catalog size");
+        int selectedSlot=b.readVarInt(), slots=b.readVarInt();
+        if (slots<0 || slots>37 || offset!=0 && slots!=0) throw new IllegalArgumentException("inventory size");
+        List<InventoryEntry> inventory=new ArrayList<>();
+        for (int i=0;i<slots;i++) inventory.add(new InventoryEntry(b.readVarInt(),b.readItem(),b.readDouble(),b.readUtf(2048)));
         List<Entry> entries=new ArrayList<>();
         for(int i=0;i<n;i++) entries.add(new Entry(b.readUtf(256),b.readDouble(),b.readDouble(),b.readUtf(2048),b.readBoolean()));
-        return new Catalog(token,List.copyOf(entries),offset,total,stake,count,value,reason,open);
+        return new Catalog(token,List.copyOf(entries),offset,total,stake,count,value,reason,open,selectedSlot,List.copyOf(inventory));
     }
     private static void send(ServerPlayer player,Object message) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),message); }
     public static void catalog(ServerPlayer player, boolean open) {
@@ -91,7 +100,16 @@ public final class Network {
             player.displayClientMessage(Component.literal("Дождитесь завершения текущего апгрейда."),true); return;
         }
         ItemStack hand=player.getMainHandItem(); var value=Economy.usable(player,hand); UUID token=UUID.randomUUID();
-        SESSIONS.put(id,new Session(token,Economy.current.revision(),player.getInventory().selected,hand.copy()));
+        Map<Integer,ItemStack> snapshot=new HashMap<>();
+        List<InventoryEntry> inventory=new ArrayList<>();
+        for (int slot=0;slot<=40;slot++) {
+            if (slot>=36 && slot<40) continue; // Main inventory, hotbar and offhand; no equipped armour.
+            ItemStack stack=player.getInventory().getItem(slot).copy();
+            snapshot.put(slot,stack);
+            var quote=Economy.usable(player,stack);
+            inventory.add(new InventoryEntry(slot,stack,quote==null?0:quote.cost(),Economy.reason(player,stack)));
+        }
+        SESSIONS.put(id,new Session(token,Economy.current.revision(),Map.copyOf(snapshot)));
         // Search is local, against localized display names. Send bounded chunks once per refresh.
         List<Entry> entries=new ArrayList<>();
         for (ResourceLocation key : new TreeSet<>(ForgeRegistries.ITEMS.getKeys())) {
@@ -103,10 +121,10 @@ public final class Network {
         }
         for (int offset=0; offset<entries.size() || offset==0; offset+=CHUNK) {
             send(player,new Catalog(token,List.copyOf(entries.subList(offset,Math.min(offset+CHUNK,entries.size()))),
-                    offset,entries.size(),Economy.id(hand),hand.getCount(),value==null?0:value.cost(),Economy.reason(player,hand),open&&offset==0));
+                    offset,entries.size(),Economy.id(hand),hand.getCount(),value==null?0:value.cost(),Economy.reason(player,hand),open&&offset==0,player.getInventory().selected,offset==0?List.copyOf(inventory):List.of()));
         }
     }
-    private static void reject(ServerPlayer player, UUID token, String reason) { send(player,new Outcome(token,false,false,0,0,reason)); }
+    private static void reject(ServerPlayer player, UUID token, String reason) { Upgrade.LOGGER.debug("Upgrade rejected: {}",reason); send(player,new Outcome(token,false,false,0,0,reason)); }
     private static void spin(ServerPlayer player, Spin packet) {
         Session session=SESSIONS.get(player.getUUID());
         if(session==null || !session.token().equals(packet.token())) { reject(player,packet.token(),"Сессия устарела. Обновите каталог."); return; }
@@ -116,18 +134,24 @@ public final class Network {
         if(!session.revision().equals(Economy.current.revision()) || !player.isAlive() || player.isSpectator() || player.isCreative()) {
             reject(player,packet.token(),"Нужен режим выживания и актуальная оценка."); return;
         }
-        ItemStack hand=player.getMainHandItem();
-        if(player.getInventory().selected!=session.slot() || !ItemStack.matches(hand,session.stake())
+        ItemStack original=session.inventory().get(packet.slot());
+        if (original==null) { reject(player,packet.token(),"Недопустимый слот инвентаря."); return; }
+        ItemStack hand=player.getInventory().getItem(packet.slot());
+        if(!ItemStack.matches(hand,original)
                 || packet.count()<1 || packet.count()>64 || packet.count()>hand.getCount()) {
-            reject(player,packet.token(),"Предмет в руке изменился. Обновите каталог."); return;
+            reject(player,packet.token(),"Предмет в выбранном слоте изменился. Обновите инвентарь."); return;
         }
         ResourceLocation key=ResourceLocation.tryParse(packet.target());
         if(key==null || !ForgeRegistries.ITEMS.containsKey(key)) { reject(player,packet.token(),"Неизвестная цель."); return; }
         ItemStack reward=new ItemStack(Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(key)));
+        if (packet.rewardCount()<1 || packet.rewardCount()>Math.min(64,reward.getMaxStackSize())) {
+            reject(player,packet.token(),"Недопустимое количество награды."); return;
+        }
+        reward.setCount(packet.rewardCount());
         var source=Economy.usable(player,hand); var target=Economy.usable(player,reward);
         if(source==null || target==null) { reject(player,packet.token(),"Предмет заблокирован или не оценён."); return; }
         double chance;
-        try { chance=CostEngine.chance(source.cost()*packet.count(),target.cost(),Economy.EFFICIENCY); }
+        try { chance=CostEngine.chance(source.cost()*packet.count(),target.cost()*packet.rewardCount(),Economy.EFFICIENCY); }
         catch(IllegalArgumentException ex) { reject(player,packet.token(),"Цена цели должна превышать ставку."); return; }
         double roll=RNG.nextDouble(); boolean won=roll<chance;
         CompoundTag pending=new CompoundTag();
@@ -137,8 +161,8 @@ public final class Network {
         // Keep a pending payout on the player across disconnect/restart and player cloning.
         player.getPersistentData().put(PENDING,pending);
         hand.shrink(packet.count()); player.inventoryMenu.broadcastChanges();
-        Upgrade.LOGGER.info("Upgrade player={} revision={} input={} count={} target={} chance={} won={}",
-                player.getUUID(),session.revision(),Economy.id(session.stake()),packet.count(),packet.target(),chance,won);
+        Upgrade.LOGGER.info("Upgrade player={} revision={} input={} count={} target={} rewardCount={} chance={} won={}",
+                player.getUUID(),session.revision(),Economy.id(original),packet.count(),packet.target(),packet.rewardCount(),chance,won);
         send(player,new Outcome(packet.token(),true,won,chance,roll,""));
     }
     public static void tick(MinecraftServer server) {
@@ -151,12 +175,13 @@ public final class Network {
         // Remove before delivery: repeated Finish packets cannot deliver twice.
         player.getPersistentData().remove(PENDING);
         boolean won=pending.getBoolean("won");
+        int rewardCount=ItemStack.of(pending.getCompound("reward")).getCount();
         if (won) {
             ItemStack reward=ItemStack.of(pending.getCompound("reward"));
             if (!player.getInventory().add(reward)) player.drop(reward,false);
         }
         player.inventoryMenu.broadcastChanges();
-        send(player,new Settled(pending.getUUID("token"),won,pending.getString("target")));
+        send(player,new Settled(pending.getUUID("token"),won,pending.getString("target"),rewardCount));
         player.displayClientMessage(Component.literal(won?"Победа! Предмет получен.":"Поражение. Ставка потрачена."),true);
     }
     public static void copyPending(net.minecraft.world.entity.player.Player from, net.minecraft.world.entity.player.Player to) {

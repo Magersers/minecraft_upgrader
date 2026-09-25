@@ -3,7 +3,7 @@ plugins {
     id 'net.minecraftforge.gradle' version '6.0.54'
 }
 group = 'dev.upgrade'
-version = '0.2.0-alpha'
+version = '0.3.0-alpha'
 base { archivesName = 'upgrade' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 minecraft { mappings channel: 'official', version: '1.20.1' }
@@ -25,7 +25,7 @@ sourceSets {
 }
 minecraft.runs {
     gameTestServer {
-        workingDirectory project.file('run/gametest')
+        workingDirectory project.file(project.hasProperty('compatTest') ? 'run/compat' : 'run/gametest')
         property 'forge.enabledGameTestNamespaces', 'upgrade'
         mods { upgrade { source sourceSets.main; source sourceSets.gametest } }
     }
@@ -38,3 +38,16 @@ minecraft.runs {
 
 // The historical recovery archive is not an up-to-date source distribution.
 processResources { exclude 'META-INF/source-recovery.zip' }
+
+// Optional integration-test mods, never bundled and never required by the release JAR.
+if (project.hasProperty('compatTest')) {
+    repositories {
+        maven { url = 'https://api.modrinth.com/maven' }
+        maven { url = 'https://www.cursemaven.com' }
+    }
+    dependencies {
+        runtimeOnly fg.deobf('maven.modrinth:mantle:1.11.117')
+        runtimeOnly fg.deobf('maven.modrinth:tinkers-construct:3.12.1.231')
+        runtimeOnly fg.deobf('curse.maven:the-twilight-forest-227639:5468648')
+    }
+}

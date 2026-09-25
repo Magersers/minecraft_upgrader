@@ -3,7 +3,7 @@ loaderVersion="[47,)"
 license="MIT"
 [[mods]]
 modId="upgrade"
-version="0.2.0-alpha"
+version="0.3.0-alpha"
 displayName="Upgrade Forge"
 authors="Upgrade Forge contributors"
 description='''Server-authoritative item upgrades with explainable acquisition costs.'''

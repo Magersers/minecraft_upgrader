@@ -2,6 +2,8 @@ package dev.upgrade;
 
 import com.google.gson.*;
 import dev.upgrade.core.CostEngine;
+import dev.upgrade.compat.TinkersCompat;
+import dev.upgrade.compat.EncounterProfiles;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -55,7 +57,10 @@ public final class Economy {
                     } else cost = s.get("cost").getAsDouble();
                     var value = new CostEngine.Value(cost, number(s,"confidence",.9),
                             s.has("reason") ? s.get("reason").getAsString() : "Базовый ресурс", strings(s,"gates"));
-                    if (s.has("item")) localSeeds.put(s.get("item").getAsString(), value);
+                    if (s.has("item")) {
+                        String itemId=s.get("item").getAsString();
+                        if (ForgeRegistries.ITEMS.containsKey(new ResourceLocation(itemId))) localSeeds.put(itemId,value);
+                    }
                     else if (s.has("tag")) {
                         var tag = ForgeRegistries.ITEMS.tags().getTag(TagKey.create(Registries.ITEM, new ResourceLocation(s.get("tag").getAsString())));
                         for (Item item : tag) localSeeds.put(ForgeRegistries.ITEMS.getKey(item).toString(), value);
@@ -76,6 +81,8 @@ public final class Economy {
                 routes.addAll(localRoutes); denied.addAll(localDenied);
             } catch (Exception ex) { Upgrade.LOGGER.error("Skipping invalid value profile {}", entry.getKey(), ex); }
         }
+        EncounterProfiles.load(server,seeds);
+        TinkersCompat.importRecipes(server,routes);
         for (Recipe<?> recipe : server.getRecipeManager().getRecipes()) {
             try {
                 ItemStack output = recipe.getResultItem(server.registryAccess());
@@ -124,7 +131,7 @@ public final class Economy {
         denied.forEach(seeds::remove);
         List<CostEngine.Route> filtered = new ArrayList<>();
         for (CostEngine.Route route : routes) {
-            if (denied.contains(route.output())) continue;
+            if (denied.contains(route.output().split("#",2)[0])) continue;
             List<CostEngine.Input> inputs = new ArrayList<>();
             boolean safe = true;
             for (CostEngine.Input input : route.inputs()) {
@@ -139,8 +146,9 @@ public final class Economy {
         Map<String, List<CostEngine.Route>> byOutput = new HashMap<>();
         filtered.forEach(r -> byOutput.computeIfAbsent(r.output(), k -> new ArrayList<>()).add(r));
         Map<String, String> explanations = new HashMap<>();
-        for (ResourceLocation key : ForgeRegistries.ITEMS.getKeys()) {
-            String id = key.toString();
+        Set<String> explanationKeys=new HashSet<>(byOutput.keySet());
+        ForgeRegistries.ITEMS.getKeys().forEach(k -> explanationKeys.add(k.toString()));
+        for (String id : explanationKeys) {
             String explanation;
             if (solved.quarantined().contains(id)) explanation = "Обнаружен цикл, бесконечно удешевляющий предмет.";
             else if (solved.values().containsKey(id)) {
@@ -156,6 +164,10 @@ public final class Economy {
             } else explanation = unsupported.getOrDefault(id, "Нет рецепта или базовой цены добычи. Добавьте источник в upgrade_values.");
             explanations.put(id, explanation.substring(0, Math.min(1800, explanation.length())));
         }
+        for (String id : solved.values().keySet()) if (!explanations.containsKey(id)) {
+            StringBuilder text=new StringBuilder(); describe(id,solved,text,new HashSet<>(),0);
+            explanations.put(id,text.substring(0,Math.min(1800,text.length())));
+        }
         current = new Snapshot(UUID.randomUUID(), solved.values(), Set.copyOf(denied), Map.copyOf(explanations));
         Upgrade.LOGGER.info("Economy: {} valued, {} recipes, {} quarantined, {} passes", solved.values().size(),
                 filtered.size(), solved.quarantined().size(), solved.passes());
@@ -170,13 +182,19 @@ public final class Economy {
         out.append("\n").append("  ".repeat(depth)).append("Крафт: ");
         var grouped = new LinkedHashMap<String, Double>();
         recipe.parts().forEach(p -> grouped.merge(p.item(), p.count(), Double::sum));
-        grouped.forEach((item, count) -> out.append(String.format(Locale.ROOT,"%s × %.0f; ", item, count)));
-        out.append(String.format(Locale.ROOT, "+ %.2f E / %.0f шт.\n", recipe.overhead(), recipe.outputCount()));
+        grouped.forEach((item, count) -> out.append(String.format(Locale.ROOT,"%s × %.3f; ", item, count)));
+        out.append(String.format(Locale.ROOT, "+ %.2f E / %.3f ед.\n", recipe.overhead(), recipe.outputCount()));
         grouped.keySet().forEach(item -> describe(item, solved, out, visited, depth + 1));
     }
     public static String reason(ServerPlayer player, ItemStack stack) {
+        if (stack.isEmpty()) return "Пустой слот. Выберите предмет в инвентаре.";
         String id = id(stack);
         if (current.denied().contains(id)) return "Исключён профилем";
+        if (TinkersCompat.special(stack)) {
+            var quote=TinkersCompat.quote(stack,current.values());
+            if (quote!=null&&!unlocked(player,quote)) return "Нужен этап: "+String.join(", ",quote.gates());
+            return TinkersCompat.reason(stack,current.values(),current.explanations());
+        }
         if (!plain(stack)) return "Особые данные, износ или содержимое: такой предмет нельзя ставить.";
         var value = current.values().get(id);
         if (value != null && !unlocked(player, value)) return "Нужен этап: " + String.join(", ", value.gates());
@@ -193,7 +211,7 @@ public final class Economy {
                 && tag.getInt("Damage") == 0 && stack.getItem().isDamageable(stack);
     }
     public static boolean plain(ItemStack stack) {
-        return !stack.isEmpty() && ordinaryData(stack) && !stack.isDamaged() && !(stack.getItem() instanceof SpawnEggItem)
+        return !stack.isEmpty() && !TinkersCompat.special(stack) && ordinaryData(stack) && !stack.isDamaged() && !(stack.getItem() instanceof SpawnEggItem)
                 && !stack.getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent()
                 && !stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).isPresent()
                 && !stack.getCapability(ForgeCapabilities.ENERGY).isPresent();
@@ -208,8 +226,8 @@ public final class Economy {
         return true;
     }
     public static CostEngine.Value usable(ServerPlayer player, ItemStack stack) {
-        if (!plain(stack) || current.denied().contains(id(stack))) return null;
-        var value = current.values().get(id(stack));
+        if (current.denied().contains(id(stack))) return null;
+        var value = TinkersCompat.special(stack)?TinkersCompat.quote(stack,current.values()):plain(stack)?current.values().get(id(stack)):null;
         return value != null && value.confidence() >= MIN_CONFIDENCE && unlocked(player, value) ? value : null;
     }
 }
