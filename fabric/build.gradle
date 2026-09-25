@@ -13,7 +13,8 @@ layout.buildDirectory = file("build/${mc}")
 java { toolchain.languageVersion = JavaLanguageVersion.of(target.java); withSourcesJar() }
 repositories { mavenCentral() }
 dependencies {
-    if (project.hasProperty("compatJar")) modLocalRuntime files(project.property("compatJar"))
+    if (project.hasProperty("compatMods")) modImplementation fileTree(project.property("compatMods")) { include "*.jar" }
+    if (project.hasProperty("compatJar")) modImplementation files(project.property("compatJar"))
     minecraft "com.mojang:minecraft:${mc}"
     mappings loom.officialMojangMappings()
     modImplementation 'net.fabricmc:fabric-loader:0.17.2'
@@ -71,22 +72,33 @@ loom {
 }
 // Fabric's conventional tags changed to the shared c: hierarchy in 1.21.
 def fabricTags = mc == '1.20.1' ? [
-    'forge:cobblestone':'c:cobblestone', 'forge:ingots/iron':'c:iron_ingots',
+    'forge:cobblestone':'c:normal_cobblestone', 'forge:ingots/iron':'c:iron_ingots',
     'forge:ingots/copper':'c:copper_ingots', 'forge:ingots/gold':'c:gold_ingots',
     'forge:gems/diamond':'c:diamonds', 'forge:gems/emerald':'c:emeralds',
     'forge:dusts/redstone':'c:redstone_dusts', 'forge:gems/lapis':'c:lapis',
     'forge:string':'c:strings', 'forge:leather':'c:leathers', 'forge:feathers':'c:feathers', 'forge:bones':'c:bones'
-] : ['forge:cobblestone':'c:cobblestones', 'forge:ingots/iron':'c:ingots/iron',
+] : ['forge:cobblestone':'c:cobblestones/normal', 'forge:ingots/iron':'c:ingots/iron',
     'forge:ingots/copper':'c:ingots/copper', 'forge:ingots/gold':'c:ingots/gold',
     'forge:gems/diamond':'c:gems/diamond', 'forge:gems/emerald':'c:gems/emerald',
     'forge:dusts/redstone':'c:dusts/redstone', 'forge:gems/lapis':'c:gems/lapis',
     'forge:string':'c:strings', 'forge:leather':'c:leathers', 'forge:feathers':'c:feathers', 'forge:bones':'c:bones']
 processResources {
     inputs.property 'fabricTags', fabricTags
-    filesMatching('data/upgrade/upgrade_values/baseline.json') {
+    filesMatching('**/upgrade_values/baseline.json') {
         filter { line -> fabricTags.each { oldTag,newTag -> line=line.replace('"'+oldTag+'"','"'+newTag+'"') }; line }
     }
 }
 tasks.withType(JavaExec).configureEach {
     javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(target.java) }
+}
+
+['runTestServer':'upgrade-tests-passed.txt', 'runTestClient':'upgrade-ui-passed.txt'].each { taskName, marker ->
+    def directory = taskName == 'runTestServer' ? 'test-server' : 'test-client'
+    tasks.named(taskName) {
+        doFirst { file("run/${mc}/${directory}/${marker}").delete() }
+        doLast {
+            if (!file("run/${mc}/${directory}/${marker}").isFile())
+                throw new GradleException("${taskName} did not finish its assertions; inspect the Minecraft log")
+        }
+    }
 }

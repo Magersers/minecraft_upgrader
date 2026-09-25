@@ -16,16 +16,28 @@ public final class FabricServerTests implements ModInitializer {
    try {
     Economy.rebuild(server);
     var ctx=new TestContext(server.overworld());
+    try (var reader=server.getResourceManager().getResourceOrThrow(Ids.of("upgrade:upgrade_values/baseline.json")).openAsReader()) {
+     var baseline=com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
+     for (var source:baseline.getAsJsonArray("sources")) {
+      var entry=source.getAsJsonObject();
+      ctx.assertTrue(!entry.has("tag") || !entry.get("tag").getAsString().startsWith("forge:"),"Packaged baseline must use Fabric convention tags");
+     }
+    }
     price(ctx,"oak_planks",1); price(ctx,"stick",.5); price(ctx,"chest",8); 
     boolean compat=net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("tconstruct");
     if (!compat) { price(ctx,"iron_block",67.5);
     price(ctx,"diamond_pickaxe",361); price(ctx,"cake",67); }
     ctx.assertTrue(Economy.current.values().size()>700,"Vanilla recipe coverage");
+    ctx.assertTrue(!Economy.current.values().containsKey("minecraft:infested_cobblestone"),"Infested blocks must not inherit the cobblestone baseline");
     var tool=new ItemStack(Items.DIAMOND_PICKAXE);
     ctx.assertTrue(Economy.plain(tool),"Fresh tool should be valued"); tool.setDamageValue(1);
     ctx.assertTrue(!Economy.plain(tool),"Damaged tool should be excluded");
     tool.setDamageValue(0); TestPlatform.name(tool);
     ctx.assertTrue(!Economy.plain(tool),"Named items should be excluded");
+    var lootMethod=dev.upgrade.compat.EncounterProfiles.class.getDeclaredMethod("loot",net.minecraft.server.MinecraftServer.class,net.minecraft.resources.ResourceLocation.class,java.util.Set.class);
+    lootMethod.setAccessible(true);
+    var drops=(java.util.Map<?,?>)lootMethod.invoke(null,server,Ids.of("minecraft:entities/skeleton"),new java.util.HashSet<>());
+    ctx.assertTrue(Double.valueOf(1).equals(drops.get("minecraft:bone")) && Double.valueOf(1).equals(drops.get("minecraft:arrow")),"Read actual skeleton loot with Looting 0 in both formats");
     NetworkGameTests.delayedAndExactlyOncePayout(ctx);
     NetworkGameTests.lossAndInterruptedPlayerRecovery(ctx);
     NetworkGameTests.inventorySlotAndStackReward(ctx);
@@ -54,8 +66,9 @@ public final class FabricServerTests implements ModInitializer {
     } finally { buf.release(); }
     if (compat) Class.forName("dev.upgrade.HephaestusTests").getMethod("tinkersMaterialsAndFluids",TestContext.class).invoke(null,ctx);
     Upgrade.LOGGER.info("FABRIC SERVER TESTS PASS: {} valued items",Economy.current.values().size());
+    java.nio.file.Files.writeString(java.nio.file.Path.of("upgrade-tests-passed.txt"),"PASS\n");
     server.halt(false);
-   } catch (Throwable failure) { Upgrade.LOGGER.error("FABRIC SERVER TESTS FAILED",failure); System.exit(1); }
+   } catch (Throwable failure) { Upgrade.LOGGER.error("FABRIC SERVER TESTS FAILED",failure); server.halt(false); }
   }));
  }
  private static void price(TestContext ctx,String id,double expected) {

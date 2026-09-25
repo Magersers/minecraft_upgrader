@@ -69,6 +69,10 @@ public final class EncounterProfiles {
             chance*=switch (condition.get("condition").getAsString()) {
                 case "minecraft:killed_by_player" -> 1;
                 case "minecraft:random_chance", "minecraft:random_chance_with_looting" -> probability(condition.get("chance").getAsDouble());
+                case "minecraft:random_chance_with_enchanted_bonus" -> {
+                    if (!"minecraft:looting".equals(condition.get("enchantment").getAsString())) throw new IllegalArgumentException("Unsupported loot enchantment");
+                    yield probability(condition.get("unenchanted_chance").getAsDouble());
+                }
                 default -> throw new IllegalArgumentException("Context-dependent loot condition");
             };
         }
@@ -78,7 +82,7 @@ public final class EncounterProfiles {
         double count=initial;
         if (o.has("functions")) for (JsonElement element:o.getAsJsonArray("functions")) {
             JsonObject f=element.getAsJsonObject(); String type=f.get("function").getAsString();
-            if (type.equals("minecraft:looting_enchant")) continue; // Explicit Looting 0 baseline.
+            if (type.equals("minecraft:looting_enchant") || type.equals("minecraft:enchanted_count_increase") && "minecraft:looting".equals(f.get("enchantment").getAsString())) continue; // Explicit Looting 0 baseline.
             if (!type.equals("minecraft:set_count")) throw new IllegalArgumentException("Context-dependent loot function "+type);
             double chance=conditions(f),value=mean(f.get("count"));
             count=f.has("add")&&f.get("add").getAsBoolean()?count+chance*value:count*(1-chance)+chance*value;
@@ -116,7 +120,7 @@ public final class EncounterProfiles {
                             if (amount>0) poolDrops.merge(entry.get("name").getAsString(),amount,Double::sum);
                         } else if (type.equals("minecraft:loot_table")) {
                             if (pool.has("functions")||entry.has("functions")) throw new IllegalArgumentException("Nested loot functions");
-                            loot(server,Ids.of(entry.get("name").getAsString()),visiting).forEach((key,amount) -> poolDrops.merge(key,amount*rolls*chance,Double::sum));
+                            loot(server,Ids.of(entry.get(entry.has("value")?"value":"name").getAsString()),visiting).forEach((key,amount) -> poolDrops.merge(key,amount*rolls*chance,Double::sum));
                         } else if (!type.equals("minecraft:empty")) throw new IllegalArgumentException("Unsupported loot entry "+type);
                     }
                     poolDrops.forEach((key,amount) -> result.merge(key,amount,Double::sum));

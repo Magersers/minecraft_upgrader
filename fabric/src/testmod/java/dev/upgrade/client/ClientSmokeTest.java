@@ -18,7 +18,7 @@ public final class ClientSmokeTest implements net.fabricmc.api.ClientModInitiali
     private static void field(UpgradeScreen screen,String name,Object value) throws ReflectiveOperationException {
         var f=UpgradeScreen.class.getDeclaredField(name); f.setAccessible(true); f.set(screen,value);
     }
-    public static void tick() throws ReflectiveOperationException {
+    public static void tick() throws Exception {
         if (!Boolean.getBoolean("upgrade.uiSmoke")) return;
         Minecraft mc=Minecraft.getInstance();
         if (mc.screen!=null && mc.screen.getClass().getSimpleName().equals("AccessibilityOnboardingScreen")) mc.setScreen(new TitleScreen());
@@ -56,7 +56,7 @@ public final class ClientSmokeTest implements net.fabricmc.api.ClientModInitiali
             mc.options.guiScale().set(2); mc.resizeDisplay();
         }
         if (ticks==105) Screenshot.grab(mc.gameDirectory,"upgrade-compact.png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
-        if (ticks==120) { Upgrade.LOGGER.info("CLIENT SMOKE PASS"); mc.stop(); }
+        if (ticks==120) { java.nio.file.Files.writeString(mc.gameDirectory.toPath().resolve("upgrade-ui-passed.txt"),"PASS\n"); Upgrade.LOGGER.info("CLIENT SMOKE PASS"); mc.stop(); }
     }
     private static java.util.List<Network.InventoryEntry> inventory() {
         var result=new java.util.ArrayList<Network.InventoryEntry>();
