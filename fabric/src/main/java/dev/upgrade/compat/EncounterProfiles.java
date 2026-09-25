@@ -103,7 +103,11 @@ public final class EncounterProfiles {
                     double totalWeight=0;
                     for (JsonElement value:entries) {
                         JsonObject entry=value.getAsJsonObject();
-                        if (entries.size()>1&&entry.has("conditions")) throw new IllegalArgumentException("Conditional weighted pool");
+                        // Expanding group/tag/alternative entries do not contribute one ordinary weight.
+                        // Their unknown children would corrupt the probability of otherwise readable entries.
+                        if (!Set.of("minecraft:item","minecraft:loot_table","minecraft:empty").contains(entry.get("type").getAsString()))
+                            throw new IllegalArgumentException("Expanding loot entry requires a dedicated profile");
+                        if (entries.size()>1 && entry.has("conditions") && !entry.getAsJsonArray("conditions").isEmpty()) throw new IllegalArgumentException("Conditional weighted pool");
                         totalWeight+=finite(n(entry,"weight",1));
                     }
                     if (totalWeight<=0) continue;

@@ -17,6 +17,7 @@ final class InheritanceTests {
         try { RecipeInheritance.read(server,new Platform.RecipeRef(Ids.of("upgrade_test:counted"),any),new ItemStack(Items.TORCH,4),Set.of()); }
         catch (IllegalArgumentException expected) { rejected=true; }
         ctx.assertTrue(rejected,"Unsupported ingredient counts must not become count one");
+        ctx.assertTrue(EncounterProfiles.drops(server,Ids.of("upgrade_test:chests/expanded")).isEmpty(),"Expanding loot entries must not give ordinary entries a false drop probability");
         var drops=EncounterProfiles.drops(server,Ids.of("upgrade_test:chests/weighted"));
         ctx.assertTrue(Math.abs(drops.getOrDefault("minecraft:diamond",0.0)-.1)<1e-8,"An unsupported enchanted entry must retain its weight without hiding the plain entry");
         ctx.assertTrue(!drops.containsKey("minecraft:enchanted_book"),"Do not price NBT-bearing rewards as blank items");
