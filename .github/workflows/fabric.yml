@@ -1,0 +1,40 @@
+name: Fabric builds and server checks
+on:
+  push:
+    paths: ['fabric/**', 'src/main/java/dev/upgrade/core/**', 'src/test/**', 'src/main/resources/data/**', '.github/workflows/fabric.yml']
+  pull_request:
+    paths: ['fabric/**', 'src/main/java/dev/upgrade/core/**', 'src/test/**', 'src/main/resources/data/**', '.github/workflows/fabric.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fabric:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        minecraft: ['1.20.1', '1.21.1']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: |
+            17
+            21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build and verify economy
+        run: ./gradlew -p fabric -Pminecraft_version=${{ matrix.minecraft }} build --console=plain
+      - name: Prepare isolated test world
+        run: |
+          mkdir -p fabric/run/${{ matrix.minecraft }}/test-server
+          echo eula=true > fabric/run/${{ matrix.minecraft }}/test-server/eula.txt
+          printf 'online-mode=false\nserver-port=0\nlevel-type=minecraft:flat\nspawn-protection=0\n' > fabric/run/${{ matrix.minecraft }}/test-server/server.properties
+      - name: Real dedicated-server integration tests
+        timeout-minutes: 10
+        run: ./gradlew -p fabric -Pminecraft_version=${{ matrix.minecraft }} runTestServer --console=plain
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: upgrade-fabric-${{ matrix.minecraft }}
+          path: fabric/build/${{ matrix.minecraft }}/libs/upgrade-fabric-${{ matrix.minecraft }}-0.4.0-alpha.jar

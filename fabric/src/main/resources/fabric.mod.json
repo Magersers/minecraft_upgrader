@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "upgrade",
+  "version": "${version}",
+  "name": "Upgrader Fabric",
+  "description": "Item upgrades with inventory selection, stack rewards and explainable acquisition costs.",
+  "authors": ["Minecraft Upgrader contributors"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {"main": ["dev.upgrade.Upgrade"], "client": ["dev.upgrade.client.ClientEvents"]},
+  "mixins": ["upgrade.mixins.json"],
+  "depends": {"fabricloader": ">=0.17.2", "fabric-api": ">=${api}", "minecraft": "${minecraft}", "java": ">=${java}"}
+}
