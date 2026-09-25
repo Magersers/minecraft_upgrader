@@ -1,0 +1,307 @@
+{
+  "schema": 1,
+  "notes": "Illustrative curated baseline, not measured Minecraft economics. 1 E = 10 seconds equivalent effort. Replace this exact datapack path for your pack. Confidence is a curation policy score, not a statistical probability.",
+  "sources": [
+    {
+      "item": "minecraft:oak_log",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: oak_log (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:spruce_log",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: spruce_log (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:birch_log",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: birch_log (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:jungle_log",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: jungle_log (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:acacia_log",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: acacia_log (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:dark_oak_log",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: dark_oak_log (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:mangrove_log",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: mangrove_log (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:cherry_log",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: cherry_log (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:bamboo_block",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: bamboo_block (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:crimson_stem",
+      "cost": 5,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: crimson_stem (требует калибровки сборки)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:warped_stem",
+      "cost": 5,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: warped_stem (требует калибровки сборки)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:cobblestone",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: cobblestone (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:stone",
+      "cost": 1.5,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: stone (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:cobbled_deepslate",
+      "cost": 1.2,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: cobbled_deepslate (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:dirt",
+      "cost": 0.5,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: dirt (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:sand",
+      "cost": 0.7,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: sand (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:gravel",
+      "cost": 0.7,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: gravel (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:coal",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: coal (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:charcoal",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: charcoal (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:iron_ingot",
+      "cost": 8,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: iron_ingot (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:raw_iron",
+      "cost": 7,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: raw_iron (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:copper_ingot",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: copper_ingot (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:raw_copper",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: raw_copper (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:gold_ingot",
+      "cost": 20,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: gold_ingot (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:raw_gold",
+      "cost": 19,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: raw_gold (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:redstone",
+      "cost": 4,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: redstone (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:lapis_lazuli",
+      "cost": 6,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: lapis_lazuli (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:diamond",
+      "cost": 120,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: diamond (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:emerald",
+      "cost": 30,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: emerald (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:quartz",
+      "cost": 5,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: quartz (требует калибровки сборки)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:obsidian",
+      "cost": 12,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: obsidian (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:flint",
+      "cost": 2,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: flint (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:string",
+      "cost": 3,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: string (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:leather",
+      "cost": 6,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: leather (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:wheat",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: wheat (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:sugar_cane",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: sugar_cane (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:slime_ball",
+      "cost": 10,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: slime_ball (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:ender_pearl",
+      "cost": 30,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: ender_pearl (требует калибровки сборки)",
+      "gates": []
+    },
+    {
+      "item": "minecraft:blaze_rod",
+      "cost": 45,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: blaze_rod (требует калибровки сборки)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:netherite_scrap",
+      "cost": 240,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: netherite_scrap (требует калибровки сборки)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    },
+    {
+      "item": "minecraft:netherite_ingot",
+      "cost": 1040,
+      "confidence": 0.9,
+      "reason": "Стартовый профиль: netherite_ingot (требует калибровки сборки)",
+      "gates": [
+        "minecraft:story/enter_the_nether"
+      ]
+    }
+  ],
+  "routes": [],
+  "deny": []
+}

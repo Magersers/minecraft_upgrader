@@ -1,0 +1,21 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+[[mods]]
+modId="upgrade"
+version="0.1.1-alpha"
+displayName="Upgrade Forge"
+authors="Upgrade Forge contributors"
+description='''Server-authoritative item upgrades with explainable acquisition costs.'''
+[[dependencies.upgrade]]
+modId="forge"
+mandatory=true
+versionRange="[47.4.10,48)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.upgrade]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="BOTH"
