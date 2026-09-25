@@ -165,7 +165,7 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         switchView(inventoryView); filter();
     }
     @Override public void tick() {
-        search.tick();
+        tickSearch(search);
         if (outcome!=null && settled==null) {
             if (!rolling() && !finishSent) {
                 finishSent=true; status="Получение результата…"; ClientTransport.send(new Network.Finish(outcome.token()));

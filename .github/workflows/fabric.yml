@@ -1,6 +1,7 @@
 name: Fabric builds and server checks
 on:
   push:
+    branches: [main]
     paths: ['fabric/**', 'src/main/java/dev/upgrade/core/**', 'src/test/**', 'src/main/resources/data/**', '.github/workflows/fabric.yml']
   pull_request:
     paths: ['fabric/**', 'src/main/java/dev/upgrade/core/**', 'src/test/**', 'src/main/resources/data/**', '.github/workflows/fabric.yml']

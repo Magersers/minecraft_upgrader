@@ -21,6 +21,7 @@ public final class ClientSmokeTest implements net.fabricmc.api.ClientModInitiali
     public static void tick() throws ReflectiveOperationException {
         if (!Boolean.getBoolean("upgrade.uiSmoke")) return;
         Minecraft mc=Minecraft.getInstance();
+        if (mc.screen!=null && mc.screen.getClass().getSimpleName().equals("AccessibilityOnboardingScreen")) mc.setScreen(new TitleScreen());
         if (!opened && mc.screen instanceof TitleScreen && mc.getOverlay()==null) {
             opened=true; token=UUID.randomUUID();
             org.lwjgl.glfw.GLFW.glfwSetWindowSize(mc.getWindow().getWindow(),1280,800);
