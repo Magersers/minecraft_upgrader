@@ -38,6 +38,18 @@ public final class Platform {
     public static ItemStack readItem(FriendlyByteBuf b) { return ItemStack.OPTIONAL_STREAM_CODEC.decode((RegistryFriendlyByteBuf)b); }
     public static CompoundTag saveItem(ServerPlayer player,ItemStack stack) { return (CompoundTag)stack.save(player.registryAccess()); }
     public static ItemStack loadItem(ServerPlayer player,CompoundTag tag) { return ItemStack.parseOptional(player.registryAccess(),tag); }
+    public static com.google.gson.JsonObject lootJson(MinecraftServer server,ResourceLocation id) {
+        var table=server.reloadableRegistries().getLootTable(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE,id));
+        return net.minecraft.world.level.storage.loot.LootTable.DIRECT_CODEC.encodeStart(
+                server.reloadableRegistries().get().createSerializationContext(com.mojang.serialization.JsonOps.INSTANCE),table).getOrThrow().getAsJsonObject();
+    }
+    public static java.util.Collection<ResourceLocation> lootKeys(MinecraftServer server) {
+        return server.reloadableRegistries().getKeys(net.minecraft.core.registries.Registries.LOOT_TABLE);
+    }
+    public static net.minecraft.world.level.storage.loot.LootTable blockLoot(MinecraftServer server,net.minecraft.world.level.block.Block block) {
+        return server.reloadableRegistries().getLootTable(block.getLootTable());
+    }
+    public static ResourceLocation mobLootId(net.minecraft.world.entity.Mob mob) { return mob.getLootTable().location(); }
     public static String recipeDirectory() { return "recipe/"; }
     public static String lootDirectory() { return "loot_table/"; }
     public static boolean unlocked(ServerPlayer player,CostEngine.Value value) {

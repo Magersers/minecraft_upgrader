@@ -4,6 +4,8 @@ import com.google.gson.*;
 import dev.upgrade.core.CostEngine;
 import dev.upgrade.compat.TinkersCompat;
 import dev.upgrade.compat.EncounterProfiles;
+import dev.upgrade.compat.RecipeInheritance;
+import dev.upgrade.compat.NaturalInheritance;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -40,6 +42,7 @@ public final class Economy {
                 "minecraft:chain_command_block", "minecraft:repeating_command_block", "minecraft:structure_block",
                 "minecraft:structure_void", "minecraft:jigsaw", "minecraft:debug_stick", "minecraft:light",
                 "minecraft:bedrock", "minecraft:end_portal_frame", "minecraft:spawner", "minecraft:dragon_egg"));
+        BuiltInRegistries.ITEM.keySet().stream().filter(k->k.getPath().startsWith("debug/")).forEach(k->denied.add(k.toString()));
         var profiles = server.getResourceManager().listResources("upgrade_values", p -> p.getPath().endsWith(".json"));
         // Validate each complete profile before applying it. One broken optional pack must
         // not disable every item in the economy or leave a half-applied profile behind.
@@ -65,7 +68,13 @@ public final class Economy {
                     }
                     else if (s.has("tag")) {
                         var tag = BuiltInRegistries.ITEM.getTagOrEmpty(TagKey.create(Registries.ITEM, Ids.of(s.get("tag").getAsString())));
-                        for (var holder : tag) localSeeds.put(BuiltInRegistries.ITEM.getKey(holder.value()).toString(), value);
+                        for (var holder : tag) {
+                            var itemKey=BuiltInRegistries.ITEM.getKey(holder.value());
+                            // Crafting substitutability is not equal acquisition cost (e.g. cincinnasite in c:iron_ingots).
+                            // Pack-authored profiles may deliberately set a shared price; the shipped baseline must not.
+                            if (entry.getKey().equals(Ids.of("upgrade:upgrade_values/baseline.json")) && !itemKey.getNamespace().equals("minecraft")) continue;
+                            localSeeds.put(itemKey.toString(),value);
+                        }
                     } else throw new IllegalArgumentException("Source requires item or tag");
                 }
                 if (root.has("routes")) for (JsonElement element : root.getAsJsonArray("routes")) {
@@ -93,6 +102,10 @@ public final class Economy {
                 // Read the contract (recipe type / ingredients), not an exact Java class.
                 boolean supported = recipe instanceof CraftingRecipe || recipe instanceof AbstractCookingRecipe
                         || recipe instanceof StonecutterRecipe || recipe instanceof SmithingTransformRecipe;
+                if (!supported && plain(output)) {
+                    var imported=RecipeInheritance.read(server,recipeRef,output,denied);
+                    if (imported!=null) { routes.add(imported); continue; }
+                }
                 if (!supported || recipe.isSpecial() || !plain(output)) {
                     unsupported.putIfAbsent(id(output), "Особый рецепт: " + recipeRef.id() + ". Нужен профиль routes.");
                     continue;
@@ -132,6 +145,10 @@ public final class Economy {
             } catch (Exception ex) { Upgrade.LOGGER.warn("Cannot import recipe {}", recipeRef.id(), ex); }
         }
         denied.forEach(seeds::remove);
+        // Resolve exact routes first. Automatic acquisition fills gaps, preserving calibrated prices.
+        var exact=CostEngine.solve(seeds,routes,128);
+        Upgrade.LOGGER.info("Economy before automatic sources: {} valued",exact.values().size());
+        NaturalInheritance.load(server,seeds,routes,exact.values(),denied);
         List<CostEngine.Route> filtered = new ArrayList<>();
         for (CostEngine.Route route : routes) {
             if (denied.contains(route.output().split("#",2)[0])) continue;
@@ -157,7 +174,7 @@ public final class Economy {
             else if (solved.values().containsKey(id)) {
                 StringBuilder text = new StringBuilder();
                 describe(id, solved, text, new HashSet<>(), 0);
-                explanation = text.toString().strip();
+                explanation = (solved.values().get(id).confidence()<=.85?"Приблизительная цена: ":"")+text.toString().strip();
             } else if (byOutput.containsKey(id)) {
                 var missing = byOutput.get(id).stream().min(Comparator.comparingLong(r -> r.inputs().stream()
                         .filter(i -> CostEngine.cheapest(i, solved.values()) == null).count())).orElseThrow();
@@ -182,7 +199,7 @@ public final class Economy {
         out.append("  ".repeat(depth)).append(id).append(String.format(Locale.ROOT, " = %.2f E", value.cost()));
         var recipe = solved.breakdowns().get(id);
         if (recipe == null) { out.append(" · ").append(value.source()).append('\n'); return; }
-        out.append("\n").append("  ".repeat(depth)).append("Крафт: ");
+        out.append("\n").append("  ".repeat(depth)).append(recipe.recipe().contains("дроп")?"Добыча: ":"Крафт: ");
         var grouped = new LinkedHashMap<String, Double>();
         recipe.parts().forEach(p -> grouped.merge(p.item(), p.count(), Double::sum));
         grouped.forEach((item, count) -> out.append(String.format(Locale.ROOT,"%s × %.3f; ", item, count)));
@@ -209,7 +226,7 @@ public final class Economy {
     // normal item data, not a custom NBT payload, and must not exclude all equipment.
     private static boolean ordinaryData(ItemStack stack) { return Platform.ordinaryData(stack); }
     public static boolean plain(ItemStack stack) {
-        return !stack.isEmpty() && !TinkersCompat.special(stack) && ordinaryData(stack) && !stack.isDamaged() && !(stack.getItem() instanceof SpawnEggItem)
+        return !stack.isEmpty() && !TinkersCompat.special(stack) && ordinaryData(stack) && !stack.isDamaged() && !(stack.getItem() instanceof SpawnEggItem) && !(stack.getItem() instanceof GameMasterBlockItem)
                 && !Platform.hasStorage(stack);
     }
     public static boolean unlocked(ServerPlayer player, CostEngine.Value value) {

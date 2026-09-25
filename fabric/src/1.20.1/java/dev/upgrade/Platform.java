@@ -35,6 +35,17 @@ public final class Platform {
     public static ItemStack readItem(FriendlyByteBuf b) { return b.readItem(); }
     public static CompoundTag saveItem(ServerPlayer player,ItemStack stack) { return stack.save(new CompoundTag()); }
     public static ItemStack loadItem(ServerPlayer player,CompoundTag tag) { return ItemStack.of(tag); }
+    public static com.google.gson.JsonObject lootJson(MinecraftServer server,ResourceLocation id) {
+        return net.minecraft.world.level.storage.loot.Deserializers.createLootTableSerializer().create()
+                .toJsonTree(server.getLootData().getLootTable(id)).getAsJsonObject();
+    }
+    public static java.util.Collection<ResourceLocation> lootKeys(MinecraftServer server) {
+        return server.getLootData().getKeys(net.minecraft.world.level.storage.loot.LootDataType.TABLE);
+    }
+    public static net.minecraft.world.level.storage.loot.LootTable blockLoot(MinecraftServer server,net.minecraft.world.level.block.Block block) {
+        return server.getLootData().getLootTable(block.getLootTable());
+    }
+    public static ResourceLocation mobLootId(net.minecraft.world.entity.Mob mob) { return mob.getLootTable(); }
     public static String recipeDirectory() { return "recipes/"; }
     public static String lootDirectory() { return "loot_tables/"; }
     public static boolean unlocked(ServerPlayer player,CostEngine.Value value) {

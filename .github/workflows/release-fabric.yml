@@ -1,4 +1,4 @@
-name: Release Fabric 0.4
+name: Release Fabric 0.5
 on:
   workflow_dispatch:
   push:
@@ -27,15 +27,20 @@ jobs:
             echo eula=true > "fabric/run/$mc/test-server/eula.txt"
             printf 'online-mode=false\nserver-port=0\nlevel-type=minecraft:flat\nview-distance=2\nsimulation-distance=2\n' > "fabric/run/$mc/test-server/server.properties"
             ./gradlew -p fabric -Pminecraft_version="$mc" build runTestServer --console=plain
-            cp "fabric/build/$mc/libs/upgrade-fabric-$mc-0.4.0-alpha.jar" release/
+            cp "fabric/build/$mc/libs/upgrade-fabric-$mc-0.5.0-alpha.jar" release/
           done
           (cd release && sha256sum *.jar > SHA256SUMS.txt)
+      - name: Verify BetterX acquisition chains
+        timeout-minutes: 15
+        run: |
+          python scripts/prepare-betterx.py "$RUNNER_TEMP/betterx"
+          ./gradlew -p fabric -Pminecraft_version=1.20.1 -PcompatMods="$RUNNER_TEMP/betterx" runTestServer --console=plain
       - name: Publish Fabric files and release notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          gh release create fabric-v0.4.0-alpha release/*.jar release/SHA256SUMS.txt \
+          gh release create fabric-v0.5.0-alpha release/*.jar release/SHA256SUMS.txt \
             --target "$GITHUB_SHA" \
-            --title 'Upgrader Fabric 0.4.0-alpha — 1.20.1 / 1.21.1' \
-            --notes-file docs/releases/fabric-0.4.0.md --prerelease
+            --title 'Upgrader Fabric 0.5.0-alpha — 1.20.1 / 1.21.1' \
+            --notes-file docs/releases/fabric-0.5.0.md --prerelease

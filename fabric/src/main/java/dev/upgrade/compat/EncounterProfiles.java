@@ -50,6 +50,7 @@ public final class EncounterProfiles {
             } catch (Exception e) { Upgrade.LOGGER.warn("Skipping invalid encounter profile {}: {}",file.getKey(),e.toString()); }
         }
     }
+    public static Map<String,Double> drops(MinecraftServer server,ResourceLocation id) throws Exception { return loot(server,id,new HashSet<>()); }
     private static double mean(JsonElement element) {
         if (element.isJsonPrimitive()) return finite(element.getAsDouble());
         JsonObject value=element.getAsJsonObject(); String type=value.get("type").getAsString();
@@ -91,13 +92,10 @@ public final class EncounterProfiles {
     }
     private static Map<String,Double> loot(MinecraftServer server,ResourceLocation id,Set<ResourceLocation> visiting) throws Exception {
         if (!visiting.add(id)) throw new IllegalArgumentException("Recursive loot table");
-        ResourceLocation file=Ids.of(id.getNamespace(),Platform.lootDirectory()+id.getPath()+".json");
-        var resource=server.getResourceManager().getResource(file);
-        if (resource.isEmpty()) throw new IllegalArgumentException("Missing loot table "+id);
         Map<String,Double> result=new HashMap<>();
-        try (Reader reader=resource.get().openAsReader()) {
-            JsonObject table=JsonParser.parseReader(reader).getAsJsonObject();
-            if (table.has("functions")) throw new IllegalArgumentException("Table-wide loot functions require a dedicated profile");
+        try {
+            JsonObject table=Platform.lootJson(server,id);
+            if (table.has("functions") && !table.getAsJsonArray("functions").isEmpty()) throw new IllegalArgumentException("Table-wide loot functions require a dedicated profile");
             if (table.has("pools")) for (JsonElement p:table.getAsJsonArray("pools")) {
                 JsonObject pool=p.getAsJsonObject();
                 try {
@@ -113,6 +111,7 @@ public final class EncounterProfiles {
                     Map<String,Double> poolDrops=new HashMap<>();
                     for (JsonElement value:entries) {
                         JsonObject entry=value.getAsJsonObject();
+                        try {
                         double chance=conditions(entry)*n(entry,"weight",1)/totalWeight;
                         String type=entry.get("type").getAsString();
                         if (type.equals("minecraft:item")) {
@@ -122,6 +121,7 @@ public final class EncounterProfiles {
                             if (pool.has("functions")||entry.has("functions")) throw new IllegalArgumentException("Nested loot functions");
                             loot(server,Ids.of(entry.get(entry.has("value")?"value":"name").getAsString()),visiting).forEach((key,amount) -> poolDrops.merge(key,amount*rolls*chance,Double::sum));
                         } else if (!type.equals("minecraft:empty")) throw new IllegalArgumentException("Unsupported loot entry "+type);
+                        } catch (IllegalArgumentException ex) { Upgrade.LOGGER.debug("Unsupported loot entry in {}: {}",id,ex.getMessage()); }
                     }
                     poolDrops.forEach((key,amount) -> result.merge(key,amount,Double::sum));
                 } catch (IllegalArgumentException e) { Upgrade.LOGGER.debug("Loot pool {} skipped: {}",id,e.getMessage()); }
