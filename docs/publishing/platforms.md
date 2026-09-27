@@ -18,7 +18,7 @@
 - Game: Minecraft Java Edition. Class: Mods.
 - Name: Magersers' Upgrader. Проверить уникальность при создании проекта.
 - Summary: `Risk spare items for better rewards with an inventory upgrade wheel and recipe-based item values.`
-- Logo: `icon.png`, 1280×1280 PNG. Промо-иллюстрация создана с ИИ; это раскрыто в описании.
+- Logo: `icon.png`, 1254×1254 PNG. Промо-иллюстрация создана с ИИ; это раскрыто в описании.
 - Description: `description-en.md`, затем при желании `description-ru.md`.
 - License: Custom, название `Magersers Proprietary License — All Rights Reserved`, полный текст `LICENSE`.
 - Основная категория: выбрать подходящую категорию утилит/изменения игрового процесса из текущего списка формы. Не отмечать world generation или новые измерения.
