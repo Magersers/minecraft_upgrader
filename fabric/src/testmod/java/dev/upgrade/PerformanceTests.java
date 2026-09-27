@@ -23,19 +23,19 @@ final class PerformanceTests {
         var cycle=new CostEngine.Route("test:cycle","test:steel",1,List.of(new CostEngine.Input(List.of("test:boots"),1)),0,.9,Set.of());
         ctx.assertTrue(PerformanceMath.reverse(Map.of("test:boots",base),Map.of(),List.of(pure,cycle),Set.of()).size()==1,"No feedback through reverse recipe cycles");
         double weapon=PerformanceMath.weapon(7,1.6,1561,0,240.5);
-        ctx.assertTrue(PerformanceMath.weapon(14,1.6,1561,0,240.5)>weapon*2,"High damage increases utility substantially");
+        ctx.assertTrue(PerformanceMath.weapon(14,1.6,1561,0,240.5)>=weapon*8-1e-7,"High damage increases utility substantially");
         ctx.assertTrue(PerformanceMath.weapon(7,1.6,3122,0,240.5)>weapon,"Higher durability increases value");
         ctx.assertTrue(PerformanceMath.armor(6,4,429,3,429,480)>480,"Protection and toughness increase armour value");
         var sword=new ItemStack(Items.DIAMOND_SWORD); var netherite=new ItemStack(Items.NETHERITE_SWORD);
         ctx.assertTrue(PerformancePricing.utility(netherite,Set.of()).cost()>PerformancePricing.utility(sword,Set.of()).cost(),"Read actual registered weapon stats");
-        ctx.assertTrue(Math.abs(PerformancePricing.utility(sword,Set.of()).cost()-240.5)<1e-3,"Diamond sword reference");
+        ctx.assertTrue(Math.abs(PerformancePricing.utility(sword,Set.of()).cost()-240.5*BalancePolicy.equipmentScale())<.01,"Diamond sword reference");
         if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("techreborn")) energy(ctx,server);
         var profiles=PricingPolicy.profiles;
         try {
             var altered=new HashMap<>(profiles);
             altered.put("minecraft:diamond_sword",new PricingPolicy.Profile(List.of(new PricingPolicy.Ability("poison",1,false)),Set.of()));
             PricingPolicy.profiles=altered;
-            ctx.assertTrue(PerformancePricing.utility(sword,Set.of()).cost()>weapon*5,"Poison profile substantially raises weapon value");
+            ctx.assertTrue(PerformancePricing.utility(sword,Set.of()).cost()>weapon*BalancePolicy.equipmentScale()*5,"Poison profile substantially raises weapon value");
         } finally { PricingPolicy.profiles=profiles; }
         var player=TestPlatform.player(server.overworld());
         var original=Economy.current;
@@ -57,7 +57,7 @@ final class PerformanceTests {
             var log=new ItemStack(Items.OAK_LOG); double target=Economy.target(player,log).cost();
             PricingPolicy.hard=true;
             ctx.assertTrue(Economy.usable(player,log).cost()<=1 && Economy.target(player,log).cost()==target,"Hard mode lowers stakes but not reward prices");
-            ctx.assertTrue(Economy.target(player,new ItemStack(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE)).cost()>=840,"Template includes seven-diamond marginal copy cost");
+            ctx.assertTrue(Economy.target(player,new ItemStack(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE)).cost()>=14000,"Template includes seven-diamond marginal copy cost");
         } finally { Economy.current=original; PricingPolicy.hard=hard; }
     }
     private static void energy(TestContext ctx,net.minecraft.server.MinecraftServer server) throws Exception {
@@ -79,7 +79,8 @@ final class PerformanceTests {
             ctx.assertTrue(dev.upgrade.compat.EnergyCompat.read(full).amount()==capacity,"Pricing must not consume energy");
             ctx.assertTrue(Economy.plain(Platform.pricingCopy(full,PerformancePricing.allowedKeys(full))),"Known energy metadata may be priced safely");
             var quote=Economy.usable(TestPlatform.player(server.overworld()),full);
-            ctx.assertTrue(quote!=null && Math.abs(quote.cost()-high.cost())<1e-6,"Real charged armour is available as an inventory stake");
+            var emptyQuote=Economy.usable(TestPlatform.player(server.overworld()),empty);
+            ctx.assertTrue(quote!=null && emptyQuote!=null && quote.cost()>emptyQuote.cost(),"Real charge increases the acquisition-backed inventory stake");
             if (id.contains("quantum")) ctx.assertTrue(high.cost()>12000,"Quantum flight and shield carry a substantial premium");
             Upgrade.LOGGER.info("Energy valuation {}: empty={}, half={}, full={}",id,low.cost(),middle.cost(),high.cost());
         }

@@ -16,6 +16,7 @@ import java.util.*;
 public final class PerformancePricing {
     private PerformancePricing() {}
     public static Set<String> simple=Set.of();
+    public static Map<String,Double> stakeLimits=Map.of();
     public static void attribute(Map<String,double[]> map,String name,double base,double amount,int operation) {
         if (!Double.isFinite(base)||!Double.isFinite(amount)) return;
         String key=name.replace("generic.","").replace("player.","");
@@ -85,12 +86,12 @@ public final class PerformancePricing {
                 +Math.max(0,stats.getOrDefault("block_interaction_range",4.5)-4.5)*600
                 +Math.max(0,stats.getOrDefault("entity_interaction_range",3d)-3)*800;
         cost+=extras;
-        if (extras>0) detail+=String.format(Locale.ROOT,"; дополнительные атрибуты +%.2f E",extras);
+        if (extras>0) detail+=String.format(Locale.ROOT,"; дополнительные атрибуты +%.2f E",extras*BalancePolicy.equipmentScale());
         if (profile!=null) for (var ability:profile.abilities()) {
             double factor=ability.charged()?(charge==null?0:charge.fraction()):1;
             if (!EnergyCompat.abilityEnabled(Economy.id(stack),ability.type())) factor=0;
             double bonus=PricingPolicy.WEIGHTS.get(ability.type())*ability.strength()*factor;
-            cost+=bonus; detail+=String.format(Locale.ROOT,"; %s +%.2f E%s",ability.type(),bonus,ability.charged()?" (по заряду)":"");
+            cost+=bonus; detail+=String.format(Locale.ROOT,"; %s +%.2f E%s",ability.type(),bonus*BalancePolicy.equipmentScale(),ability.charged()?" (по заряду)":"");
         }
         if (charge!=null) {
             double battery=80*Math.log1p(charge.capacity()/10000d);
@@ -100,7 +101,9 @@ public final class PerformancePricing {
         if (!Double.isFinite(cost)||cost<=0) return null;
         if (!BuiltInRegistries.ITEM.getKey(item).getNamespace().equals("minecraft") && profile==null)
             detail+="; скрытые эффекты кода не оценены: нужен профиль upgrade_abilities";
-        return new CostEngine.Value(cost,.85,"Оценка по характеристикам: "+detail,gates);
+        cost*=BalancePolicy.equipmentScale();
+        if (!Double.isFinite(cost)) return null;
+        return new CostEngine.Value(cost,.85,"Оценка по характеристикам (алмаз "+BalancePolicy.diamond()+" E): "+detail,gates);
     }
     public static CostEngine.Result apply(MinecraftServer server,CostEngine.Result acquisition,Map<String,CostEngine.Value> baseSeeds,List<CostEngine.Route> routes,Set<String> denied) {
         Map<String,CostEngine.Value> anchors=new TreeMap<>(),equipmentAnchors=new TreeMap<>(); Set<String> inputs=new HashSet<>(),cheap=new HashSet<>();
@@ -110,7 +113,7 @@ public final class PerformancePricing {
             if (stack.isEmpty()||denied.contains(id)||!Economy.plain(stack)) continue;
             var old=acquisition.values().get(id); Set<String> gates=new TreeSet<>(dev.upgrade.compat.NaturalInheritance.namespaceGates(id)); if (old!=null) gates.addAll(old.gates());
             try {
-                var utility=utility(stack,gates); if (utility!=null) { anchors.put(id,utility); equipmentAnchors.put(id,utility); }
+                var utility=utility(stack,gates); if (utility!=null) equipmentAnchors.put(id,utility);
                 if (simpleResource(stack) || decorative(stack,inputs)) cheap.add(id);
                 if (decorative(stack,inputs)) {
                     var block=((BlockItem)item).getBlock(); double hardness=block.defaultBlockState().getDestroySpeed(server.overworld(),BlockPos.ZERO);
@@ -143,13 +146,32 @@ public final class PerformancePricing {
             if (cost>0 && Double.isFinite(cost)) anchors.put(id,new CostEngine.Value(cost,.85,
                     String.format(Locale.ROOT,"Кузнечный шаблон: копирование %.2f E, поиск %.2f E; используется большая оценка",copy,templateLoot.getOrDefault(id,old==null?840:old.cost())),old==null?Set.of():old.gates()));
         }
-        Map<String,CostEngine.Value> knownForReverse=new TreeMap<>(acquisition.values()); knownForReverse.putAll(anchors);
+        Map<String,CostEngine.Value> knownForReverse=new TreeMap<>(acquisition.values()); knownForReverse.putAll(anchors); knownForReverse.putAll(equipmentAnchors);
         var inferred=PerformanceMath.reverse(equipmentAnchors,knownForReverse,routes,denied);
         Map<String,CostEngine.Value> seeds=new TreeMap<>(baseSeeds); seeds.putAll(inferred); seeds.putAll(anchors);
+        // The stake cannot mint utility value by crafting cheap ingredients into expensive equipment/decor.
+        Map<String,CostEngine.Value> acquisitionSeeds=new TreeMap<>(baseSeeds); acquisitionSeeds.putAll(inferred);
+        anchors.forEach((id,value)-> { if (BuiltInRegistries.ITEM.get(Ids.of(id)) instanceof SmithingTemplateItem) acquisitionSeeds.put(id,value); });
+        var budget=BalancePolicy.solve(acquisitionSeeds,routes,128);
+        Map<String,Double> limits=new TreeMap<>(); budget.values().forEach((id,value)->limits.put(id,value.cost()));
+        stakeLimits=Map.copyOf(limits);
         var activeRoutes=routes.stream().filter(r->!anchors.containsKey(r.output())).toList();
-        var result=CostEngine.solve(seeds,activeRoutes,128);
+        Map<String,Double> equipmentFloors=new TreeMap<>();
+        equipmentAnchors.forEach((id,v)-> {
+            equipmentFloors.put(id,v.cost());
+            if (!acquisition.values().containsKey(id)) seeds.put(id,v);
+        });
+        var result=BalancePolicy.solve(seeds,activeRoutes,128,equipmentFloors);
+        Map<String,CostEngine.Value> values=new TreeMap<>(result.values());
+        Map<String,CostEngine.Breakdown> breakdowns=new HashMap<>(result.breakdowns());
+        equipmentAnchors.forEach((id,stats)-> {
+            var value=values.get(id); if (value==null) return;
+            values.put(id,new CostEngine.Value(value.cost(),Math.min(value.confidence(),stats.confidence()),
+                    stats.source()+String.format(Locale.ROOT,"; минимум по характеристикам %.2f E; итог также учитывает рецепт/добычу: %s",stats.cost(),value.source()),value.gates()));
+            breakdowns.remove(id);
+        });
         simple=Set.copyOf(cheap);
-        return result;
+        return new CostEngine.Result(Map.copyOf(values),result.quarantined(),result.passes(),Map.copyOf(breakdowns));
     }
     private static boolean simpleResource(ItemStack stack) {
         return stack.is(ItemTags.LOGS)||stack.is(ItemTags.PLANKS)||stack.is(ItemTags.DIRT)

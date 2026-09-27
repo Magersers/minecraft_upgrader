@@ -25,6 +25,10 @@ public final class NaturalInheritance {
     private static JsonObject latestPolicy=new JsonObject();
     public static Set<String> namespaceGates(String id) { return gates(latestPolicy,id); }
     public static boolean simpleBlock(Block block) { return Set.of("Stone","Wood","Sand","Snow").contains(java.util.Objects.toString(NaturalFamilies.family(block),"")); }
+    public static boolean plantBlock(Block block) {
+        String family=java.util.Objects.toString(NaturalFamilies.family(block),"");
+        return family.contains("Plant")||family.contains("Vine")||family.contains("Sapling")||family.equals("Leaves");
+    }
     private record Source(double cost,String reason) {}
     public static void load(MinecraftServer server,Map<String,CostEngine.Value> seeds,List<CostEngine.Route> routes,
                             Map<String,CostEngine.Value> known,Set<String> denied) {
@@ -143,7 +147,8 @@ public final class NaturalInheritance {
                 else for (int i=1;i<=128;i++) for (ItemStack drop:custom?state.getDrops(builder):table.getRandomItems(params,0x52FA1234L+i*104729L)) {
                     if (Economy.plain(drop)) drops.merge(Economy.id(drop),drop.getCount()/128.0,Double::sum);
                 }
-                for (var drop:drops.entrySet()) if (!drop.getKey().equals(id) && !known.containsKey(drop.getKey()) && !denied.contains(drop.getKey())) {
+                for (var drop:drops.entrySet()) if (!drop.getKey().equals(id) && (!known.containsKey(drop.getKey()) || BalancePolicy.ordinaryPlant(block)) && !denied.contains(drop.getKey())) {
+                    if (BalancePolicy.ordinaryPlant(block) && drop.getValue()>=.5) BalancePolicy.gatheredPlantDrop(drop.getKey());
                     routes.add(new CostEngine.Route((exactDrops==null?"Оценка дропа (128 проб): ":"Средний дроп руды: ")+id+" -> "+drop.getKey(),drop.getKey(),drop.getValue(),
                             List.of(new CostEngine.Input(List.of(id),1)),.1,.85,Set.of())); dropRoutes++;
                 }

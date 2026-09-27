@@ -253,7 +253,7 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         if (settled!=null && settled.won()) {
             g.pose().pushPose(); g.pose().translate(cx-12,cy-13,0); g.pose().scale(1.5f,1.5f,1); g.renderItem(item(settled.target()),0,0); g.pose().popPose();
             g.drawCenteredString(font,"× "+settled.count(),cx,cy+14,GOLD);
-        } else { g.drawCenteredString(font,String.format(Locale.ROOT,"%.1f%%",p*100),cx,cy-6,TEXT); g.drawCenteredString(font,"шанс",cx,cy+7,MUTED); }
+        } else { g.drawCenteredString(font,(p>0 && p<.00001?"<0.001%":String.format(Locale.ROOT,p<.01?"%.3f%%":"%.1f%%",p*100)),cx,cy-6,TEXT); g.drawCenteredString(font,"шанс",cx,cy+7,MUTED); }
         if (settled!=null) {
             g.fillGradient(x+12,y+statusY-3,x+panelWidth-12,y+tabsY-4,settled.won()?0xFF214C40:0xFF512D40,0xAA172238);
             label(g,settled.won()?"✦ ПОБЕДА! ✦":"ПОРАЖЕНИЕ",cx,y+statusY,panelWidth-28,settled.won()?GREEN:RED);

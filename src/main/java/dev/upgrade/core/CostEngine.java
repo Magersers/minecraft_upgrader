@@ -32,6 +32,15 @@ public final class CostEngine {
     public record Result(Map<String, Value> values, Set<String> quarantined, int passes, Map<String, Breakdown> breakdowns) {}
 
     public static Result solve(Map<String, Value> seeds, List<Route> recipes, int minPasses) {
+        return solve(seeds,recipes,minPasses,Map.of(),Map.of());
+    }
+    /** Optional economy bounds apply during every relaxation, including reversible storage recipes. */
+    public static Result solve(Map<String, Value> seeds, List<Route> recipes, int minPasses,
+                               Map<String,Double> floors,Map<String,Double> ceilings) {
+        for (var map:List.of(floors,ceilings)) for (double n:map.values())
+            if (!Double.isFinite(n)||n<=0) throw new IllegalArgumentException("Invalid price bound");
+        for (String id:floors.keySet()) if (floors.get(id)>ceilings.getOrDefault(id,Double.POSITIVE_INFINITY))
+            throw new IllegalArgumentException("Conflicting price bounds: "+id);
         if (minPasses < 1) throw new IllegalArgumentException("passes");
         List<Route> routes = recipes.stream().sorted(Comparator.comparing(Route::id)).toList();
         Set<String> vertices = new HashSet<>(seeds.keySet());
@@ -42,7 +51,8 @@ public final class CostEngine {
         // A simple path can be as deep as the graph. A fixed 128-pass cutoff falsely
         // classified long (but finite) modpack chains as money-generating cycles.
         int limit = Math.max(minPasses, vertices.size() + 1);
-        Map<String, Value> values = new TreeMap<>(seeds);
+        Map<String, Value> values = new TreeMap<>();
+        for (var entry:seeds.entrySet()) values.put(entry.getKey(),bounded(entry.getKey(),entry.getValue(),floors,ceilings));
         Map<String, Breakdown> breakdowns = new HashMap<>();
         Set<String> changing = new HashSet<>();
         int passes = 0;
@@ -66,10 +76,11 @@ public final class CostEngine {
                 if (!known) continue;
                 double cost = total / route.count();
                 if (!Double.isFinite(cost) || cost <= 0) continue;
-                Value candidate = new Value(cost, confidence, route.id(), gates), old = next.get(route.output());
+                Value candidate = bounded(route.output(),new Value(cost, confidence, route.id(), gates),floors,ceilings), old = next.get(route.output());
                 if (better(candidate, old)) {
                     next.put(route.output(), candidate);
-                    breakdowns.put(route.output(), new Breakdown(route.id(), route.count(), route.overhead(), parts));
+                    if (candidate.cost()==cost) breakdowns.put(route.output(), new Breakdown(route.id(), route.count(), route.overhead(), parts));
+                    else breakdowns.remove(route.output());
                     changing.add(route.output());
                 }
             }
@@ -95,6 +106,12 @@ public final class CostEngine {
         } while (expanded);
         bad.forEach(values::remove); bad.forEach(breakdowns::remove);
         return result(values, bad, passes, breakdowns);
+    }
+    private static Value bounded(String id,Value value,Map<String,Double> floors,Map<String,Double> ceilings) {
+        double cost=Math.min(ceilings.getOrDefault(id,Double.POSITIVE_INFINITY),Math.max(floors.getOrDefault(id,0d),value.cost()));
+        if (cost==value.cost()) return value;
+        return new Value(cost,value.confidence(),String.format(Locale.ROOT,"%s баланса %.2f E (до ограничения %.2f E): %s",
+                cost>value.cost()?"Минимум":"Предел",cost,value.cost(),value.source()),value.gates());
     }
     private static Result result(Map<String, Value> values, Set<String> bad, int passes, Map<String, Breakdown> breakdowns) {
         return new Result(Map.copyOf(values), Set.copyOf(bad), passes, Map.copyOf(breakdowns));

@@ -36,6 +36,7 @@ public final class Economy {
 
     public static void rebuild(MinecraftServer server) {
         PricingPolicy.load(server);
+        BalancePolicy.load(server);
         Map<String, CostEngine.Value> seeds = new TreeMap<>();
         List<CostEngine.Route> routes = new ArrayList<>();
         Map<String, String> unsupported = new HashMap<>();
@@ -147,7 +148,7 @@ public final class Economy {
         }
         denied.forEach(seeds::remove);
         // Resolve exact routes first. Automatic acquisition fills gaps, preserving calibrated prices.
-        var exact=CostEngine.solve(seeds,routes,128);
+        var exact=BalancePolicy.solve(seeds,routes,128);
         Upgrade.LOGGER.info("Economy before automatic sources: {} valued",exact.values().size());
         NaturalInheritance.load(server,seeds,routes,exact.values(),denied);
         List<CostEngine.Route> filtered = new ArrayList<>();
@@ -163,7 +164,7 @@ public final class Economy {
             if (safe) filtered.add(new CostEngine.Route(route.id(), route.output(), route.count(), inputs,
                     route.overhead(), route.confidence(), route.gates()));
         }
-        var acquisition = CostEngine.solve(seeds, filtered, 128);
+        var acquisition = BalancePolicy.solve(seeds, filtered, 128);
         var solved = PerformancePricing.apply(server,acquisition,seeds,filtered,denied);
         Map<String, List<CostEngine.Route>> byOutput = new HashMap<>();
         filtered.forEach(r -> byOutput.computeIfAbsent(r.output(), k -> new ArrayList<>()).add(r));
@@ -222,6 +223,8 @@ public final class Economy {
         if (value != null && !unlocked(player, value)) return "Нужен этап: " + String.join(", ", value.gates());
         if (value != null && value.confidence() < MIN_CONFIDENCE) return "Недостаточное доверие к цене: " + Math.round(value.confidence() * 100) + "%";
         String detail=current.explanations().getOrDefault(id, "Нет оценки предмета");
+        if (value!=null && PerformancePricing.stakeLimits.getOrDefault(id,value.cost())<value.cost())
+            detail=String.format(Locale.ROOT,"Ставка ограничена доступной цепочкой добычи/крафта: %.2f E; цена получения %.2f E.\n",PerformancePricing.stakeLimits.get(id),value.cost())+detail;
         if (stack.isDamaged()) detail+=String.format(Locale.ROOT,"\nОстаток прочности %.1f%%; стоимость ставки × %.3f",100*PerformanceMath.wear(stack.getDamageValue(),stack.getMaxDamage()),PerformanceMath.wear(stack.getDamageValue(),stack.getMaxDamage()));
         if (dev.upgrade.compat.EnergyCompat.read(stack)!=null) { var quote=PerformancePricing.utility(stack,value==null?Set.of():value.gates()); if (quote!=null) detail=quote.source()+"\n"+detail; }
         if (PricingPolicy.hard && PerformancePricing.simple.contains(id)) detail+=String.format(Locale.ROOT,"\nХард-режим: ставка не дороже %.2f E/шт.; цена получения не снижена",PricingPolicy.simpleCap);
@@ -252,10 +255,13 @@ public final class Economy {
         var clean=Platform.pricingCopy(stack,PerformancePricing.allowedKeys(stack));
         var value=TinkersCompat.special(stack)?TinkersCompat.quote(clean,current.values()):stakeData(stack)?current.values().get(id(stack)):null;
         if (value==null || value.confidence()<MIN_CONFIDENCE || !unlocked(player,value)) return null;
+        double cost=TinkersCompat.special(stack)?value.cost():Math.min(value.cost(),PerformancePricing.stakeLimits.getOrDefault(id(stack),value.cost()));
         if (!TinkersCompat.special(stack) && dev.upgrade.compat.EnergyCompat.read(stack)!=null) {
-            var powered=PerformancePricing.utility(stack,value.gates()); if (powered!=null) value=powered;
+            var powered=PerformancePricing.utility(stack,value.gates());
+            var empty=PerformancePricing.utility(stack.getItem().getDefaultInstance(),value.gates());
+            if (powered!=null && empty!=null) cost+=Math.max(0,powered.cost()-empty.cost());
         }
-        double cost=value.cost()*PerformanceMath.wear(stack.getDamageValue(),stack.getMaxDamage());
+        cost*=PerformanceMath.wear(stack.getDamageValue(),stack.getMaxDamage());
         if (PricingPolicy.hard && PerformancePricing.simple.contains(id(stack))) cost=Math.min(cost,PricingPolicy.simpleCap);
         return new CostEngine.Value(cost,value.confidence(),value.source(),value.gates());
     }

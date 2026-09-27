@@ -9,14 +9,15 @@ public final class PerformanceMath {
     public static double wear(int damage,int maximum) {
         return maximum<=0?1:Math.max(.01,Math.min(1,1-damage/(double)maximum));
     }
+    private static double growth(double ratio,double below,double above) { return Math.pow(ratio,ratio>1?above:below); }
     public static double weapon(double damage,double speed,double durability,double mining,double referenceCost) {
-        double combat=Math.pow(Math.max(.01,damage*speed)/(7*1.6),1.6);
-        double digging=mining<=0?0:Math.pow(mining/8,1.4);
+        double combat=growth(Math.max(.01,damage)/7,1.6,3)*growth(Math.max(.01,speed)/1.6,1,1.5);
+        double digging=mining<=0?0:growth(mining/8,1.4,2.5);
         return Math.max(.01,referenceCost*Math.max(combat,digging)*Math.pow(Math.max(1,durability)/1561,.35));
     }
     public static double armor(double protection,double toughness,double durability,double referenceProtection,double referenceDurability,double referenceCost) {
-        return Math.max(.01,referenceCost*Math.pow(Math.max(.1,protection)/referenceProtection,1.6)
-                *Math.pow((2+Math.max(0,toughness))/4,.7)*Math.pow(Math.max(1,durability)/referenceDurability,.35));
+        return Math.max(.01,referenceCost*growth(Math.max(.1,protection)/referenceProtection,1.6,3)
+                *growth((2+Math.max(0,toughness))/4,.7,1.5)*Math.pow(Math.max(1,durability)/referenceDurability,.35));
     }
     /** Equal budgets per distinct unknown material; quantities divide each material's share. */
     public static Map<String,CostEngine.Value> reverse(Map<String,CostEngine.Value> anchors,Map<String,CostEngine.Value> known,

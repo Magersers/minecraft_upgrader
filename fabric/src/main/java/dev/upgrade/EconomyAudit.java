@@ -17,7 +17,7 @@ public final class EconomyAudit {
             String status=Economy.current.denied().contains(id)||!Economy.plain(item.getDefaultInstance())?"excluded":value==null?"unknown":"valued";
             int[] count=counts.computeIfAbsent(mod,k->new int[3]); count[status.equals("valued")?0:status.equals("unknown")?1:2]++;
             row.addProperty("status",status);
-            if (value!=null) { row.addProperty("cost",value.cost()); row.addProperty("pristine_stake_cost",PricingPolicy.hard && PerformancePricing.simple.contains(id)?Math.min(value.cost(),PricingPolicy.simpleCap):value.cost()); row.addProperty("confidence",value.confidence()); row.add("gates",new Gson().toJsonTree(value.gates())); }
+            if (value!=null) { row.addProperty("cost",value.cost()); row.addProperty("pristine_stake_cost",Math.min(value.cost(),Math.min(PerformancePricing.stakeLimits.getOrDefault(id,value.cost()),PricingPolicy.hard && PerformancePricing.simple.contains(id)?PricingPolicy.simpleCap:Double.POSITIVE_INFINITY))); row.addProperty("confidence",value.confidence()); row.add("gates",new Gson().toJsonTree(value.gates())); }
             row.addProperty("reason",Economy.current.explanations().getOrDefault(id,"")); items.add(row);
         }
         counts.forEach((mod,count)-> { JsonObject row=new JsonObject(); row.addProperty("valued",count[0]); row.addProperty("unknown",count[1]); row.addProperty("excluded",count[2]); mods.add(mod,row); });
