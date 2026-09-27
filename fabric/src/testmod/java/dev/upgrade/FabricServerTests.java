@@ -26,7 +26,7 @@ public final class FabricServerTests implements ModInitializer {
     }
     price(ctx,"oak_planks",1); price(ctx,"stick",.5); price(ctx,"chest",8); 
     boolean compat=net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("tconstruct");
-    if (!compat && !net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("bclib")) { price(ctx,"iron_block",67.5);
+    if (!compat && !net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("bclib")) { price(ctx,"iron_block",net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("techreborn")?66.75:67.5);
     price(ctx,"diamond_pickaxe",361); price(ctx,"cake",67); }
     ctx.assertTrue(Economy.current.values().size()>700,"Vanilla recipe coverage");
     ctx.assertTrue(!Economy.current.values().containsKey("minecraft:infested_cobblestone"),"Infested blocks must not inherit the cobblestone baseline");
@@ -40,11 +40,13 @@ public final class FabricServerTests implements ModInitializer {
     var drops=(java.util.Map<?,?>)lootMethod.invoke(null,server,Ids.of("minecraft:entities/skeleton"),new java.util.HashSet<>());
     ctx.assertTrue(Double.valueOf(1).equals(drops.get("minecraft:bone")) && Double.valueOf(1).equals(drops.get("minecraft:arrow")),"Read actual skeleton loot with Looting 0 in both formats");
     InheritanceTests.run(ctx,server);
+    PerformanceTests.run(ctx,server);
     NetworkGameTests.delayedAndExactlyOncePayout(ctx);
     NetworkGameTests.lossAndInterruptedPlayerRecovery(ctx);
     NetworkGameTests.inventorySlotAndStackReward(ctx);
     NetworkGameTests.priceUsesWholeRewardStack(ctx);
     NetworkGameTests.rejectForgedCountsAndChangedSlots(ctx);
+    NetworkGameTests.wearAndHardMode(ctx);
     var player=TestPlatform.player(server.overworld());
     Platform.data(player).putString("saved-test","preserved");
     var save=new CompoundTag(); player.addAdditionalSaveData(save);

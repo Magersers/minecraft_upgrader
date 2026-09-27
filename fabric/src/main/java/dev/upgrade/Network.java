@@ -94,7 +94,7 @@ public final class Network {
             if (stack.isEmpty()) continue;
             var price=Economy.current.values().get(key.toString());
             entries.add(new Entry(key.toString(),price==null?0:price.cost(),price==null?0:price.confidence(),
-                    Economy.reason(player,stack),Economy.usable(player,stack)!=null));
+                    Economy.reason(player,stack),Economy.target(player,stack)!=null));
         }
         for (int offset=0; offset<entries.size() || offset==0; offset+=CHUNK) {
             send(player,new Catalog(token,List.copyOf(entries.subList(offset,Math.min(offset+CHUNK,entries.size()))),
@@ -125,7 +125,7 @@ public final class Network {
             reject(player,packet.token(),"Недопустимое количество награды."); return;
         }
         reward.setCount(packet.rewardCount());
-        var source=Economy.usable(player,hand); var target=Economy.usable(player,reward);
+        var source=Economy.usable(player,hand); var target=Economy.target(player,reward);
         if(source==null || target==null) { reject(player,packet.token(),"Предмет заблокирован или не оценён."); return; }
         double chance;
         try { chance=CostEngine.chance(source.cost()*packet.count(),target.cost()*packet.rewardCount(),Economy.EFFICIENCY); }

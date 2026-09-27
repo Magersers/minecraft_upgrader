@@ -10,7 +10,8 @@ import zipfile
 root = Path(__file__).resolve().parent.parent
 out = Path(sys.argv[1])
 out.mkdir(parents=True, exist_ok=True)
-for entry in json.loads((root / 'fabric/test-mods/betterx-1.20.1.json').read_text()):
+manifest = Path(sys.argv[2]) if len(sys.argv) > 2 else root / 'fabric/test-mods/betterx-1.20.1.json'
+for entry in json.loads(manifest.read_text()):
     target = out / entry['file']
     if not target.exists() or hashlib.sha512(target.read_bytes()).hexdigest() != entry['sha512']:
         for attempt in range(5):

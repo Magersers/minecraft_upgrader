@@ -22,6 +22,9 @@ import java.util.*;
 /** Approximate acquisition sources from runtime registries, never a blanket price for every registered item. */
 public final class NaturalInheritance {
     private NaturalInheritance() {}
+    private static JsonObject latestPolicy=new JsonObject();
+    public static Set<String> namespaceGates(String id) { return gates(latestPolicy,id); }
+    public static boolean simpleBlock(Block block) { return Set.of("Stone","Wood","Sand","Snow").contains(java.util.Objects.toString(NaturalFamilies.family(block),"")); }
     private record Source(double cost,String reason) {}
     public static void load(MinecraftServer server,Map<String,CostEngine.Value> seeds,List<CostEngine.Route> routes,
                             Map<String,CostEngine.Value> known,Set<String> denied) {
@@ -36,6 +39,7 @@ public final class NaturalInheritance {
                 double n=policy.get(key).getAsDouble(); if (!Double.isFinite(n)||n<=0) throw new IllegalArgumentException(key);
             }
         } catch (Exception ex) { Upgrade.LOGGER.warn("Invalid inheritance policy; estimates disabled",ex); return; }
+        latestPolicy=policy;
         if (!enabled(policy,"enabled")) return;
         Map<Block,Source> natural=new HashMap<>();
         Set<String> craftable=new HashSet<>(); routes.forEach(r->craftable.add(r.output()));
@@ -48,14 +52,14 @@ public final class NaturalInheritance {
                     double cost=Math.max(4,160.0/Math.max(1,ore.size));
                     for (var target:ore.targetStates) put(natural,target.state.getBlock(),cost,"Генерация руды "+key+", размер жилы "+ore.size);
                 } else {
-                    ConfiguredFeature.DIRECT_CODEC.encodeStart(JsonOps.INSTANCE,feature).result()
+                    ConfiguredFeature.DIRECT_CODEC.encodeStart(net.minecraft.resources.RegistryOps.create(JsonOps.INSTANCE,server.registryAccess()),feature).result()
                             .ifPresent(json->states(json,natural,key.toString()));
                 }
             } catch (Exception ex) { Upgrade.LOGGER.debug("Cannot inspect feature {}: {}",key,ex.toString()); }
         }
         if (enabled(policy,"natural_resources")) for (Block block:BuiltInRegistries.BLOCK) {
             var state=block.defaultBlockState(); var stack=block.asItem().getDefaultInstance();
-            if (BuiltInRegistries.BLOCK.getKey(block).getNamespace().equals("minecraft")) continue;
+            if (BuiltInRegistries.BLOCK.getKey(block).getNamespace().equals("minecraft") && !generatedFlower(block,natural)) continue;
             String family=NaturalFamilies.family(block);
             if (family!=null && (!craftable.contains(Economy.id(stack)) || family.equals("Ore")))
                 put(natural,block,NaturalFamilies.effort(family),"Природное семейство "+family);
@@ -72,9 +76,9 @@ public final class NaturalInheritance {
             var state=block.defaultBlockState();
             for (var property:state.getProperties()) if (property instanceof net.minecraft.world.level.block.state.properties.IntegerProperty age && age.getName().equals("age"))
                 state=state.setValue(age,Collections.max(age.getPossibleValues()));
-            if (BuiltInRegistries.BLOCK.getKey(block).getNamespace().equals("minecraft") || denied.contains(id)
+            if ((BuiltInRegistries.BLOCK.getKey(block).getNamespace().equals("minecraft") && !generatedFlower(block,natural)) || denied.contains(id)
                     || block instanceof EntityBlock || block instanceof InfestedBlock || state.getDestroySpeed(server.overworld(),BlockPos.ZERO)<0 || (!stack.isEmpty() && !Economy.plain(stack))) continue;
-            if (!known.containsKey(id)) {
+            if (!seeds.containsKey(id)) {
                 Source source=entry.getValue();
                 seeds.putIfAbsent(id,new CostEngine.Value(source.cost(),.85,"Приблизительная добыча: "+source.reason()+". Редкость биома и доступ к измерению требуют калибровки сборки.",gates(policy,BuiltInRegistries.BLOCK.getKey(block).toString()))); sources++;
             }
@@ -156,6 +160,11 @@ public final class NaturalInheritance {
         Set<String> result=new TreeSet<>();
         if (map!=null && map.has(namespace)) for (JsonElement e:map.getAsJsonArray(namespace)) result.add(e.getAsString());
         return result;
+    }
+    // Only genuinely generated overworld flowers, not every BushBlock (boss drops and Nether plants differ).
+    private static boolean generatedFlower(Block block,Map<Block,Source> natural) {
+        return natural.containsKey(block) && !(block instanceof WitherRoseBlock)
+                && (block instanceof FlowerBlock || block instanceof PinkPetalsBlock || block instanceof DoublePlantBlock);
     }
     private static boolean oreTag(String p) { return p.equals("ores")||p.startsWith("ores/")||p.endsWith("_ores"); }
     private static void put(Map<Block,Source> values,Block block,double cost,String reason) {

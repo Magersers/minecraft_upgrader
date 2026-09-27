@@ -118,6 +118,20 @@ public final class NetworkGameTests {
             helper.succeed();
         } finally { Network.forget(changed.getUUID()); }
     }
+    public static void wearAndHardMode(TestContext helper) throws ReflectiveOperationException {
+        ServerPlayer player=player(helper); boolean hard=PricingPolicy.hard;
+        try {
+            PricingPolicy.hard=false;
+            var sword=new ItemStack(Items.IRON_SWORD); sword.setDamageValue(sword.getMaxDamage()-1);
+            player.getInventory().setItem(0,sword);
+            spin(player,new Network.Spin(session(player),"minecraft:diamond",1,0,1));
+            helper.assertTrue(Platform.data(player).contains("upgradePendingRoll") && player.getInventory().getItem(0).isEmpty(),"Server accepts and consumes a worn item");
+            Platform.data(player).remove("upgradePendingRoll"); Network.forget(player.getUUID());
+            player.getInventory().setItem(0,new ItemStack(Items.OAK_LOG)); PricingPolicy.hard=true;
+            spin(player,new Network.Spin(session(player),"minecraft:oak_planks",1,0,1));
+            helper.assertTrue(Platform.data(player).contains("upgradePendingRoll"),"Hard stake 0.5 E can target a 1 E plank; target must not use discounted stake price");
+        } finally { PricingPolicy.hard=hard; Network.forget(player.getUUID()); }
+    }
     private static ServerPlayer player(TestContext helper) {
         var player=TestPlatform.player(helper.getLevel());
         helper.assertTrue(!player.isCreative() && !player.isSpectator(), "Test player must be in survival");

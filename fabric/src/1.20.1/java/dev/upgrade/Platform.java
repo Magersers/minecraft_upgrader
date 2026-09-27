@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import java.util.List;
 
 public final class Platform {
+    public static boolean glass(net.minecraft.world.level.block.Block block) { return block instanceof net.minecraft.world.level.block.AbstractGlassBlock; }
     public static net.minecraft.world.item.crafting.Ingredient ingredient(com.google.gson.JsonElement json) { return net.minecraft.world.item.crafting.Ingredient.fromJson(json); }
     public record RecipeRef(ResourceLocation id,Recipe<?> recipe) {}
     public static List<RecipeRef> recipes(MinecraftServer server) { return server.getRecipeManager().getRecipes().stream().map(r -> new RecipeRef(r.getId(),r)).toList(); }
@@ -25,6 +26,19 @@ public final class Platform {
         if (!stack.hasTag()) return true;
         var tag=stack.getTag();
         return tag.size()==1 && tag.contains("Damage",Tag.TAG_INT) && tag.getInt("Damage")==0 && stack.isDamageableItem();
+    }
+    public static ItemStack pricingCopy(ItemStack stack,java.util.Set<String> allowed) {
+        var copy=stack.copy();
+        if (copy.isDamageableItem()) copy.setDamageValue(0);
+        if (copy.hasTag()) { allowed.forEach(copy.getTag()::remove); if (copy.getTag().isEmpty()) copy.setTag(null); }
+        return copy;
+    }
+    public static java.util.Map<String,Double> attributes(ItemStack stack,net.minecraft.world.entity.EquipmentSlot slot) {
+        var accum=new java.util.HashMap<String,double[]>();
+        stack.getAttributeModifiers(slot).forEach((attribute,modifier)->PerformancePricing.attribute(accum,
+                net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE.getKey(attribute).getPath(),attribute.getDefaultValue(),
+                modifier.getAmount(),modifier.getOperation().ordinal()));
+        return PerformancePricing.attributes(accum);
     }
     public static boolean sameItemData(ItemStack a,ItemStack b) { return ItemStack.isSameItemSameTags(a,b); }
     public static boolean hasStorage(ItemStack stack) {

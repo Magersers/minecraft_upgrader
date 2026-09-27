@@ -17,6 +17,7 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import java.util.List;
 
 public final class Platform {
+    public static boolean glass(net.minecraft.world.level.block.Block block) { return block instanceof net.minecraft.world.level.block.TransparentBlock; }
     public static net.minecraft.world.item.crafting.Ingredient ingredient(com.google.gson.JsonElement json) { return net.minecraft.world.item.crafting.Ingredient.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE,json).getOrThrow(); }
     public record RecipeRef(ResourceLocation id,Recipe<?> recipe) {}
     public static List<RecipeRef> recipes(MinecraftServer server) { return server.getRecipeManager().getRecipes().stream().map(r -> new RecipeRef(r.id(),r.value())).toList(); }
@@ -28,6 +29,21 @@ public final class Platform {
             if (entry.getKey()!=DataComponents.DAMAGE || entry.getValue().isEmpty() || !entry.getValue().get().equals(0) || !stack.isDamageableItem()) return false;
         }
         return true;
+    }
+    public static ItemStack pricingCopy(ItemStack stack,java.util.Set<String> allowed) {
+        var copy=stack.copy();
+        if (copy.isDamageableItem()) copy.setDamageValue(0);
+        var tag=tag(copy); allowed.forEach(tag::remove);
+        if (tag.isEmpty()) copy.remove(DataComponents.CUSTOM_DATA);
+        else copy.set(DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(tag));
+        return copy;
+    }
+    public static java.util.Map<String,Double> attributes(ItemStack stack,net.minecraft.world.entity.EquipmentSlot slot) {
+        var accum=new java.util.HashMap<String,double[]>();
+        stack.forEachModifier(slot,(holder,modifier)->PerformancePricing.attribute(accum,
+                net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE.getKey(holder.value()).getPath(),holder.value().getDefaultValue(),
+                modifier.amount(),modifier.operation().ordinal()));
+        return PerformancePricing.attributes(accum);
     }
     public static boolean sameItemData(ItemStack a,ItemStack b) { return ItemStack.isSameItemSameComponents(a,b); }
     public static boolean hasStorage(ItemStack stack) {

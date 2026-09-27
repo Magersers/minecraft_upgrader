@@ -35,6 +35,7 @@ public final class Economy {
     private static double number(JsonObject o, String key, double fallback) { return o.has(key) ? o.get(key).getAsDouble() : fallback; }
 
     public static void rebuild(MinecraftServer server) {
+        PricingPolicy.load(server);
         Map<String, CostEngine.Value> seeds = new TreeMap<>();
         List<CostEngine.Route> routes = new ArrayList<>();
         Map<String, String> unsupported = new HashMap<>();
@@ -162,7 +163,8 @@ public final class Economy {
             if (safe) filtered.add(new CostEngine.Route(route.id(), route.output(), route.count(), inputs,
                     route.overhead(), route.confidence(), route.gates()));
         }
-        var solved = CostEngine.solve(seeds, filtered, 128);
+        var acquisition = CostEngine.solve(seeds, filtered, 128);
+        var solved = PerformancePricing.apply(server,acquisition,seeds,filtered,denied);
         Map<String, List<CostEngine.Route>> byOutput = new HashMap<>();
         filtered.forEach(r -> byOutput.computeIfAbsent(r.output(), k -> new ArrayList<>()).add(r));
         Map<String, String> explanations = new HashMap<>();
@@ -211,15 +213,19 @@ public final class Economy {
         String id = id(stack);
         if (current.denied().contains(id)) return "Исключён профилем";
         if (TinkersCompat.special(stack)) {
-            var quote=TinkersCompat.quote(stack,current.values());
+            var quote=TinkersCompat.quote(Platform.pricingCopy(stack,Set.of()),current.values());
             if (quote!=null&&!unlocked(player,quote)) return "Нужен этап: "+String.join(", ",quote.gates());
-            return TinkersCompat.reason(stack,current.values(),current.explanations());
+            return TinkersCompat.reason(Platform.pricingCopy(stack,Set.of()),current.values(),current.explanations())+(stack.isDamaged()?String.format(Locale.ROOT," · Износ: ставка × %.3f",PerformanceMath.wear(stack.getDamageValue(),stack.getMaxDamage())):"");
         }
-        if (!plain(stack)) return "Особые данные, износ или содержимое: такой предмет нельзя ставить.";
+        if (!stakeData(stack)) return "Особые данные или содержимое: нужен профиль этого предмета.";
         var value = current.values().get(id);
         if (value != null && !unlocked(player, value)) return "Нужен этап: " + String.join(", ", value.gates());
         if (value != null && value.confidence() < MIN_CONFIDENCE) return "Недостаточное доверие к цене: " + Math.round(value.confidence() * 100) + "%";
-        return current.explanations().getOrDefault(id, "Выберите предмет в основной руке");
+        String detail=current.explanations().getOrDefault(id, "Нет оценки предмета");
+        if (stack.isDamaged()) detail+=String.format(Locale.ROOT,"\nОстаток прочности %.1f%%; стоимость ставки × %.3f",100*PerformanceMath.wear(stack.getDamageValue(),stack.getMaxDamage()),PerformanceMath.wear(stack.getDamageValue(),stack.getMaxDamage()));
+        if (dev.upgrade.compat.EnergyCompat.read(stack)!=null) { var quote=PerformancePricing.utility(stack,value==null?Set.of():value.gates()); if (quote!=null) detail=quote.source()+"\n"+detail; }
+        if (PricingPolicy.hard && PerformancePricing.simple.contains(id)) detail+=String.format(Locale.ROOT,"\nХард-режим: ставка не дороже %.2f E/шт.; цена получения не снижена",PricingPolicy.simpleCap);
+        return detail.substring(0,Math.min(1800,detail.length()));
     }
     public static String id(ItemStack stack) { return BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(); }
     // Vanilla writes Damage:0 even on freshly crafted tools and armour. This is
@@ -233,9 +239,24 @@ public final class Economy {
         return Platform.unlocked(player,value);
     }
 
+    private static boolean stakeData(ItemStack stack) {
+        return plain(Platform.pricingCopy(stack,PerformancePricing.allowedKeys(stack)));
+    }
+    public static CostEngine.Value target(ServerPlayer player,ItemStack stack) {
+        if (current.denied().contains(id(stack)) || !plain(stack)) return null;
+        var value=current.values().get(id(stack));
+        return value!=null && value.confidence()>=MIN_CONFIDENCE && unlocked(player,value)?value:null;
+    }
     public static CostEngine.Value usable(ServerPlayer player, ItemStack stack) {
-        if (current.denied().contains(id(stack))) return null;
-        var value = TinkersCompat.special(stack)?TinkersCompat.quote(stack,current.values()):plain(stack)?current.values().get(id(stack)):null;
-        return value != null && value.confidence() >= MIN_CONFIDENCE && unlocked(player, value) ? value : null;
+        if (stack.isEmpty()||current.denied().contains(id(stack))) return null;
+        var clean=Platform.pricingCopy(stack,PerformancePricing.allowedKeys(stack));
+        var value=TinkersCompat.special(stack)?TinkersCompat.quote(clean,current.values()):stakeData(stack)?current.values().get(id(stack)):null;
+        if (value==null || value.confidence()<MIN_CONFIDENCE || !unlocked(player,value)) return null;
+        if (!TinkersCompat.special(stack) && dev.upgrade.compat.EnergyCompat.read(stack)!=null) {
+            var powered=PerformancePricing.utility(stack,value.gates()); if (powered!=null) value=powered;
+        }
+        double cost=value.cost()*PerformanceMath.wear(stack.getDamageValue(),stack.getMaxDamage());
+        if (PricingPolicy.hard && PerformancePricing.simple.contains(id(stack))) cost=Math.min(cost,PricingPolicy.simpleCap);
+        return new CostEngine.Value(cost,value.confidence(),value.source(),value.gates());
     }
 }

@@ -17,7 +17,13 @@ public final class Upgrade implements ModInitializer {
     @Override public void onInitialize() {
         ServerTransport.init();
         CommandRegistrationCallback.EVENT.register((dispatcher,registries,environment) -> dispatcher.register(
-                Commands.literal("upgrade").then(Commands.literal("audit").requires(source->source.hasPermission(2)).executes(ctx->{
+                Commands.literal("upgrade").then(Commands.literal("hard").requires(source->source.hasPermission(2))
+                        .then(Commands.argument("enabled",com.mojang.brigadier.arguments.BoolArgumentType.bool()).executes(ctx->{
+                            boolean enabled=com.mojang.brigadier.arguments.BoolArgumentType.getBool(ctx,"enabled");
+                            try { PricingPolicy.setHard(enabled); Economy.rebuild(ctx.getSource().getServer()); Network.clear();
+                                ctx.getSource().sendSuccess(()->net.minecraft.network.chat.Component.literal("Хард-режим: "+(enabled?"включён":"выключен")),true); return 1;
+                            } catch (java.io.IOException ex) { ctx.getSource().sendFailure(net.minecraft.network.chat.Component.literal("Не удалось сохранить режим")); return 0; }
+                        }))).then(Commands.literal("audit").requires(source->source.hasPermission(2)).executes(ctx->{
                     try { var path=EconomyAudit.write(); ctx.getSource().sendSuccess(()->net.minecraft.network.chat.Component.literal("Отчёт цен: "+path),false); return 1; }
                     catch (java.io.IOException ex) { ctx.getSource().sendFailure(net.minecraft.network.chat.Component.literal("Не удалось записать отчёт: "+ex.getMessage())); return 0; }
                 })).executes(ctx -> { Network.catalog(ctx.getSource().getPlayerOrException(),true); return Command.SINGLE_SUCCESS; })));
