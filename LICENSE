@@ -1,0 +1,52 @@
+Magersers Proprietary License — All Rights Reserved
+Copyright (c) 2026 Magersers.
+
+1. Scope
+This license applies to Magersers-owned Upgrader code, documentation and other
+protectable project material distributed with this license, beginning with the
+0.6.4 release. It grants only the permissions expressly stated below.
+
+2. Permitted use
+You may download official releases, install and run the mod for gameplay on
+clients and private or public Minecraft servers, and keep personal backup copies.
+You may make private modifications for your own use. You may publish gameplay
+screenshots, videos and reviews. Modpack manifests may reference official download
+locations without embedding or rehosting the mod files.
+
+3. Reserved rights
+Without prior written permission from Magersers, you may not rehost, redistribute,
+sell or sublicense the mod or its source, publish modified versions or ports,
+remove attribution or license notices, or incorporate its code or protectable
+assets into another distributed project. All rights not expressly granted are
+reserved to the extent provided by applicable law.
+
+4. Official distribution
+Magersers may distribute this project through GitHub, CurseForge or other chosen
+platforms and authorize the hosting necessary for those official uploads under
+the respective platform terms. A download link is not permission for a mirror.
+Permissions required by a hosting platform's terms remain unaffected.
+
+5. Existing grants and third-party material
+This license does not revoke permissions already granted for earlier copies.
+Earlier releases bearing MIT metadata are not retroactively relicensed by this
+file. Third-party software, assets, trademarks and notices retain their own
+licenses and ownership. The preserved Forge MDK notice is located at
+licenses/Forge-MDK-LICENSE.txt and does not license Upgrader's original code.
+Minecraft, Forge and Fabric are not owned by Magersers.
+
+6. Warranty
+THE MOD IS PROVIDED AS IS, WITHOUT WARRANTY, TO THE EXTENT PERMITTED BY LAW.
+THE AUTHOR IS NOT LIABLE FOR DAMAGES ARISING FROM USE OF THE MOD TO THE EXTENT
+SUCH LIABILITY MAY LAWFULLY BE EXCLUDED. MANDATORY STATUTORY RIGHTS ARE UNAFFECTED.
+
+7. Permission requests
+Contact Magersers through the official project account:
+https://github.com/Magersers/minecraft_upgrader
+
+Русское пояснение (основные условия изложены выше на английском)
+© 2026 Magersers. Все права защищены. Разрешены установка и игра, личные резервные
+копии, приватные изменения для себя, скриншоты и видео. Модпаки могут ссылаться
+на официальные загрузки. Перезалив, распространение исходников или изменённых
+версий, продажа и использование кода в распространяемых проектах требуют
+письменного разрешения Magersers. Права, ранее предоставленные на старые версии,
+и лицензии сторонних компонентов не отменяются.

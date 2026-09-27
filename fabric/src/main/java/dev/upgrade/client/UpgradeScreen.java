@@ -27,11 +27,9 @@ import dev.upgrade.Ids;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class UpgradeScreen extends UpgradeBaseScreen {
     private static final int GREEN=0xFF90EDC1, MUTED=0xFF99ABC5, TEXT=0xFFF0F5FF, RED=0xFFFF8199, GOLD=0xFFFFD68A;
-    private static final Pattern ITEM_ID=Pattern.compile("[a-z0-9_.-]+:[a-z0-9_./-]+");
     private Network.Catalog catalog;
     private final List<Network.Entry> entries=new ArrayList<>();
     private List<Network.Entry> filtered=List.of();
@@ -190,18 +188,6 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         spin.active=enabled&&chance()>0; spin.setMessage(t(busy()?"ПРОКРУТКА…":"УЛУЧШИТЬ"));
     }
     private void label(GuiGraphics g,String text,int center,int yy,int maxWidth,int color) { g.drawCenteredString(font,font.plainSubstrByWidth(text,maxWidth),center,yy,color); }
-    private List<Component> details(ItemStack stack,double value,String reason,boolean inventory) {
-        List<Component> lines=new ArrayList<>(); lines.add(stack.isEmpty()?t("Пустой слот"):stack.getHoverName());
-        if (!stack.isEmpty()) lines.add(t(Economy.id(stack)).withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
-        lines.add(t(value>0?String.format(Locale.ROOT,(inventory?"Цена ставки: %.2f E за 1 шт.":"Цена получения: %.2f E за 1 шт."),value):"Предмет недоступен для ставки"));
-        String translated=ITEM_ID.matcher(reason).replaceAll(match -> {
-            String key=match.group(); ItemStack found=item(key);
-            return java.util.regex.Matcher.quoteReplacement(found.isEmpty()?key:found.getHoverName().getString());
-        });
-        for (String line : translated.split("\n")) for (var wrapped : font.getSplitter().splitLines(t(line),Math.min(340,width-20),net.minecraft.network.chat.Style.EMPTY))
-            lines.add(t(wrapped.getString()).withStyle(net.minecraft.ChatFormatting.GRAY));
-        return lines.stream().limit(Math.max(5,(height-20)/10)).toList();
-    }
     private static void vertex(BufferBuilder b,Matrix4f matrix,double xx,double yy,int color) { RenderSupport.vertex(b,matrix,(float)xx,(float)yy,color); }
     private static void triangle(BufferBuilder b,Matrix4f m,double ax,double ay,double bx,double by,double cx,double cy,int color) {
         vertex(b,m,ax,ay,color); vertex(b,m,bx,by,color); vertex(b,m,cx,cy,color);
@@ -285,10 +271,10 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         g.drawCenteredString(font,(page+1)+" / "+pages(),x+69,y+panelHeight-17,MUTED);
         if (panelWidth>350) label(g,inventoryView?"37 слотов":filtered.size()+" целей",cx,y+panelHeight-17,panelWidth-260,MUTED);
         super.render(g,mx,my,partial);
-        if (hoveredSlot!=null) g.renderComponentTooltip(font,details(hoveredSlot.stack(),hoveredSlot.value(),hoveredSlot.reason(),true),mx,my);
-        else if (hovered!=null) g.renderComponentTooltip(font,details(item(hovered.id()),hovered.value(),hovered.reason(),false),mx,my);
-        else if (mx>=x+12&&mx<x+12+card&&my>=y+top&&my<y+controlsY) g.renderComponentTooltip(font,details(stakeItem,stake.value(),stake.reason(),true),mx,my);
-        else if (target!=null&&mx>=right&&mx<right+card&&my>=y+top&&my<y+controlsY) g.renderComponentTooltip(font,details(item(target.id()),target.value(),target.reason(),false),mx,my);
+        if (hoveredSlot!=null) g.renderComponentTooltip(font,ItemDetails.lines(hoveredSlot.stack(),hoveredSlot.value(),true,hoveredSlot.value()>0),mx,my);
+        else if (hovered!=null) g.renderComponentTooltip(font,ItemDetails.lines(item(hovered.id()),hovered.value(),false,hovered.available()),mx,my);
+        else if (mx>=x+12&&mx<x+12+card&&my>=y+top&&my<y+controlsY) g.renderComponentTooltip(font,ItemDetails.lines(stakeItem,stake.value(),true,stake.value()>0),mx,my);
+        else if (target!=null&&mx>=right&&mx<right+card&&my>=y+top&&my<y+controlsY) g.renderComponentTooltip(font,ItemDetails.lines(item(target.id()),target.value(),false,target.available()),mx,my);
     }
     @Override public boolean mouseClicked(double mx,double my,int button) {
         if (!busy()&&!loading&&button==0) {

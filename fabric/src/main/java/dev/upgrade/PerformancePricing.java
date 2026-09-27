@@ -105,6 +105,27 @@ public final class PerformancePricing {
         if (!Double.isFinite(cost)) return null;
         return new CostEngine.Value(cost,.85,"Оценка по характеристикам (алмаз "+BalancePolicy.diamond()+" E): "+detail,gates);
     }
+    private static boolean premiumEquipment(String id,CostEngine.Value stats) {
+        Item item=BuiltInRegistries.ITEM.get(Ids.of(id));
+        var profile=PricingPolicy.profiles.get(id);
+        if (profile!=null&&!profile.abilities().isEmpty() || EnergyCompat.read(item.getDefaultInstance())!=null) return true;
+        Item reference;
+        if (item instanceof ArmorItem armor) reference=switch(armor.getEquipmentSlot()) {
+            case HEAD->Items.DIAMOND_HELMET; case LEGS->Items.DIAMOND_LEGGINGS;
+            case FEET->Items.DIAMOND_BOOTS; default->Items.DIAMOND_CHESTPLATE;
+        };
+        else if (item instanceof AxeItem) reference=Items.DIAMOND_AXE;
+        else if (item instanceof PickaxeItem) reference=Items.DIAMOND_PICKAXE;
+        else if (item instanceof ShovelItem) reference=Items.DIAMOND_SHOVEL;
+        else if (item instanceof HoeItem) reference=Items.DIAMOND_HOE;
+        else if (item instanceof BowItem) reference=Items.BOW;
+        else if (item instanceof CrossbowItem) reference=Items.CROSSBOW;
+        else if (item instanceof ShieldItem) reference=Items.SHIELD;
+        else if (item instanceof ElytraItem) reference=Items.ELYTRA;
+        else reference=Items.DIAMOND_SWORD;
+        var baseline=utility(reference.getDefaultInstance(),Set.of());
+        return baseline!=null && stats.cost()>baseline.cost()*1.001;
+    }
     public static CostEngine.Result apply(MinecraftServer server,CostEngine.Result acquisition,Map<String,CostEngine.Value> baseSeeds,List<CostEngine.Route> routes,Set<String> denied) {
         Map<String,CostEngine.Value> anchors=new TreeMap<>(),equipmentAnchors=new TreeMap<>(); Set<String> inputs=new HashSet<>(),cheap=new HashSet<>();
         routes.forEach(r->r.inputs().forEach(i->inputs.addAll(i.alternatives())));
@@ -158,13 +179,17 @@ public final class PerformancePricing {
         var activeRoutes=routes.stream().filter(r->!anchors.containsKey(r.output())).toList();
         Map<String,Double> equipmentFloors=new TreeMap<>();
         equipmentAnchors.forEach((id,v)-> {
-            equipmentFloors.put(id,v.cost());
-            if (!acquisition.values().containsKey(id)) seeds.put(id,v);
+            // Known ordinary gear is worth its recipe, not a fraction of diamond utility.
+            // Preserve independent anchors for unknown mod materials and genuinely stronger gear.
+            boolean unknown=!budget.values().containsKey(id);
+            if (unknown || premiumEquipment(id,v)) equipmentFloors.put(id,v.cost());
+            if (unknown) seeds.put(id,v);
         });
         var result=BalancePolicy.solve(seeds,activeRoutes,128,equipmentFloors);
         Map<String,CostEngine.Value> values=new TreeMap<>(result.values());
         Map<String,CostEngine.Breakdown> breakdowns=new HashMap<>(result.breakdowns());
         equipmentAnchors.forEach((id,stats)-> {
+            if (!equipmentFloors.containsKey(id)) return;
             var value=values.get(id); if (value==null) return;
             values.put(id,new CostEngine.Value(value.cost(),Math.min(value.confidence(),stats.confidence()),
                     stats.source()+String.format(Locale.ROOT,"; минимум по характеристикам %.2f E; итог также учитывает рецепт/добычу: %s",stats.cost(),value.source()),value.gates()));
@@ -174,6 +199,7 @@ public final class PerformancePricing {
         return new CostEngine.Result(Map.copyOf(values),result.quarantined(),result.passes(),Map.copyOf(breakdowns));
     }
     private static boolean simpleResource(ItemStack stack) {
+        if (BalancePolicy.usefulPlant(Economy.id(stack)) || Platform.foodValue(stack)>0) return false;
         return stack.is(ItemTags.LOGS)||stack.is(ItemTags.PLANKS)||stack.is(ItemTags.DIRT)
                 ||stack.is(Items.STONE)||stack.is(Items.COBBLESTONE)||stack.is(Items.DEEPSLATE)||stack.is(Items.COBBLED_DEEPSLATE)
                 ||stack.is(Items.PINK_PETALS)||stack.is(Items.SAND)||stack.is(Items.GRAVEL)

@@ -27,7 +27,7 @@ public final class FabricServerTests implements ModInitializer {
     price(ctx,"oak_planks",1); price(ctx,"stick",.5); price(ctx,"chest",8); 
     boolean compat=net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("tconstruct");
     if (!compat && !net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("bclib")) { price(ctx,"iron_block",1080);
-    price(ctx,"diamond_pickaxe",361*2000d/120); price(ctx,"cake",67); }
+    price(ctx,"diamond_pickaxe",6001); price(ctx,"cake",112); }
     ctx.assertTrue(Economy.current.values().size()>700,"Vanilla recipe coverage");
     ctx.assertTrue(!Economy.current.values().containsKey("minecraft:infested_cobblestone"),"Infested blocks must not inherit the cobblestone baseline");
     var tool=new ItemStack(Items.DIAMOND_PICKAXE);

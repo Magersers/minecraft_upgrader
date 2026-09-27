@@ -15,6 +15,12 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import java.util.List;
 
 public final class Platform {
+    public static double foodValue(ItemStack stack) {
+        try {
+        var food=stack.getItem().getFoodProperties();
+        return food==null?0:Math.max(6,food.getNutrition()*2+food.getNutrition()*food.getSaturationModifier()*4);
+        } catch (RuntimeException ignored) { return 0; }
+    }
     public static boolean glass(net.minecraft.world.level.block.Block block) { return block instanceof net.minecraft.world.level.block.AbstractGlassBlock; }
     public static net.minecraft.world.item.crafting.Ingredient ingredient(com.google.gson.JsonElement json) { return net.minecraft.world.item.crafting.Ingredient.fromJson(json); }
     public record RecipeRef(ResourceLocation id,Recipe<?> recipe) {}

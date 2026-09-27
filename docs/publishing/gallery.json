@@ -1,0 +1,22 @@
+[
+  {
+    "file": "screenshots/inventory.png",
+    "title": "Choose your inventory stake",
+    "caption": "Rendered mod interface with demonstration items and current vanilla values."
+  },
+  {
+    "file": "screenshots/catalog.png",
+    "title": "Browse rewards",
+    "caption": "Searchable reward catalog and stack quantity controls."
+  },
+  {
+    "file": "screenshots/win.png",
+    "title": "Upgrade result",
+    "caption": "Demonstration of the success presentation after the spin."
+  },
+  {
+    "file": "screenshots/item-details.png",
+    "title": "Compact item details",
+    "caption": "Mod name, armour stats and final per-item reward value."
+  }
+]

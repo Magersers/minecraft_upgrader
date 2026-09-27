@@ -147,6 +147,20 @@ public final class Economy {
             } catch (Exception ex) { Upgrade.LOGGER.warn("Cannot import recipe {}", recipeRef.id(), ex); }
         }
         denied.forEach(seeds::remove);
+        // A legacy/loot estimate for a prepared meal must not undercut its ingredients.
+        // Keep raw commodities anchored, and keep fallback sources if a recipe cannot be resolved.
+        Map<String,CostEngine.Value> preparedSeeds=new TreeMap<>();
+        for (var route:routes) {
+            String id=route.output(); var key=ResourceLocation.tryParse(id);
+            if (key==null || !BuiltInRegistries.ITEM.containsKey(key)) continue;
+            var item=BuiltInRegistries.ITEM.get(key);
+            if (Platform.foodValue(item.getDefaultInstance())>0 && !BalancePolicy.floors.containsKey(id) && seeds.containsKey(id))
+                preparedSeeds.put(id,seeds.remove(id));
+        }
+        if (!preparedSeeds.isEmpty()) {
+            var prepared=BalancePolicy.solve(seeds,routes,128);
+            preparedSeeds.forEach((id,value)-> { if (!prepared.values().containsKey(id)) seeds.put(id,value); });
+        }
         // Resolve exact routes first. Automatic acquisition fills gaps, preserving calibrated prices.
         var exact=BalancePolicy.solve(seeds,routes,128);
         Upgrade.LOGGER.info("Economy before automatic sources: {} valued",exact.values().size());

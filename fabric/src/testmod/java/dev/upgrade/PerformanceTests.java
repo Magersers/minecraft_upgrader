@@ -29,7 +29,6 @@ final class PerformanceTests {
         var sword=new ItemStack(Items.DIAMOND_SWORD); var netherite=new ItemStack(Items.NETHERITE_SWORD);
         ctx.assertTrue(PerformancePricing.utility(netherite,Set.of()).cost()>PerformancePricing.utility(sword,Set.of()).cost(),"Read actual registered weapon stats");
         ctx.assertTrue(Math.abs(PerformancePricing.utility(sword,Set.of()).cost()-240.5*BalancePolicy.equipmentScale())<.01,"Diamond sword reference");
-        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("techreborn")) energy(ctx,server);
         var profiles=PricingPolicy.profiles;
         try {
             var altered=new HashMap<>(profiles);
@@ -48,6 +47,8 @@ final class PerformanceTests {
         } finally { PricingPolicy.setHard(hard); }
         try {
             PricingPolicy.hard=false;
+            // Energy pricing is checked with progression unlocked, like the wear checks below.
+            if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("techreborn")) energy(ctx,server);
             double pristine=Economy.usable(player,sword).cost();
             sword.setDamageValue(sword.getMaxDamage()/2);
             ctx.assertTrue(Math.abs(Economy.usable(player,sword).cost()/pristine-PerformanceMath.wear(sword.getDamageValue(),sword.getMaxDamage()))<1e-9,"Use actual inventory wear");

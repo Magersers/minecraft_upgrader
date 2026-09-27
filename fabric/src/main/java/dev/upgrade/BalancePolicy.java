@@ -16,6 +16,7 @@ public final class BalancePolicy {
     private BalancePolicy() {}
     public static Map<String,Double> floors=Map.of("minecraft:diamond",2000d);
     private static final Map<String,Double> caps=new TreeMap<>();
+    private static final Set<String> usefulPlants=new HashSet<>();
     public static double diamond() { return floors.getOrDefault("minecraft:diamond",2000d); }
     public static double equipmentScale() { return diamond()/120; }
     public static void load(MinecraftServer server) {
@@ -29,13 +30,29 @@ public final class BalancePolicy {
                 for (var holder:BuiltInRegistries.ITEM.getTagOrEmpty(TagKey.create(Registries.ITEM,Ids.of(entry.getKey()))))
                     minimum.merge(BuiltInRegistries.ITEM.getKey(holder.value()).toString(),cost,Math::max);
             }
+            Set<String> processedFood=new HashSet<>(),useful=new HashSet<>();
+            for (var ref:Platform.recipes(server)) {
+                try {
+                    var recipe=ref.recipe();
+                    if (recipe.isSpecial()) continue;
+                    var output=recipe.getResultItem(server.registryAccess());
+                    if (!output.isEmpty() && Platform.foodValue(output)>0) processedFood.add(Economy.id(output));
+                } catch (RuntimeException ex) { Upgrade.LOGGER.debug("Cannot inspect food recipe {}",ref.id(),ex); }
+            }
             for (var item:BuiltInRegistries.ITEM) {
                 var stack=item.getDefaultInstance(); String id=Economy.id(stack);
-                if (ordinaryPlant(stack)||item instanceof DyeItem) maximum.merge(id,1d,Math::min);
+                double food=Platform.foodValue(stack);
+                boolean crop=item instanceof BlockItem b && b.getBlock() instanceof CropBlock;
+                if (food>0 || crop) useful.add(id);
+                // Cooked/crafted food inherits its ingredients, rather than minting nutritional value.
+                if (food>0 && !processedFood.contains(id)) minimum.putIfAbsent(id,food);
+                if (crop) minimum.putIfAbsent(id,2d);
+                if ((ordinaryPlant(stack)&&!useful.contains(id))||item instanceof DyeItem) maximum.merge(id,1d,Math::min);
             }
             // Valuable tagged materials always retain their floor, even if a mod grows them on plants.
             minimum.keySet().forEach(maximum::remove);
             floors=Map.copyOf(minimum); caps.clear(); caps.putAll(maximum);
+            usefulPlants.clear(); usefulPlants.addAll(useful);
         } catch (Exception ex) { Upgrade.LOGGER.error("Invalid upgrade_balance/policy.json; retaining previous valid price bounds",ex); }
     }
     private static void read(JsonObject json,Map<String,Double> into) {
@@ -54,7 +71,8 @@ public final class BalancePolicy {
         return block instanceof BushBlock || block instanceof PinkPetalsBlock || block instanceof GrowingPlantBlock
                 || block instanceof VineBlock || block instanceof LeavesBlock || NaturalInheritance.plantBlock(block);
     }
-    public static void gatheredPlantDrop(String id) { if (!floors.containsKey(id)) caps.merge(id,1d,Math::min); }
+    public static boolean usefulPlant(String id) { return floors.containsKey(id)||usefulPlants.contains(id); }
+    public static void gatheredPlantDrop(String id) { if (!usefulPlant(id)) caps.merge(id,1d,Math::min); }
     public static CostEngine.Result solve(Map<String,CostEngine.Value> seeds,List<CostEngine.Route> routes,int passes) {
         return solve(seeds,routes,passes,Map.of());
     }
