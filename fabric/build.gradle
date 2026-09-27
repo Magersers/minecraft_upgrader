@@ -1,0 +1,107 @@
+plugins {
+    id 'fabric-loom' version '1.7.4'
+    id 'maven-publish'
+}
+group = 'dev.upgrade'
+version = '0.6.4-alpha'
+def mc = project.property('minecraft_version')
+def targets = ['1.20.1': [java: 17, api: '0.92.12+1.20.1'], '1.21.1': [java: 21, api: '0.116.17+1.21.1']]
+if (!targets.containsKey(mc)) throw new GradleException("Unsupported Minecraft version: ${mc}; use ${targets.keySet()}")
+def target = targets[mc]
+base { archivesName = "upgrade-fabric-${mc}" }
+layout.buildDirectory = file("build/${mc}")
+java { toolchain.languageVersion = JavaLanguageVersion.of(target.java); withSourcesJar() }
+repositories { mavenCentral() }
+dependencies {
+    if (project.hasProperty("compatMods")) modImplementation fileTree(project.property("compatMods")) { include "*.jar" }
+    if (project.hasProperty("compatJar")) modImplementation files(project.property("compatJar"))
+    minecraft "com.mojang:minecraft:${mc}"
+    mappings loom.officialMojangMappings()
+    modImplementation 'net.fabricmc:fabric-loader:0.17.2'
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${target.api}"
+}
+sourceSets.main.java.srcDir("src/${mc}/java")
+sourceSets.main.java.srcDir('../src/main/java/dev/upgrade/core')
+sourceSets.test.java.srcDir('../src/test/java')
+processResources {
+    from('../LICENSE')
+    from('../licenses') { into 'licenses' }
+    from('../src/main/resources/data') { into 'data' }
+    inputs.property 'version', project.version
+    inputs.property 'minecraft', mc
+    filesMatching('fabric.mod.json') { expand(version:project.version, minecraft:mc, java:target.java, api:target.api) }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = target.java }
+tasks.register('coreTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'dev.upgrade.core.CostEngineTest'
+}
+check.dependsOn coreTest
+loom {
+    runs {
+        client { client(); runDir "run/${mc}/client"; vmArg '-Dupgrade.uiSmoke=' + System.getProperty('upgrade.uiSmoke','false') }
+        server { server(); runDir "run/${mc}/server" }
+    }
+}
+sourceSets {
+    testmod {
+        java.srcDir "src/${mc}/testmod"
+        resources.srcDir "src/${mc}/testmodresources"
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+loom {
+    mods {
+        upgrade { sourceSet sourceSets.main }
+        upgrade_test { sourceSet sourceSets.testmod }
+    }
+    runs {
+        testServer {
+            server()
+            source sourceSets.testmod
+            runDir "run/${mc}/test-server"
+            vmArg '-Dupgrade.serverTests=true'
+            programArg 'nogui'
+        }
+        testClient {
+            client()
+            source sourceSets.testmod
+            runDir "run/${mc}/test-client"
+            vmArg '-Dupgrade.uiSmoke=true'
+        }
+    }
+}
+// Fabric's conventional tags changed to the shared c: hierarchy in 1.21.
+def fabricTags = mc == '1.20.1' ? [
+    'forge:cobblestone':'c:normal_cobblestone', 'forge:ingots/iron':'c:iron_ingots',
+    'forge:ingots/copper':'c:copper_ingots', 'forge:ingots/gold':'c:gold_ingots',
+    'forge:gems/diamond':'c:diamonds', 'forge:gems/emerald':'c:emeralds',
+    'forge:dusts/redstone':'c:redstone_dusts', 'forge:gems/lapis':'c:lapis',
+    'forge:string':'c:strings', 'forge:leather':'c:leathers', 'forge:feathers':'c:feathers', 'forge:bones':'c:bones'
+] : ['forge:cobblestone':'c:cobblestones/normal', 'forge:ingots/iron':'c:ingots/iron',
+    'forge:ingots/copper':'c:ingots/copper', 'forge:ingots/gold':'c:ingots/gold',
+    'forge:gems/diamond':'c:gems/diamond', 'forge:gems/emerald':'c:gems/emerald',
+    'forge:dusts/redstone':'c:dusts/redstone', 'forge:gems/lapis':'c:gems/lapis',
+    'forge:string':'c:strings', 'forge:leather':'c:leathers', 'forge:feathers':'c:feathers', 'forge:bones':'c:bones']
+processResources {
+    inputs.property 'fabricTags', fabricTags
+    filesMatching('**/upgrade_values/baseline.json') {
+        filter { line -> fabricTags.each { oldTag,newTag -> line=line.replace('"'+oldTag+'"','"'+newTag+'"') }; line }
+    }
+}
+tasks.withType(JavaExec).configureEach {
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(target.java) }
+}
+
+['runTestServer':'upgrade-tests-passed.txt', 'runTestClient':'upgrade-ui-passed.txt'].each { taskName, marker ->
+    def directory = taskName == 'runTestServer' ? 'test-server' : 'test-client'
+    tasks.named(taskName) {
+        doFirst { file("run/${mc}/${directory}/${marker}").delete() }
+        doLast {
+            if (!file("run/${mc}/${directory}/${marker}").isFile())
+                throw new GradleException("${taskName} did not finish its assertions; inspect the Minecraft log")
+        }
+    }
+}

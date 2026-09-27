@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "upgrade",
+  "version": "${version}",
+  "name": "Magersers' Upgrader",
+  "description": "Risk items for a chance at better rewards. Inventory selection, stack rewards and recipe-based value balancing.",
+  "authors": [
+    "Magersers"
+  ],
+  "license": "LicenseRef-Magersers-Proprietary",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.upgrade.Upgrade"
+    ],
+    "client": [
+      "dev.upgrade.client.ClientEvents"
+    ]
+  },
+  "mixins": [
+    "upgrade.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.17.2",
+    "fabric-api": ">=${api}",
+    "minecraft": "${minecraft}",
+    "java": ">=${java}"
+  },
+  "contact": {
+    "homepage": "https://github.com/Magersers/minecraft_upgrader",
+    "issues": "https://github.com/Magersers/minecraft_upgrader/issues"
+  },
+  "icon": "assets/upgrade/icon.png"
+}

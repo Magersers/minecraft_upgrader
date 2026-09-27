@@ -1,0 +1,52 @@
+name: Release Fabric
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/release-fabric.yml, fabric/build.gradle]
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: |
+            17
+            21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build and test both Minecraft versions
+        timeout-minutes: 20
+        run: |
+          mkdir -p release
+          for mc in 1.20.1 1.21.1; do
+            mkdir -p "fabric/run/$mc/test-server"
+            echo eula=true > "fabric/run/$mc/test-server/eula.txt"
+            printf 'online-mode=false\nserver-port=0\nlevel-type=minecraft:flat\nview-distance=2\nsimulation-distance=2\n' > "fabric/run/$mc/test-server/server.properties"
+            ./gradlew -p fabric -Pminecraft_version="$mc" build runTestServer --console=plain
+            cp "fabric/build/$mc/libs/upgrade-fabric-$mc-0.6.4-alpha.jar" release/
+          done
+          (cd release && sha256sum *.jar > SHA256SUMS.txt)
+      - name: Verify BetterX acquisition chains
+        timeout-minutes: 15
+        run: |
+          python scripts/prepare-betterx.py "$RUNNER_TEMP/betterx"
+          ./gradlew -p fabric -Pminecraft_version=1.20.1 -PcompatMods="$RUNNER_TEMP/betterx" runTestServer --console=plain
+      - name: Verify TechReborn energy armour
+        timeout-minutes: 15
+        run: |
+          python scripts/prepare-betterx.py "$RUNNER_TEMP/techreborn" fabric/test-mods/techreborn-1.20.1.json
+          mv fabric/run/1.20.1/test-server/world "$RUNNER_TEMP/betterx-world"
+          ./gradlew -p fabric -Pminecraft_version=1.20.1 -PcompatMods="$RUNNER_TEMP/techreborn" runTestServer --console=plain
+      - name: Publish Fabric files and release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create fabric-v0.6.4-alpha release/*.jar release/SHA256SUMS.txt \
+            --target "$GITHUB_SHA" \
+            --title 'Upgrader Fabric 0.6.4-alpha — 1.20.1 / 1.21.1' \
+            --notes-file docs/releases/fabric-0.6.4.md --prerelease

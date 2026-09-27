@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "natural_resources": true,
+  "block_drops": true,
+  "mob_drops": true,
+  "chest_loot": true,
+  "chest_effort": 128,
+  "mob_search_effort": 8,
+  "namespace_gates": {
+    "betterend": ["minecraft:story/enter_the_end"],
+    "betternether": ["minecraft:story/enter_the_nether"]
+  }
+}

@@ -1,0 +1,29 @@
+name: Build and recipe tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  forge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        mods: [vanilla, compat]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build and test in Forge
+        run: ./gradlew ${{ matrix.mods == 'compat' && '-PcompatTest' || '' }} build runGameTestServer --console=plain
+      - uses: actions/upload-artifact@v4
+        if: success() && matrix.mods == 'vanilla'
+        continue-on-error: true # Build/test results remain useful if the account artifact quota is full.
+        with:
+          retention-days: 3
+          name: upgrade-forge-1.20.1
+          path: build/libs/upgrade-*.jar

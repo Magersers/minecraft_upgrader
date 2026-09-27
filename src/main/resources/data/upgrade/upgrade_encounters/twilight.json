@@ -1,0 +1,88 @@
+{
+  "encounters": [
+    {
+      "entity": "twilightforest:hydra",
+      "player_dps": 8,
+      "mechanics": 5,
+      "search": 360,
+      "consumables": 100,
+      "death_chance": 0.25,
+      "death_loss": 360,
+      "setup": 1200,
+      "horizon": 5,
+      "success": 0.8
+    },
+    {
+      "entity": "twilightforest:naga",
+      "player_dps": 8,
+      "mechanics": 2,
+      "search": 140,
+      "consumables": 24,
+      "death_chance": 0.1,
+      "death_loss": 160,
+      "setup": 300,
+      "horizon": 5,
+      "success": 0.92
+    },
+    {
+      "entity": "twilightforest:lich",
+      "player_dps": 8,
+      "mechanics": 3,
+      "search": 180,
+      "consumables": 50,
+      "death_chance": 0.15,
+      "death_loss": 360,
+      "setup": 400,
+      "horizon": 5,
+      "success": 0.9
+    },
+    {
+      "entity": "twilightforest:minoshroom",
+      "player_dps": 8,
+      "mechanics": 2.5,
+      "search": 220,
+      "consumables": 45,
+      "death_chance": 0.15,
+      "death_loss": 360,
+      "setup": 500,
+      "horizon": 5,
+      "success": 0.9
+    },
+    {
+      "entity": "twilightforest:alpha_yeti",
+      "player_dps": 8,
+      "mechanics": 3,
+      "search": 250,
+      "consumables": 70,
+      "death_chance": 0.2,
+      "death_loss": 360,
+      "setup": 650,
+      "horizon": 5,
+      "success": 0.85
+    },
+    {
+      "entity": "twilightforest:snow_queen",
+      "player_dps": 8,
+      "mechanics": 4,
+      "search": 330,
+      "consumables": 95,
+      "death_chance": 0.25,
+      "death_loss": 360,
+      "setup": 1000,
+      "horizon": 5,
+      "success": 0.8
+    },
+    {
+      "entity": "twilightforest:ur_ghast",
+      "player_dps": 8,
+      "mechanics": 5,
+      "search": 400,
+      "consumables": 120,
+      "death_chance": 0.3,
+      "death_loss": 360,
+      "setup": 1200,
+      "horizon": 5,
+      "success": 0.8
+    }
+  ]
+}

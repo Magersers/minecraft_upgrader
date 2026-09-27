@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "sources": [
+    {
+      "item": "minecraft:pink_petals",
+      "cost": 1,
+      "confidence": 0.9,
+      "reason": "Сбор растущих розовых лепестков: 1 E за штуку (настраиваемая базовая цена)",
+      "gates": []
+    }
+  ]
+}

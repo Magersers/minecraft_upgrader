@@ -1,0 +1,1 @@
+{"type": "minecraft:chest", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": "minecraft:diamond", "weight": 1}, {"type": "minecraft:item", "name": "minecraft:enchanted_book", "weight": 9, "functions": [{"function": "minecraft:enchant_randomly"}]}]}]}

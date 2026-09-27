@@ -1,0 +1,37 @@
+name: Preserve Forge 0.3.0 release
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/upgrader-economy-ui]
+    paths: [.github/workflows/release-forge.yml]
+permissions:
+  contents: write
+jobs:
+  forge-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: b4ee4e1281206b4b2a6443fa987726ef76337406
+          path: forge-source
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build preserved Forge source
+        working-directory: forge-source
+        run: ./gradlew build runGameTestServer --console=plain
+      - name: Publish Forge release and checksum
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          cp forge-source/build/libs/upgrade-0.3.0-alpha.jar upgrade-forge-1.20.1-0.3.0-alpha.jar
+          sha256sum upgrade-forge-1.20.1-0.3.0-alpha.jar > upgrade-forge-1.20.1-0.3.0-alpha.jar.sha256
+          gh release create forge-1.20.1-v0.3.0-alpha \
+            upgrade-forge-1.20.1-0.3.0-alpha.jar upgrade-forge-1.20.1-0.3.0-alpha.jar.sha256 \
+            --target b4ee4e1281206b4b2a6443fa987726ef76337406 \
+            --title 'Upgrade Forge 0.3.0-alpha — Minecraft 1.20.1' \
+            --notes-file docs/releases/forge-0.3.0.md --prerelease

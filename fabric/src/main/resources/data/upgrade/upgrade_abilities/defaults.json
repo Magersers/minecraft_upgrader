@@ -1,0 +1,14 @@
+{
+  "items": [
+    {"item":"minecraft:elytra","abilities":[{"type":"gliding"}]},
+    {"item":"minecraft:turtle_helmet","abilities":[{"type":"water_breathing","strength":0.25}]},
+    {"item":"techreborn:nano_helmet","allowed_data_keys":["energy","isActive"],"abilities":[{"type":"shield","strength":8,"charged":true},{"type":"night_vision","charged":true}]},
+    {"item":"techreborn:nano_chestplate","allowed_data_keys":["energy"],"abilities":[{"type":"shield","strength":8,"charged":true}]},
+    {"item":"techreborn:nano_leggings","allowed_data_keys":["energy"],"abilities":[{"type":"shield","strength":8,"charged":true}]},
+    {"item":"techreborn:nano_boots","allowed_data_keys":["energy"],"abilities":[{"type":"shield","strength":8,"charged":true}]},
+    {"item":"techreborn:quantum_helmet","allowed_data_keys":["energy","isActive"],"abilities":[{"type":"shield","strength":20,"charged":true},{"type":"water_breathing","charged":true},{"type":"night_vision","charged":true}]},
+    {"item":"techreborn:quantum_chestplate","allowed_data_keys":["energy"],"abilities":[{"type":"shield","strength":20,"charged":true},{"type":"flight","charged":true},{"type":"fire_extinguish","charged":true}]},
+    {"item":"techreborn:quantum_leggings","allowed_data_keys":["energy","isActive"],"abilities":[{"type":"shield","strength":20,"charged":true},{"type":"speed","charged":true}]},
+    {"item":"techreborn:quantum_boots","allowed_data_keys":["energy"],"abilities":[{"type":"shield","strength":20,"charged":true},{"type":"speed","strength":0.5,"charged":true}]}
+  ]
+}
