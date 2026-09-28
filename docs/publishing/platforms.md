@@ -16,7 +16,7 @@
 Создание проекта: https://authors.curseforge.com/#/projects/create/choose-game
 
 - Game: Minecraft Java Edition. Class: Mods.
-- Name: Magersers' Upgrader. Проверить уникальность при создании проекта.
+- Name: Modded Item Upgrader. Проверить уникальность при создании проекта.
 - Summary: `Risk spare items for better rewards with an inventory upgrade wheel and recipe-based item values.`
 - Logo: `icon.png`, 1254×1254 PNG. Промо-иллюстрация создана с ИИ; это раскрыто в описании.
 - Description: `description-en.md`, затем при желании `description-ru.md`.

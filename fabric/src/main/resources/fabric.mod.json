@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "upgrade",
   "version": "${version}",
-  "name": "Magersers' Upgrader",
+  "name": "Modded Item Upgrader",
   "description": "Risk items for a chance at better rewards. Inventory selection, stack rewards and recipe-based value balancing.",
   "authors": [
     "Magersers"

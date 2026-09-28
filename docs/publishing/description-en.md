@@ -1,4 +1,4 @@
-# Magersers’ Upgrader
+# Modded Item Upgrader
 
 Turn spare items into a chance at a better reward. Choose a stake from your inventory, pick an item and quantity, check the odds, and spin the upgrade wheel.
 
@@ -40,6 +40,6 @@ A separate historical Forge 1.20.1 build exists. It has an older feature set and
 
 © 2026 Magersers. **All Rights Reserved — Magersers Proprietary License**, starting with 0.6.4. Gameplay and private use are allowed; reuploads and distributing modified versions require written permission. Modpack manifests may reference official downloads. Earlier license grants and third-party rights are unaffected. The full LICENSE is included in each JAR and the publication package.
 
-Development and page text used substantial AI assistance. The cover/icon is AI-generated promotional artwork, not a screenshot; the gallery contains captures of the mod’s rendered interface with demonstration items. The mod does not call an AI service during gameplay.
+Development and page text used substantial AI assistance. The cover/icon is AI-generated promotional artwork, not a screenshot; the gallery contains real captures of the mod’s rendered interface with BetterEnd and BetterNether loaded. The mod does not call an AI service during gameplay.
 
 Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.

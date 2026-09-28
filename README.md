@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/media/upgrader-mods-logo.png" alt="Magersers' Upgrader logo" width="460">
+<img src="docs/media/upgrader-mods-logo.png" alt="Modded Item Upgrader logo" width="460">
 
-# Magersers' Upgrader
+# Modded Item Upgrader
 
 **Risk the items you have for a chance to win something better.**
 
@@ -16,7 +16,7 @@
 
 </div>
 
-Magersers' Upgrader adds an inventory-based upgrade wheel to Minecraft. Choose an item from your inventory as the stake, select the reward and quantity you want, review the exact success chance, and spin.
+Modded Item Upgrader adds an inventory-based upgrade wheel to Minecraft. Choose an item from your inventory as the stake, select the reward and quantity you want, review the exact success chance, and spin.
 
 A successful roll delivers the reward after the animation. A failed roll consumes the stake. The system uses ordinary in-game items only—there are no purchases, premium currencies, or real-money mechanics.
 
@@ -105,6 +105,6 @@ Useful technical references:
 
 Created by **Magersers**. Releases starting with 0.6.4 use the [Magersers Proprietary License — All Rights Reserved](LICENSE). Gameplay and private use are allowed; reuploads and distribution of modified versions require written permission. Modpack manifests may reference the official download.
 
-Development and documentation used substantial AI assistance. The promotional logo is AI-generated artwork, not an in-game screenshot. Its Atomic Disassembler-style tool is a visual shorthand for mod compatibility; Upgrader does not add that item and is not affiliated with Mekanism. The interface images above are captures of the rendered mod UI using demonstration items. The mod does not call an AI service during gameplay.
+Development and documentation used substantial AI assistance. The promotional logo is AI-generated artwork, not an in-game screenshot. Its Atomic Disassembler-style tool is a visual shorthand for mod compatibility; Upgrader does not add that item and is not affiliated with Mekanism. The interface images above are real captures of the rendered mod UI with BetterEnd and BetterNether loaded. The mod does not call an AI service during gameplay.
 
 Minecraft is a trademark of Microsoft. This project is not approved by or associated with Mojang or Microsoft.

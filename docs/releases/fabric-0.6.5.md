@@ -1,4 +1,4 @@
-# Magersers' Upgrader 0.6.5 — Multilingual
+# Modded Item Upgrader 0.6.5 — Multilingual
 
 The upgrade interface now follows the language selected in Minecraft.
 

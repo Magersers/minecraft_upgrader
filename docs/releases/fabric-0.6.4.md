@@ -1,4 +1,4 @@
-# Magersers’ Upgrader 0.6.4-alpha
+# Modded Item Upgrader 0.6.4-alpha
 
 Publication package for Fabric 1.20.1 and 1.21.1. Includes the recipe-consistent economy from 0.6.3 and compact item tooltips from 0.6.2.
 

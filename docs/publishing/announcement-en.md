@@ -1,4 +1,4 @@
-Magersers’ Upgrader — item upgrade wheel for Fabric 1.20.1 and 1.21.1
+Modded Item Upgrader — item upgrade wheel for Fabric 1.20.1 and 1.21.1
 
 Choose spare items from your inventory, pick a reward and stack size, then spin with a clearly displayed chance. Stakes are consumed whether you win or lose; successful rewards arrive after the animation. Ordinary equipment and goods are priced through their recipes, with separate values for useful farming materials and supported enhanced equipment.
 
