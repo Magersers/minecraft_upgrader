@@ -1,185 +1,110 @@
-# Magersers’ Upgrader
+<div align="center">
 
-![Upgrader — promotional artwork](fabric/src/main/resources/assets/upgrade/icon.png)
+<img src="docs/media/upgrader-mods-logo.png" alt="Magersers' Upgrader logo" width="460">
 
-**Автор: Magersers · Fabric 0.6.4-alpha · All Rights Reserved**
+# Magersers' Upgrader
 
-[English description](docs/publishing/description-en.md) · [Описание на русском](docs/publishing/description-ru.md) · [Лицензия](LICENSE)
+**Risk the items you have for a chance to win something better.**
 
-Обложка создана с помощью ИИ и является рекламной иллюстрацией, а не скриншотом.
+[![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader/files/all)
+[![Minecraft 1.21.1](https://img.shields.io/badge/Minecraft-1.21.1-62B47A?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader/files/all)
+[![Fabric](https://img.shields.io/badge/Loader-Fabric-DBD0B4?style=flat-square)](https://fabricmc.net/)
+[![Release 0.6.4](https://img.shields.io/badge/Release-0.6.4-FF9A00?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader)
+[![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-8A2BE2?style=flat-square)](LICENSE)
 
-Рулетка улучшения предметов с выбором инвентаря, количеством награды и серверным расчётом стоимости. **Fabric 0.6.3-alpha** согласует обычное снаряжение с ценой его материалов: деревянный меч 2.5 E, кожа 48 E, тростник/бумага 8 E, книга 72 E. Полезный урожай отделён от дешёвого декора, готовая еда наследует стоимость ингредиентов. Сохранены строгие цены минералов, надбавки для усиленного снаряжения и компактные цветные подсказки. [Цены и правила 0.6.3](docs/releases/fabric-0.6.3.md).
+[Download on CurseForge](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader) · [English publishing text](docs/publishing/description-en.md) · [Русское описание](docs/publishing/description-ru.md)
 
-| Загрузчик | Minecraft | Java | Файл |
-|---|---|---|---|
-| Fabric | 1.20.1 | 17+ | `upgrade-fabric-1.20.1-0.6.4-alpha.jar` |
-| Fabric | 1.21.1 | 21+ | `upgrade-fabric-1.21.1-0.6.4-alpha.jar` |
-| Forge | 1.20.1 | 17 | [Сохранённый релиз 0.3.0-alpha](https://github.com/Magersers/minecraft_upgrader/releases/tag/forge-1.20.1-v0.3.0-alpha) |
+</div>
 
-У Fabric нужны **Fabric Loader 0.17.2+** и **Fabric API для вашей версии Minecraft**. Устанавливайте один соответствующий JAR на клиент и сервер. Версии Minecraft проверяются строго: файл для 1.20.1 не предназначен для 1.21.1. Другие версии пока не заявлены. Forge остаётся отдельным рабочим проектом в корне; Fabric находится в `fabric/`.
+Magersers' Upgrader adds an inventory-based upgrade wheel to Minecraft. Choose an item from your inventory as the stake, select the reward and quantity you want, review the exact success chance, and spin.
 
-В 1.21.1 поддержаны компоненты предметов и новые сетевые пакеты; в 1.20.1 — NBT. Выигрыш сохраняется в данных игрока и восстанавливается при переподключении/смерти. Сетевой протокол Fabric — 4; обе стороны должны иметь одну сборку.
+A successful roll delivers the reward after the animation. A failed roll consumes the stake. The system uses ordinary in-game items only—there are no purchases, premium currencies, or real-money mechanics.
 
-**Модовые предметы:** оригинальные Forge-моды Tinkers’ Construct и Twilight Forest нельзя переносить в папку Fabric. В Fabric 1.20.1 адаптер рассчитан на Hephaestus (Fabric-порт Tinkers); он использует единицы жидкости Porting Lib. Профили добычи боссов включены и применяются, когда Fabric-порт соответствующего мода предоставляет нужные сущности и таблицы лута. Полная совместимость произвольных портов не обещается. Проверки оригинальных Tinkers/TF ниже относятся к сохранённой Forge-версии.
+> The interface is currently primarily Russian. Item names follow the language selected in Minecraft.
 
-Сборка Fabric из корня репозитория:
+## How it works
+
+1. Open your inventory and press the green **upgrade arrow**, or run `/upgrade` in Survival mode.
+2. Choose a stake from your main inventory, hotbar, or off-hand and set its quantity.
+3. Search the reward catalog by localized name or item ID, then choose the reward quantity.
+4. Review the chance and press **Upgrade**.
+
+The chance is calculated from the total value of the selected stake and reward stack:
+
+```text
+chance = min(95%, 85% × stake value / reward value)
+```
+
+The reward must be more valuable than the stake. For example, a 100 E stake against a 200 E reward gives a 42.5% chance.
+
+## See it in action
+
+<table>
+  <tr>
+    <td width="50%" align="center"><strong>Choose a stake from your inventory</strong><br><br><img src="docs/media/inventory.png" alt="Inventory stake selection"></td>
+    <td width="50%" align="center"><strong>Browse rewards and compare values</strong><br><br><img src="docs/media/catalog.png" alt="Searchable reward catalog"></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><strong>Inspect item stats, source mod, and value</strong><br><br><img src="docs/media/item-details.png" alt="Detailed item tooltip"></td>
+    <td width="50%" align="center"><strong>Receive the result when the wheel stops</strong><br><br><img src="docs/media/win.png" alt="Successful upgrade result"></td>
+  </tr>
+</table>
+
+## Features
+
+- Direct stake selection from all 37 player inventory slots, including the hotbar and off-hand.
+- Searchable reward catalog with filters, sorting, pages, and stack-size controls.
+- Animated upgrade wheel with sound effects and clear win/loss feedback.
+- Recipe-aware values based on ingredients, output counts, alternative materials, and processing costs.
+- Mod-aware tooltips showing the source mod, combat or armor stats, and per-item value.
+- Automatic value reduction for worn equipment, up to 99% depending on damage.
+- Server-side validation of the selected slot, quantities, item data, progression gates, and payout.
+- Persistent delayed rewards: accepted wins survive reconnects and deaths until delivered.
+- Datapack balance profiles and `/upgrade audit` reports for modpack authors and server administrators.
+- Optional hard mode that lowers the stake value of simple building resources.
+
+## Requirements
+
+Install the matching JAR on **both the client and the server**. Single-player is supported through Minecraft's integrated server.
+
+| Minecraft | Java | Fabric Loader | Fabric API | Release file |
+|---|---:|---:|---|---|
+| 1.20.1 | 17+ | 0.17.2+ | 0.92.12+1.20.1 or compatible | `upgrade-fabric-1.20.1-0.6.4.jar` |
+| 1.21.1 | 21+ | 0.17.2+ | 0.116.17+1.21.1 or compatible | `upgrade-fabric-1.21.1-0.6.4.jar` |
+
+Use only the file made for your exact Minecraft version. The 1.20.1 and 1.21.1 JARs are not interchangeable, and every player must run the same Upgrader version as the server.
+
+## Modded items and modpacks
+
+Upgrader reads supported recipes, tags, item attributes, and acquisition data from the installed game. Material costs can flow through normal crafting chains and supported modded processing systems instead of giving every unknown item an arbitrary price.
+
+Fabric 1.20.1 integration has been checked with BetterEnd, BetterNether, BCLib, TechReborn, and Hephaestus-related content. Custom machines, unusual item data, hidden abilities, contextual loot, energy, or fluid recipes may still require a datapack value profile or dedicated adapter.
+
+Server administrators can run `/upgrade audit` to generate `logs/upgrade-economy.json`, including unavailable or excluded items and the reason for every result. Balance data can be replaced or extended with datapacks and reloaded with `/reload`.
+
+This project does not claim automatic compatibility with every item in every modpack. Please report reproducible compatibility problems through [GitHub Issues](https://github.com/Magersers/minecraft_upgrader/issues).
+
+## Building from source
+
+The Fabric project is located in `fabric/` and shares one economy core across supported Minecraft versions.
 
 ```sh
 ./gradlew -p fabric -Pminecraft_version=1.20.1 build
 ./gradlew -p fabric -Pminecraft_version=1.21.1 build
 ```
 
-Результаты: `fabric/build/<версия>/libs/`. Для разработки держите установленные JDK 17 и 21. Сборки используют общее ядро расчёта и отдельные адаптеры API для каждой версии. В предыдущей Fabric 0.5.1 проверены 880 vanilla-предметов на 1.20.1 и 901 на 1.21.1, серверные сценарии и интерфейс при 1280×800 / 640×480. С **Hephaestus 3.6.4.279 + Mantle 1.9.269 + Porting Lib 2.3.4** проверены сплавы, материалы деталей, канонический новый инструмент и отказ для изменённых предметов; 2090 оценённых записей, включая внутренние материалы/жидкости. Более новые версии Hephaestus отдельно не проверены. `runTestServer` запускает серверные проверки из отдельного тестового мода, а `runTestClient` — проверку отрисовки; тестовые классы не входят в релизный JAR.
+Build outputs are written to `fabric/build/<minecraft-version>/libs/`. Development requires JDK 17 for Minecraft 1.20.1 and JDK 21 for Minecraft 1.21.1.
 
-## Оценка по характеристикам (Fabric 0.6)
+Useful technical references:
 
-Подробные формулы, примеры оценки материалов, энергетическая броня и ограничения: [описание 0.6](docs/releases/fabric-0.6.1.md). `/upgrade hard true` снижает стоимость сдачи простых ресурсов до 0.5 E; цена награды сохраняется. Режим выключен по умолчанию. Износ предметов учитывается автоматически.
+- [Fabric 0.6 economy, attributes, and hard mode](docs/releases/fabric-0.6.1.md)
+- [Fabric 0.6.3 balance changes](docs/releases/fabric-0.6.3.md)
+- [Publishing metadata and platform notes](docs/publishing/platforms.md)
 
-## Автоматические источники модовых предметов (с Fabric 0.5)
+## License and credits
 
-Цена наследуется от природных ресурсов, фактического дропа блоков/мобов/сундуков через рецепты и обработку. Учитываются программные таблицы лута, расходуемые количества, сплавы и ковка BCLib, катализаторы инфузии BetterEnd. Членство в теге крафта не приравнивает стоимость разных материалов. Приблизительные источники явно помечаются.
+Created by **Magersers**. Releases starting with 0.6.4 use the [Magersers Proprietary License — All Rights Reserved](LICENSE). Gameplay and private use are allowed; reuploads and distribution of modified versions require written permission. Modpack manifests may reference the official download.
 
-Проверка BetterEnd 4.0.11 + BetterNether 9.0.10 на 1.20.1: **757 + 533 оценённых предмета**, 28 + 50 пока без источника, 19 + 21 исключены. Полный BMC2 не тестировался. Для отчёта вашей сборки администратор может выполнить **`/upgrade audit`**: результат в `logs/upgrade-economy.json`. Настройки автоматической добычи — `data/upgrade/upgrade_inheritance/policy.json`; отдельные цены и машины — `upgrade_values`.
+Development and documentation used substantial AI assistance. The promotional logo is AI-generated artwork, not an in-game screenshot. Its Atomic Disassembler-style tool is a visual shorthand for mod compatibility; Upgrader does not add that item and is not affiliated with Mekanism. The interface images above are captures of the rendered mod UI using demonstration items. The mod does not call an AI service during gameplay.
 
-[Описание 0.6, формулы, способности и хард-режим](docs/releases/fabric-0.6.1.md). Для воспроизводимого теста BetterX:
-
-```sh
-python scripts/prepare-betterx.py /absolute/path/to/test-mods
-./gradlew -p fabric -Pminecraft_version=1.20.1 -PcompatMods=/absolute/path/to/test-mods runTestServer
-```
-
-## Как пользоваться
-
-1. Положите подходящий JAR из таблицы в `mods`. Удалите предыдущую версию. В сетевой игре обновите и клиент, и сервер: сетевой протокол изменился.
-2. Перейдите в выживание. Предмет можно выбрать из любого слота основного инвентаря, хотбара или второй руки.
-3. Откройте инвентарь и нажмите зелёный значок **↑** в правом верхнем углу окна. Команда **`/upgrade`** также работает.
-4. Во вкладке **МОЙ ИНВЕНТАРЬ** нажмите на ставку и задайте количество **− / + / Всё**. Во вкладке **КАТАЛОГ НАГРАД** найдите цель по названию или ID, например `алмаз меч`, `березовые`, `diamond_sword`, `minecraft:diamond`. Количество награды задаётся отдельно: **− / + / Макс**. Для нестакаемых предметов доступен только один; для остальных — до размера стака (не более 64).
-5. Нажмите **УЛУЧШИТЬ**. Четырёхсекундная прокрутка сопровождается замедляющимися щелчками. Затем появляются **ПОБЕДА!** или **ПОРАЖЕНИЕ** и отдельный звук результата.
-
-Поиск использует язык и ресурс-паки клиента, понимает несколько слов, регистр и `е/ё`. Фильтр **Доступные** показывает оценённые и открытые цели, включая дешёвые предметы, которые можно выбрать пачкой; **Все** позволяет просмотреть и недоступные предметы. Есть сортировка по цене, страницы, прокрутка колёсиком и подсказки с разбором цены. Наведите на ставку, чтобы узнать, почему она недоступна.
-
-Выигрыш появляется в инвентаре только после окончания анимации и подтверждения сервера. Если инвентарь полон, предмет выпадает рядом. На сервере с низким TPS после анимации может ненадолго оставаться «получение результата». Пока идёт апгрейд, элементы управления и обычное закрытие окна заблокированы.
-
-## Новое в 0.3
-
-- Встроенный инвентарь на 37 слотов: 27 основных, 9 хотбара и вторая рука. Ставка списывается из выбранного слота; перекладывать предмет в руку не нужно. Сервер сверяет снимок предмета, количество и NBT, отклоняет изменившийся слот.
-- Отдельное количество награды, проверка размера стака на сервере, цена всей пачки в шансе. Выигрыш сохраняется и выдаётся целиком один раз после анимации.
-- Кольцо рулетки с треугольной золотой стрелкой, делениями, цветным сектором шанса и результатом в центре; вкладки, подсказки, оформление победы и поражения. В маленьком окне инвентарь доступен постранично.
-- Адаптер Tinkers’ Construct: плавка, сплавы, литьё, формовка, материал детали и состав новых инструментов. Профили сложности и добычи семи боссов Twilight Forest.
-
-## Что исправлено в расчёте
-
-- Для каждого ингредиента достаточно **одной известной альтернативы**. Неоценённая древесина из мода больше не блокирует крафт из обычных досок.
-- Расчёт проходит всю цепочку рецептов, выбирает минимальную известную цену и делит затраты на количество результата.
-- Вместо точного совпадения Java-класса поддерживаются наследники обычных крафтов, приготовления, камнереза и кузнечных преобразований. Особые динамические рецепты требуют адаптера или профиля.
-- Стандартный `Damage: 0` больше не исключает новые инструменты и броню. В Fabric 0.6 износ уменьшает стоимость ставки вплоть до 99%; зачарования и неподдерживаемые особые данные требуют отдельных профилей.
-- Поддерживаются рецепты с возвращаемыми вёдрами/бутылками. Полная цена входа учитывается без вычета возвращаемой тары — это консервативная оценка.
-- Добавлены базовые ресурсы, растения, дроп, еда и материалы. Профили могут задавать цену целой группе предметов через `tag`.
-- Длинные конечные цепочки больше не считаются нестабильными только из-за лимита 128 проходов. Удешевляющие циклы по-прежнему исключаются.
-- Подсказка показывает крафт и его составляющие; при отсутствии цены — конкретные неизвестные ингредиенты или неподдерживаемый тип рецепта.
-- Ошибка в одном JSON-профиле журналируется и не выключает всю экономику. Профиль применяется целиком либо пропускается.
-
-В проверке на стандартных ресурсах Minecraft 1.20.1 получено **881 оценённых предмета / 1142 импортированных рецепта**. Это не обещание полного покрытия произвольной сборки: рецепты специальных машин с энергией, жидкостями, вероятностными выходами, NBT и некоторый некрафтовый лут требуют явных профилей.
-
-## Шансы и цены
-
-```text
-стоимость ставки = цена одного предмета × количество
-шанс = min(0.95, 0.85 × стоимость ставки / (цена одного предмета награды × количество награды))
-```
-
-Вся выбранная награда должна быть дороже всей ставки. Ставка 100 E на цель 200 E даёт 42.5%. `E` — условные единицы усилий. Базовые цены являются настройкой баланса, а не измеренной экономикой; настройте их под свою сборку.
-
-Цены хранятся в `data/<namespace>/upgrade_values/*.json`. Замените `data/upgrade/upgrade_values/baseline.json` датапаком, чтобы изменить встроенный баланс. Несколько источников одного предмета конкурируют по минимальной цене. `deny` исключает предметы, `gates` требует достижения, `confidence` ниже 0.85 запрещает ставку/цель. После `/reload` экономика пересчитывается, старые сессии каталога становятся недействительными.
-
-Пример профиля для нового материала и машины (Forge). В Fabric замените `forge:ingots/tin` на `c:tin_ingots` для 1.20.1 или `c:ingots/tin` для 1.21.1 — тег должен существовать в вашей сборке:
-
-```json
-{
-  "sources": [
-    {"tag": "forge:ingots/tin", "cost": 6, "confidence": 0.9, "reason": "Добыча олова", "gates": []}
-  ],
-  "routes": [
-    {
-      "id": "mypack:bronze_machine",
-      "output": "mymod:bronze_ingot",
-      "count": 4,
-      "inputs": [
-        {"alternatives": ["minecraft:copper_ingot"], "count": 3},
-        {"alternatives": ["mymod:tin_ingot"], "count": 1}
-      ],
-      "overhead": 1,
-      "confidence": 0.9,
-      "gates": []
-    }
-  ],
-  "deny": []
-}
-```
-
-В `sources` можно указать `item` вместо `tag`. Для добычи с моба поддержан `encounter`:
-
-```text
-(search + combat + consumables + death_chance × death_loss + setup / horizon)
-/ (success × drop_chance × mean_count)
-```
-
-## Tinkers’ Construct
-
-Адаптер работает по реально загруженным рецептам и тегам: **плавка → жидкость в mB → сплав → литьё**, с правильными объёмами и выходами. Цена формы учитывается полностью при расходовании; многоразовая форма и шаблон распределяются на 64 использования. Время плавки/обычного литья добавляет технологические затраты. Для руд используется базовый выход плавильни без конфиг-зависимого бонуса большой печи; побочные продукты не вычитаются из цены основного выхода.
-
-Детали имеют отдельную цену для каждого материала и его варианта. Новый инструмент можно выбрать из инвентаря: его цена равна сумме деталей. Проверяется совпадение с каноническим новым инструментом Tinkers; изношенные, модифицированные, переименованные инструменты и инструменты без материала не считаются обычным предметом. Каталог наград пока содержит обычные предметы, а не все сочетания NBT-материалов инструментов. Композитное литьё, замена частей и дополнительные модификаторы требуют отдельного адаптера/профиля.
-
-Исходные цены кобальта и разновидностей слизи настраиваются в `data/upgrade/upgrade_values/tinkers.json`; предметы отсутствующих модов не добавляются в экономику. Контракты адаптера сверены с [документацией SlimeKnights](https://slimeknights.github.io/docs/json/recipes/casting/) и [рецептами материалов](https://slimeknights.github.io/docs/json/recipes/materials/).
-
-## Сложность мобов и Twilight Forest
-
-`data/<namespace>/upgrade_encounters/*.json` описывает встречи. Встроенный `data/upgrade/upgrade_encounters/twilight.json` покрывает **нагу, лича, миношрума, гидру, высшего йети, снежную королеву и высшего гаста**. HP, броня и атака читаются из установленного мода; ожидаемый дроп — из активных таблиц датапака, без «Добычи» и бонуса удачи. Поддержаны постоянные/равномерные/биномиальные количества, повторные броски, простые вероятности, безусловные взвешенные альтернативы и вложенные таблицы. Контекстные функции, зачарования и неизвестные условия не подменяются обычным дропом.
-
-```text
-combat = HP / player_dps / seconds_per_effort
-         × (1 + armor / 20) × mechanics × (1 + max(0, attack - 2) / 20)
-стоимость единицы дропа =
-(search + combat + consumables + death_chance × death_loss + setup / horizon)
-/ (success × ожидаемое количество предмета за бой)
-```
-
-`seconds_per_effort` по умолчанию 10, в соответствии с 1 E = 10 секунд условного усилия. DPS игрока, поиск, расходники, механики, риск и подготовка — **настраиваемые предположения о балансе**, не измеренное время боя и не анализ ИИ моба. Подсказка показывает использованные параметры. Изменения сохраняйте в датапаке и применяйте `/reload`.
-
-Например, у гидры в проверенной версии 360 HP, средний дроп — 8.5 огненной крови, 20 отбивных и один трофей. Встроенная модель даёт примерно 119.49 E за кровь, 50.78 E за отбивную и 1015.63 E за трофей; обычные рецепты затем переносят эту стоимость в огненные слитки и снаряжение. Данные сверены с [официальной таблицей добычи гидры](https://github.com/TeamTwilight/twilightforest/blob/1.20.1/src/generated/resources/data/twilightforest/loot_tables/entities/hydra.json).
-
-Система расширяема на других мобов, но не обещает автоматическую оценку всех машин и всех таблиц произвольной сборки.
-
-## Сборка и проверки Forge
-
-```sh
-./gradlew build
-./gradlew runGameTestServer
-# Реальные совместимые моды только для тестирования, не включаются в JAR:
-./gradlew -PcompatTest runGameTestServer
-```
-
-В Windows используйте `gradlew.bat`. Результат — `build/libs/upgrade-0.3.0-alpha.jar`. `build` включает 10 145 проверок ядра (цены, альтернативы, циклы, длинные цепочки, поиск Unicode, сроки выдачи). 8 Forge GameTests (две проверки совместимости выполняются только при наличии модов) проверяют настоящие vanilla-рецепты, модовый класс-наследник с неизвестной альтернативой, списание ставки, задержку, повторные пакеты, проигрыш и восстановление ожидающего выигрыша при пересоздании игрока, выбор слота и второй руки, изменённый инвентарь, целую пачку выигрыша, поддельные количества и ограничение нестакаемых предметов. Совместимость проверена с **Tinkers’ Construct 3.12.1.231 + Mantle 1.11.117** и **Twilight Forest 4.3.2508**: сплавы, формы, деревянные/железные детали, новый составной инструмент, добыча боссов и огненное снаряжение.
-
-Для разработки интерфейса: `./gradlew runClient`. Автоматический запуск клиента с тестовыми состояниями интерфейса и PNG-снимками:
-
-```sh
-./gradlew runClient -Dupgrade.uiSmoke=true
-# Linux без дисплея:
-xvfb-run -a -s '-screen 0 1280x800x24' ./gradlew runClient -Dupgrade.uiSmoke=true
-```
-
-Снимки сохраняются в `run/client/screenshots`. Это проверка рендеринга с тестовым каталогом; она не заменяет ручной сетевой прогон на конкретной сборке. Код и структуры `src/gametest` не включаются в релизный JAR.
-
-## Сохранение результата и ограничения
-
-Ожидающий результат хранится в persistent NBT игрока, переносится при смерти/пересоздании и сохраняется обычным механизмом Minecraft при выходе и остановке сервера. Награда выдаётся один раз после серверного срока и подтверждения клиента. Если экран прерван, предусмотрено восстановление через 10 секунд после срока; офлайн-игрок получает результат после возвращения. Datapack reload не удаляет уже принятую ставку.
-
-Отдельного журнала транзакций с защитой от аварийного завершения процесса между сохранениями мира пока нет. Предметы с неподдерживаемыми особыми данными, хранилищем, жидкостью и яйца призыва исключаются. Fabric 0.6 принимает изношенные обычные предметы и поддержанную энергетическую броню; Forge 0.3 сохраняет старые ограничения.
-
-Исходники предыдущей восстановленной сборки описаны в `RESTORED_BUILD.md`. Исторический `META-INF/source-recovery.zip` в Git не обновляется и больше не включается в JAR. Актуальный код находится в дереве Git. `LICENSE.txt` и `CREDITS.txt` сохранены из Forge MDK.
-
-
-## Лицензия новых выпусков
-
-Начиная с Fabric 0.6.4: © 2026 Magersers, все права защищены; см. [LICENSE](LICENSE). Прежние лицензии старых копий и сторонние права не отменяются. Историческая Forge 0.3.0 не переиздаётся. Исходное уведомление Forge MDK сохранено в [licenses/Forge-MDK-LICENSE.txt](licenses/Forge-MDK-LICENSE.txt). Код и тексты создавались со значительным участием ИИ.
+Minecraft is a trademark of Microsoft. This project is not approved by or associated with Mojang or Microsoft.
