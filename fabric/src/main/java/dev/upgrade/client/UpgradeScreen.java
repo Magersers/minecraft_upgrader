@@ -1,5 +1,7 @@
 package dev.upgrade.client;
 
+import static dev.upgrade.client.L10n.text;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.upgrade.Economy;
@@ -42,10 +44,11 @@ public class UpgradeScreen extends UpgradeBaseScreen {
     private int amount=1,rewardAmount=1,selectedSlot=-1,x,y,panelWidth,panelHeight,columns,rows,page,lastStep=-1;
     private int searchY,gridY,cell,controlsY,spinY,statusY,tabsY;
     private long started,requested,lastCatalogRequest;
+    private boolean rejected;
     private boolean pending,finishSent,onlyAvailable=true,descending,loading=true,inventoryView=true,compact;
-    private String status="Выберите ставку в своём инвентаре";
+    private String status=text("upgrade.select_stake");
 
-    public UpgradeScreen(Network.Catalog catalog) { super(t("Улучшение предметов")); this.catalog=catalog; selectedSlot=catalog.selectedSlot(); }
+    public UpgradeScreen(Network.Catalog catalog) { super(t(text("upgrade.title"))); this.catalog=catalog; selectedSlot=catalog.selectedSlot(); }
     public static void receive(Network.Catalog packet) {
         Minecraft mc=Minecraft.getInstance();
         if (packet.open()) mc.setScreen(new UpgradeScreen(packet));
@@ -65,20 +68,20 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         if (!(Minecraft.getInstance().screen instanceof UpgradeScreen screen) || !screen.catalog.token().equals(packet.token())) return;
         screen.pending=false;
         if (packet.accepted()) {
-            screen.outcome=packet; screen.started=Util.getMillis(); screen.lastStep=-1; screen.status="Прокрутка…";
-        } else { screen.outcome=null; screen.status=packet.message(); screen.requestCatalog(); }
+            screen.outcome=packet; screen.started=Util.getMillis(); screen.lastStep=-1; screen.status=text("upgrade.spinning");
+        } else { screen.outcome=null; screen.status=text(packet.message()); screen.rejected=true; screen.requestCatalog(); }
     }
     public static void receive(Network.Settled packet) {
         if (!(Minecraft.getInstance().screen instanceof UpgradeScreen screen) || !screen.catalog.token().equals(packet.token())) return;
         screen.settled=packet;
-        screen.status=packet.won()?"Получено: "+screen.name(packet.target())+" × "+packet.count():"Ставка потрачена. Можно попробовать ещё раз";
+        screen.status=packet.won()?text("upgrade.received",screen.name(packet.target()),packet.count()):text("upgrade.lost");
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(packet.won()?SoundEvents.PLAYER_LEVELUP:SoundEvents.VILLAGER_NO,packet.won()?1.15f:.8f));
         screen.requestCatalog();
     }
     private static net.minecraft.network.chat.MutableComponent t(String text) { return Component.literal(text); }
     private Network.InventoryEntry stake() {
         return catalog.inventory().stream().filter(e -> e.slot()==selectedSlot).findFirst()
-                .orElse(new Network.InventoryEntry(-1,ItemStack.EMPTY,0,"Выберите предмет в инвентаре"));
+                .orElse(new Network.InventoryEntry(-1,ItemStack.EMPTY,0,text("upgrade.select_inventory")));
     }
     private boolean busy() { return pending || outcome!=null && settled==null; }
     private boolean rolling() { return outcome!=null && elapsed()<RollTiming.MILLIS; }
@@ -117,7 +120,7 @@ public class UpgradeScreen extends UpgradeBaseScreen {
     private int gridX() { return inventoryView?x+(panelWidth-gridColumns()*cell)/2:x+12; }
     private int pageSize() { return Math.max(1,gridColumns()*rows); }
     private int pages() { int size=inventoryView?catalog.inventory().size():filtered.size(); return Math.max(1,(size+pageSize()-1)/pageSize()); }
-    private void resetResult() { outcome=null; settled=null; }
+    private void resetResult() { outcome=null; settled=null; rejected=false; }
     private void changeAmount(int value) { amount=Math.max(1,Math.min(Math.max(1,Math.min(64,stake().stack().getCount())),value)); resetResult(); filter(); }
     private void changeReward(int value) { rewardAmount=Math.max(1,Math.min(rewardLimit(),value)); resetResult(); }
     private void switchView(boolean inventory) { inventoryView=inventory; page=0; search.setVisible(!inventory); available.visible=!inventory; sorting.visible=!inventory; }
@@ -134,39 +137,39 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         int card=Math.min(150,(panelWidth-106)/2),right=x+panelWidth-12-card;
         less=button("−",x+16,y+controlsY,18,b -> changeAmount(amount-1));
         more=button("+",x+58,y+controlsY,18,b -> changeAmount(amount+1));
-        maximum=button("Всё",x+80,y+controlsY,Math.max(24,card-72),b -> changeAmount(stake().stack().getCount()));
+        maximum=button(text("upgrade.all_stack"),x+80,y+controlsY,Math.max(24,card-72),b -> changeAmount(stake().stack().getCount()));
         rewardLess=button("−",right+4,y+controlsY,18,b -> changeReward(rewardAmount-1));
         rewardMore=button("+",right+46,y+controlsY,18,b -> changeReward(rewardAmount+1));
-        rewardMax=button("Макс",right+68,y+controlsY,Math.max(24,card-72),b -> changeReward(rewardLimit()));
-        rewardMax.setTooltip(Tooltip.create(t("Максимальный размер стака цели. Шанс учитывает всю пачку.")));
-        spin=button("УЛУЧШИТЬ",x+panelWidth/2-68,y+spinY,136,b -> {
+        rewardMax=button(text("upgrade.max"),right+68,y+controlsY,Math.max(24,card-72),b -> changeReward(rewardLimit()));
+        rewardMax.setTooltip(Tooltip.create(t(text("upgrade.max_hint"))));
+        spin=button(text("upgrade.upgrade"),x+panelWidth/2-68,y+spinY,136,b -> {
             if (chance()<=0 || busy() || loading) return;
-            pending=true; finishSent=false; resetResult(); requested=Util.getMillis(); status="Ожидание сервера…";
+            pending=true; finishSent=false; resetResult(); requested=Util.getMillis(); status=text("upgrade.waiting");
             ClientTransport.send(new Network.Spin(catalog.token(),target.id(),amount,selectedSlot,rewardAmount));
         });
-        inventoryTab=button("МОЙ ИНВЕНТАРЬ",x+12,y+tabsY,(panelWidth-28)/2,b -> switchView(true));
-        targetsTab=button("КАТАЛОГ НАГРАД",x+16+(panelWidth-28)/2,y+tabsY,(panelWidth-28)/2,b -> switchView(false));
-        search=new EditBox(font,x+12,y+searchY,panelWidth-174,18,t("Поиск по названию или ID"));
-        search.setMaxLength(100); search.setHint(t("Название или minecraft:…")); search.setValue(query);
+        inventoryTab=button(text("upgrade.inventory"),x+12,y+tabsY,(panelWidth-28)/2,b -> switchView(true));
+        targetsTab=button(text("upgrade.catalog"),x+16+(panelWidth-28)/2,y+tabsY,(panelWidth-28)/2,b -> switchView(false));
+        search=new EditBox(font,x+12,y+searchY,panelWidth-174,18,t(text("upgrade.search")));
+        search.setMaxLength(100); search.setHint(t(text("upgrade.search_hint"))); search.setValue(query);
         search.setResponder(s -> { page=0; filter(); }); addRenderableWidget(search);
-        available=button(onlyAvailable?"Доступные":"Все",x+panelWidth-156,y+searchY,86,b -> {
-            onlyAvailable=!onlyAvailable; b.setMessage(t(onlyAvailable?"Доступные":"Все")); page=0; filter();
+        available=button(onlyAvailable?text("upgrade.available"):text("upgrade.all"),x+panelWidth-156,y+searchY,86,b -> {
+            onlyAvailable=!onlyAvailable; b.setMessage(t(onlyAvailable?text("upgrade.available"):text("upgrade.all"))); page=0; filter();
         });
-        available.setTooltip(Tooltip.create(t("Доступные: оценённые и открытые цели. Количество задаётся над каталогом.")));
-        sorting=button(descending?"Цена ↓":"Цена ↑",x+panelWidth-66,y+searchY,54,b -> {
-            descending=!descending; b.setMessage(t(descending?"Цена ↓":"Цена ↑")); page=0; filter();
+        available.setTooltip(Tooltip.create(t(text("upgrade.available_hint"))));
+        sorting=button(descending?text("upgrade.price_down"):text("upgrade.price_up"),x+panelWidth-66,y+searchY,54,b -> {
+            descending=!descending; b.setMessage(t(descending?text("upgrade.price_down"):text("upgrade.price_up"))); page=0; filter();
         });
         previous=button("‹",x+12,y+panelHeight-22,22,b -> page=Math.max(0,page-1));
         next=button("›",x+104,y+panelHeight-22,22,b -> page=Math.min(pages()-1,page+1));
-        refresh=button("Обновить",x+panelWidth-96,y+panelHeight-22,84,b -> requestCatalog());
-        refresh.setTooltip(Tooltip.create(t("Обновить инвентарь и оценки предметов")));
+        refresh=button(text("upgrade.refresh"),x+panelWidth-96,y+panelHeight-22,84,b -> requestCatalog());
+        refresh.setTooltip(Tooltip.create(t(text("upgrade.refresh_hint"))));
         switchView(inventoryView); filter();
     }
     @Override public void tick() {
         tickSearch(search);
         if (outcome!=null && settled==null) {
             if (!rolling() && !finishSent) {
-                finishSent=true; status="Получение результата…"; ClientTransport.send(new Network.Finish(outcome.token()));
+                finishSent=true; status=text("upgrade.receiving"); ClientTransport.send(new Network.Finish(outcome.token()));
             } else if (rolling()) {
                 double progress=RollTiming.progress(elapsed()); int step=(int)(RollTiming.turns(progress,outcome.roll())*40);
                 if (step!=lastStep) {
@@ -175,7 +178,7 @@ public class UpgradeScreen extends UpgradeBaseScreen {
                 }
             }
         }
-        if (pending && Util.getMillis()-requested>10000) status="Сервер ещё отвечает…";
+        if (pending && Util.getMillis()-requested>10000) status=text("upgrade.server_wait");
         if (loading && !busy() && Util.getMillis()-lastCatalogRequest>1500) requestCatalog();
         boolean enabled=!busy()&&!loading;
         for (var child : children()) if (child instanceof Button b) b.active=enabled;
@@ -185,7 +188,7 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         rewardLess.active=enabled&&rewardAmount>1; rewardMore.active=rewardMax.active=enabled&&target!=null&&rewardAmount<rewardLimit();
         refresh.active=enabled&&Util.getMillis()-lastCatalogRequest>=600;
         inventoryTab.active=enabled&&!inventoryView; targetsTab.active=enabled&&inventoryView;
-        spin.active=enabled&&chance()>0; spin.setMessage(t(busy()?"ПРОКРУТКА…":"УЛУЧШИТЬ"));
+        spin.active=enabled&&chance()>0; spin.setMessage(t(busy()?text("upgrade.spinning_button"):text("upgrade.upgrade")));
     }
     private void label(GuiGraphics g,String text,int center,int yy,int maxWidth,int color) { g.drawCenteredString(font,font.plainSubstrByWidth(text,maxWidth),center,yy,color); }
     private static void vertex(BufferBuilder b,Matrix4f matrix,double xx,double yy,int color) { RenderSupport.vertex(b,matrix,(float)xx,(float)yy,color); }
@@ -219,37 +222,37 @@ public class UpgradeScreen extends UpgradeBaseScreen {
     @Override public void render(GuiGraphics g,int mx,int my,float partial) {
         drawBackground(g,mx,my,partial);
         g.fillGradient(x,y,x+panelWidth,y+panelHeight,0xFD172238,0xFD0B111E); g.fill(x,y,x+panelWidth,y+2,GREEN);
-        g.drawString(font,"UPGRADER",x+12,y+10,TEXT); g.drawString(font,"УЛУЧШЕНИЕ ПРЕДМЕТОВ",x+100,y+11,MUTED);
+        g.drawString(font,"UPGRADER",x+12,y+10,TEXT); label(g,text("upgrade.heading"),x+100+(panelWidth-112)/2,y+11,panelWidth-112,MUTED);
         int card=Math.min(150,(panelWidth-106)/2),right=x+panelWidth-12-card,cx=x+panelWidth/2,cy=y+(compact?62:71),top=compact?26:31;
         g.fillGradient(x+12,y+top,x+12+card,y+controlsY+20,0xFF24374F,0xFF18283C);
         g.fillGradient(right,y+top,right+card,y+controlsY+20,0xFF303B53,0xFF1D2B41);
-        label(g,"СТАВКА",x+12+card/2,y+top+4,card-6,MUTED); label(g,"НАГРАДА",right+card/2,y+top+4,card-6,GOLD);
+        label(g,text("upgrade.stake"),x+12+card/2,y+top+4,card-6,MUTED); label(g,text("upgrade.reward"),right+card/2,y+top+4,card-6,GOLD);
         var stake=stake(); ItemStack stakeItem=stake.stack();
         g.renderItem(stakeItem,x+12+card/2-8,y+top+17);
-        label(g,stakeItem.isEmpty()?"Выберите предмет":stakeItem.getHoverName().getString(),x+12+card/2,y+top+36,card-8,TEXT);
-        label(g,stake.value()>0?String.format(Locale.ROOT,"%.2f E",stake.value()*amount):"Нет оценки",x+12+card/2,y+top+47,card-8,stake.value()>0?GREEN:RED);
+        label(g,stakeItem.isEmpty()?text("upgrade.select_item"):stakeItem.getHoverName().getString(),x+12+card/2,y+top+36,card-8,TEXT);
+        label(g,stake.value()>0?String.format(Locale.ROOT,"%.2f E",stake.value()*amount):text("upgrade.no_value"),x+12+card/2,y+top+47,card-8,stake.value()>0?GREEN:RED);
         g.drawCenteredString(font,Integer.toString(amount),x+46,y+controlsY+5,TEXT);
         g.drawCenteredString(font,Integer.toString(rewardAmount),right+34,y+controlsY+5,TEXT);
         if (target!=null) {
             g.renderItem(item(target.id()),right+card/2-8,y+top+17);
             label(g,name(target.id()),right+card/2,y+top+36,card-8,TEXT);
-            label(g,target.value()>0?String.format(Locale.ROOT,"%.2f E",target.value()*rewardAmount):"Нет оценки",right+card/2,y+top+47,card-8,target.available()?GOLD:RED);
-        } else label(g,"Выберите в каталоге",right+card/2,y+top+35,card-8,MUTED);
+            label(g,target.value()>0?String.format(Locale.ROOT,"%.2f E",target.value()*rewardAmount):text("upgrade.no_value"),right+card/2,y+top+47,card-8,target.available()?GOLD:RED);
+        } else label(g,text("upgrade.select_catalog"),right+card/2,y+top+35,card-8,MUTED);
         double p=outcome!=null?outcome.chance():chance(); wheel(g,cx,cy,p);
         if (settled!=null && settled.won()) {
             g.pose().pushPose(); g.pose().translate(cx-12,cy-13,0); g.pose().scale(1.5f,1.5f,1); g.renderItem(item(settled.target()),0,0); g.pose().popPose();
             g.drawCenteredString(font,"× "+settled.count(),cx,cy+14,GOLD);
-        } else { g.drawCenteredString(font,(p>0 && p<.00001?"<0.001%":String.format(Locale.ROOT,p<.01?"%.3f%%":"%.1f%%",p*100)),cx,cy-6,TEXT); g.drawCenteredString(font,"шанс",cx,cy+7,MUTED); }
+        } else { g.drawCenteredString(font,(p>0 && p<.00001?"<0.001%":String.format(Locale.ROOT,p<.01?"%.3f%%":"%.1f%%",p*100)),cx,cy-6,TEXT); g.drawCenteredString(font,text("upgrade.chance"),cx,cy+7,MUTED); }
         if (settled!=null) {
             g.fillGradient(x+12,y+statusY-3,x+panelWidth-12,y+tabsY-4,settled.won()?0xFF214C40:0xFF512D40,0xAA172238);
-            label(g,settled.won()?"✦ ПОБЕДА! ✦":"ПОРАЖЕНИЕ",cx,y+statusY,panelWidth-28,settled.won()?GREEN:RED);
+            label(g,settled.won()?text("upgrade.win"):text("upgrade.loss"),cx,y+statusY,panelWidth-28,settled.won()?GREEN:RED);
             if (!compact) label(g,status,cx,y+statusY+16,panelWidth-28,MUTED);
         } else {
-            String hint=loading?"Загрузка…":busy()?status:stake.value()<=0?"Выберите оценённый предмет в инвентаре":target==null?"Выберите награду в каталоге":chance()>0?"Всё готово · шанс учитывает количество обоих предметов":"Награда должна стоить дороже ставки — увеличьте количество";
+            String hint=rejected?status:loading?text("upgrade.loading"):busy()?status:stake.value()<=0?text("upgrade.valued_stake"):target==null?text("upgrade.select_reward"):chance()>0?text("upgrade.ready"):text("upgrade.more_value");
             label(g,hint,cx,y+statusY,panelWidth-24,MUTED);
-            if (!compact) label(g,"СТАВКА × 0.85 / ПОЛНАЯ ЦЕНА НАГРАДЫ",cx,y+statusY+17,panelWidth-24,0xFF627D9F);
+            if (!compact) label(g,text("upgrade.formula"),cx,y+statusY+17,panelWidth-24,0xFF627D9F);
         }
-        if (inventoryView) label(g,"Нажмите на предмет · последние 9 слотов — хотбар · + вторая рука",cx,y+searchY+5,panelWidth-28,MUTED);
+        if (inventoryView) label(g,text("upgrade.inventory_hint"),cx,y+searchY+5,panelWidth-28,MUTED);
         Network.Entry hovered=null; Network.InventoryEntry hoveredSlot=null;
         int from=page*pageSize(),size=inventoryView?inventory().size():filtered.size(),cols=gridColumns();
         List<Network.InventoryEntry> inventory=inventory();
@@ -262,14 +265,14 @@ public class UpgradeScreen extends UpgradeBaseScreen {
             int pad=(cell-16)/2;
             g.renderItem(stack,sx+pad,sy+pad); if (inventoryView) g.renderItemDecorations(font,stack,sx+pad,sy+pad);
             if (!compact && !stack.isEmpty()) g.fill(sx+2,sy+cell-3,sx+cell-3,sy+cell-2,usable?GREEN:0xFF8C5065);
-            if (inventoryView && !compact && slot.slot()==40) g.drawString(font,"Вторая рука",sx+cell+6,sy+8,MUTED);
-            if (inventoryView && !compact && slot.slot()==0 && sx-x>65) g.drawString(font,"Хотбар",sx-46,sy+8,MUTED);
+            if (inventoryView && !compact && slot.slot()==40) g.drawString(font,font.plainSubstrByWidth(text("upgrade.offhand"),Math.max(0,x+panelWidth-sx-cell-18)),sx+cell+6,sy+8,MUTED);
+            if (inventoryView && !compact && slot.slot()==0 && sx-x>65) g.drawString(font,font.plainSubstrByWidth(text("upgrade.hotbar"),sx-x-16),x+12,sy+8,MUTED);
             if (!stack.isEmpty()&&!usable) g.fill(sx,sy,sx+cell-1,sy+cell-1,0x55101826);
             if (over) { hovered=entry; hoveredSlot=slot; }
         }
-        if (!inventoryView&&filtered.isEmpty()&&!loading) label(g,"Ничего не найдено",cx,y+gridY+5,panelWidth-26,MUTED);
+        if (!inventoryView&&filtered.isEmpty()&&!loading) label(g,text("upgrade.no_results"),cx,y+gridY+5,panelWidth-26,MUTED);
         g.drawCenteredString(font,(page+1)+" / "+pages(),x+69,y+panelHeight-17,MUTED);
-        if (panelWidth>350) label(g,inventoryView?"37 слотов":filtered.size()+" целей",cx,y+panelHeight-17,panelWidth-260,MUTED);
+        if (panelWidth>350) label(g,inventoryView?text("upgrade.slots"):text("upgrade.targets",filtered.size()),cx,y+panelHeight-17,panelWidth-260,MUTED);
         super.render(g,mx,my,partial);
         if (hoveredSlot!=null) g.renderComponentTooltip(font,ItemDetails.lines(hoveredSlot.stack(),hoveredSlot.value(),true,hoveredSlot.value()>0),mx,my);
         else if (hovered!=null) g.renderComponentTooltip(font,ItemDetails.lines(item(hovered.id()),hovered.value(),false,hovered.available()),mx,my);

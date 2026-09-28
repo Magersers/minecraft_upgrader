@@ -1,5 +1,7 @@
 package dev.upgrade.client;
 
+import static dev.upgrade.client.L10n.text;
+
 import dev.upgrade.Network;
 import dev.upgrade.mixin.ContainerScreenAccessor;
 import net.fabricmc.api.ClientModInitializer;
@@ -19,7 +21,7 @@ public final class ClientEvents implements ClientModInitializer {
             if (!(screen instanceof InventoryScreen)) return;
             ContainerScreenAccessor pos=(ContainerScreenAccessor)screen;
             Button button=new Button(pos.upgrade$left()+pos.upgrade$width()-23,pos.upgrade$top()+5,20,20,
-                    Component.literal("Улучшение предметов"),b -> ClientTransport.send(new Network.Query(true)),supplier -> supplier.get()) {
+                    Component.literal(text("upgrade.title")),b -> ClientTransport.send(new Network.Query(true)),supplier -> supplier.get()) {
                 @Override public void renderWidget(GuiGraphics g,int mx,int my,float partial) {
                     setX(pos.upgrade$left()+pos.upgrade$width()-23); setY(pos.upgrade$top()+5);
                     g.fill(getX(),getY(),getX()+20,getY()+20,isHoveredOrFocused()?0xFF467959:0xFF233C32);
@@ -28,7 +30,7 @@ public final class ClientEvents implements ClientModInitializer {
                     for (int i=0;i<6;i++) g.fill(cx-i,yy+i,cx+i+1,yy+i+1,0xFFABF0BC);
                 }
             };
-            button.setTooltip(Tooltip.create(Component.literal("Апгрейд\nВыберите предмет в окне улучшения")));
+            button.setTooltip(Tooltip.create(Component.literal(text("upgrade.open_hint"))));
             Screens.getButtons(screen).add(button);
         });
     }
@@ -39,6 +41,6 @@ public final class ClientEvents implements ClientModInitializer {
     }
     public static void unavailable() {
         var player=Minecraft.getInstance().player;
-        if (player!=null) player.displayClientMessage(Component.literal("Нужна совместимая Fabric-версия Upgrader на сервере."),true);
+        if (player!=null) player.displayClientMessage(Component.literal(text("upgrade.server_missing")),true);
     }
 }

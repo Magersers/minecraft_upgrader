@@ -21,11 +21,11 @@ public final class Upgrade implements ModInitializer {
                         .then(Commands.argument("enabled",com.mojang.brigadier.arguments.BoolArgumentType.bool()).executes(ctx->{
                             boolean enabled=com.mojang.brigadier.arguments.BoolArgumentType.getBool(ctx,"enabled");
                             try { PricingPolicy.setHard(enabled); Economy.rebuild(ctx.getSource().getServer()); Network.clear();
-                                ctx.getSource().sendSuccess(()->net.minecraft.network.chat.Component.literal("Хард-режим: "+(enabled?"включён":"выключен")),true); return 1;
-                            } catch (java.io.IOException ex) { ctx.getSource().sendFailure(net.minecraft.network.chat.Component.literal("Не удалось сохранить режим")); return 0; }
+                                ctx.getSource().sendSuccess(()->net.minecraft.network.chat.Component.translatable(enabled?"upgrade.hard_on":"upgrade.hard_off"),true); return 1;
+                            } catch (java.io.IOException ex) { ctx.getSource().sendFailure(net.minecraft.network.chat.Component.translatable("upgrade.save_failed")); return 0; }
                         }))).then(Commands.literal("audit").requires(source->source.hasPermission(2)).executes(ctx->{
-                    try { var path=EconomyAudit.write(); ctx.getSource().sendSuccess(()->net.minecraft.network.chat.Component.literal("Отчёт цен: "+path),false); return 1; }
-                    catch (java.io.IOException ex) { ctx.getSource().sendFailure(net.minecraft.network.chat.Component.literal("Не удалось записать отчёт: "+ex.getMessage())); return 0; }
+                    try { var path=EconomyAudit.write(); ctx.getSource().sendSuccess(()->net.minecraft.network.chat.Component.translatable("upgrade.audit",path.toString()),false); return 1; }
+                    catch (java.io.IOException ex) { ctx.getSource().sendFailure(net.minecraft.network.chat.Component.translatable("upgrade.audit_failed",ex.getMessage())); return 0; }
                 })).executes(ctx -> { Network.catalog(ctx.getSource().getPlayerOrException(),true); return Command.SINGLE_SUCCESS; })));
         ServerLifecycleEvents.SERVER_STARTED.register(Economy::rebuild);
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server,resources,success) -> {

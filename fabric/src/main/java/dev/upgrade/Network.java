@@ -74,7 +74,7 @@ public final class Network {
         if (tick-QUERY_TICK.getOrDefault(id,-100)<10) return;
         QUERY_TICK.put(id,tick);
         if (Platform.data(player).contains(PENDING)) {
-            player.displayClientMessage(Component.literal("Дождитесь завершения текущего апгрейда."),true); return;
+            player.displayClientMessage(Component.translatable("upgrade.pending"),true); return;
         }
         ItemStack hand=player.getMainHandItem(); var value=Economy.usable(player,hand); UUID token=UUID.randomUUID();
         Map<Integer,ItemStack> snapshot=new HashMap<>();
@@ -104,32 +104,32 @@ public final class Network {
     private static void reject(ServerPlayer player, UUID token, String reason) { Upgrade.LOGGER.debug("Upgrade rejected: {}",reason); send(player,new Outcome(token,false,false,0,0,reason)); }
     private static void spin(ServerPlayer player, Spin packet) {
         Session session=SESSIONS.get(player.getUUID());
-        if(session==null || !session.token().equals(packet.token())) { reject(player,packet.token(),"Сессия устарела. Обновите каталог."); return; }
-        if(Platform.data(player).contains(PENDING)) { reject(player,packet.token(),"Дождитесь окончания вращения."); return; }
+        if(session==null || !session.token().equals(packet.token())) { reject(player,packet.token(),"upgrade.stale"); return; }
+        if(Platform.data(player).contains(PENDING)) { reject(player,packet.token(),"upgrade.wait_spin"); return; }
         SESSIONS.remove(player.getUUID());
         QUERY_TICK.remove(player.getUUID());
         if(!session.revision().equals(Economy.current.revision()) || !player.isAlive() || player.isSpectator() || player.isCreative()) {
-            reject(player,packet.token(),"Нужен режим выживания и актуальная оценка."); return;
+            reject(player,packet.token(),"upgrade.survival"); return;
         }
         ItemStack original=session.inventory().get(packet.slot());
-        if (original==null) { reject(player,packet.token(),"Недопустимый слот инвентаря."); return; }
+        if (original==null) { reject(player,packet.token(),"upgrade.invalid_slot"); return; }
         ItemStack hand=player.getInventory().getItem(packet.slot());
         if(!ItemStack.matches(hand,original)
                 || packet.count()<1 || packet.count()>64 || packet.count()>hand.getCount()) {
-            reject(player,packet.token(),"Предмет в выбранном слоте изменился. Обновите инвентарь."); return;
+            reject(player,packet.token(),"upgrade.changed"); return;
         }
         ResourceLocation key=ResourceLocation.tryParse(packet.target());
-        if(key==null || !BuiltInRegistries.ITEM.containsKey(key)) { reject(player,packet.token(),"Неизвестная цель."); return; }
+        if(key==null || !BuiltInRegistries.ITEM.containsKey(key)) { reject(player,packet.token(),"upgrade.unknown"); return; }
         ItemStack reward=new ItemStack(Objects.requireNonNull(BuiltInRegistries.ITEM.get(key)));
         if (packet.rewardCount()<1 || packet.rewardCount()>Math.min(64,reward.getMaxStackSize())) {
-            reject(player,packet.token(),"Недопустимое количество награды."); return;
+            reject(player,packet.token(),"upgrade.invalid_count"); return;
         }
         reward.setCount(packet.rewardCount());
         var source=Economy.usable(player,hand); var target=Economy.target(player,reward);
-        if(source==null || target==null) { reject(player,packet.token(),"Предмет заблокирован или не оценён."); return; }
+        if(source==null || target==null) { reject(player,packet.token(),"upgrade.locked"); return; }
         double chance;
         try { chance=CostEngine.chance(source.cost()*packet.count(),target.cost()*packet.rewardCount(),Economy.EFFICIENCY); }
-        catch(IllegalArgumentException ex) { reject(player,packet.token(),"Цена цели должна превышать ставку."); return; }
+        catch(IllegalArgumentException ex) { reject(player,packet.token(),"upgrade.too_cheap"); return; }
         double roll=RNG.nextDouble(); boolean won=roll<chance;
         CompoundTag pending=new CompoundTag();
         pending.putUUID("token",packet.token()); pending.putBoolean("won",won); pending.putString("target",packet.target());
@@ -159,7 +159,7 @@ public final class Network {
         }
         player.inventoryMenu.broadcastChanges();
         send(player,new Settled(pending.getUUID("token"),won,pending.getString("target"),rewardCount));
-        player.displayClientMessage(Component.literal(won?"Победа! Предмет получен.":"Поражение. Ставка потрачена."),true);
+        player.displayClientMessage(Component.translatable(won?"upgrade.won_chat":"upgrade.lost_chat"),true);
     }
     public static void copyPending(net.minecraft.world.entity.player.Player from, net.minecraft.world.entity.player.Player to) {
         if (Platform.data(from).contains(PENDING)) Platform.data(to).put(PENDING,Platform.data(from).getCompound(PENDING).copy());

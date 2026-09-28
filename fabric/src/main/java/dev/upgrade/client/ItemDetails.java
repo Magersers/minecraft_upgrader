@@ -1,5 +1,7 @@
 package dev.upgrade.client;
 
+import static dev.upgrade.client.L10n.text;
+
 import dev.upgrade.Platform;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,7 +21,7 @@ final class ItemDetails {
     private static final Map<String,String> MOD_NAMES=new HashMap<>();
 
     static List<Component> lines(ItemStack stack,double value,boolean inventory,boolean available) {
-        if (stack.isEmpty()) return List.of(Component.literal("Выберите предмет").withStyle(s->s.withColor(LABEL)));
+        if (stack.isEmpty()) return List.of(Component.literal(text("upgrade.select_item")).withStyle(s->s.withColor(LABEL)));
         List<Component> lines=new ArrayList<>();
         lines.add(stack.getHoverName().copy().withStyle(s->s.withColor(0xF0F5FF).withBold(true)));
         String namespace=BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace();
@@ -30,20 +32,20 @@ final class ItemDetails {
         try {
             var hand=Platform.attributes(stack,EquipmentSlot.MAINHAND);
             double damage=hand.getOrDefault("attack_damage",0d);
-            if (damage>0) stats.add(row("Урон",number(damage),0xFFA18F));
+            if (damage>0) stats.add(row(text("upgrade.damage"),number(damage),0xFFA18F));
             var equipped=stack.getItem() instanceof ArmorItem armor
                     ?Platform.attributes(stack,armor.getEquipmentSlot()):hand;
             double armor=equipped.getOrDefault("armor",0d),toughness=equipped.getOrDefault("armor_toughness",0d);
-            if (armor>0) stats.add(row("Броня",number(armor),0x94D5FF));
-            if (toughness>0) stats.add(row("Твёрдость",number(toughness),0x94D5FF));
+            if (armor>0) stats.add(row(text("upgrade.armor"),number(armor),0x94D5FF));
+            if (toughness>0) stats.add(row(text("upgrade.toughness"),number(toughness),0x94D5FF));
         } catch (RuntimeException ignored) { /* Keep the item name and server valuation available. */ }
         if (!stats.isEmpty()) { lines.add(Component.empty()); lines.addAll(stats); }
         lines.add(Component.empty());
         if (value>0 && Double.isFinite(value)) {
-            lines.add(row(inventory?"Ценность ставки":"Ценность награды",number(value)+" E",GOLD));
-            lines.add(Component.literal("за 1 предмет").withStyle(s->s.withColor(MOD)));
-        } else lines.add(Component.literal("Пока недоступно").withStyle(s->s.withColor(0xFF9AAA)));
-        if (value>0&&!available) lines.add(Component.literal("Пока недоступно").withStyle(s->s.withColor(0xFF9AAA)));
+            lines.add(row(inventory?text("upgrade.stake_value"):text("upgrade.reward_value"),number(value)+" E",GOLD));
+            lines.add(Component.literal(text("upgrade.per_item")).withStyle(s->s.withColor(MOD)));
+        } else lines.add(Component.literal(text("upgrade.unavailable")).withStyle(s->s.withColor(0xFF9AAA)));
+        if (value>0&&!available) lines.add(Component.literal(text("upgrade.unavailable")).withStyle(s->s.withColor(0xFF9AAA)));
         return lines;
     }
 
@@ -53,9 +55,9 @@ final class ItemDetails {
     }
 
     private static String number(double value) {
-        var symbols=DecimalFormatSymbols.getInstance(Locale.ROOT);
-        symbols.setGroupingSeparator(' '); symbols.setDecimalSeparator(',');
-        if (value>0&&value<.01) return "<0,01";
+        var language=net.minecraft.client.Minecraft.getInstance().getLanguageManager().getSelected();
+        var symbols=DecimalFormatSymbols.getInstance(Locale.forLanguageTag(language.replace('_','-')));
+        if (value>0&&value<.01) return "<"+new DecimalFormat("0.00",symbols).format(.01);
         return new DecimalFormat("#,##0.##",symbols).format(value);
     }
 
@@ -64,7 +66,7 @@ final class ItemDetails {
         return FabricLoader.getInstance().getModContainer(namespace).map(mod->mod.getMetadata().getName())
                 .orElseGet(()->{
                     String words=namespace.replace('_',' ').replace('-',' ');
-                    return words.isEmpty()?"Модификация":Character.toUpperCase(words.charAt(0))+words.substring(1);
+                    return words.isEmpty()?text("upgrade.mod"):Character.toUpperCase(words.charAt(0))+words.substring(1);
                 });
     }
 }

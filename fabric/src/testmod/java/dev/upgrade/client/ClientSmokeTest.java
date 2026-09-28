@@ -28,6 +28,27 @@ public final class ClientSmokeTest implements net.fabricmc.api.ClientModInitiali
     private static int ticks;
     private static UUID token;
     private static boolean opened;
+    private static final String[] LANGUAGES=System.getProperty("upgrade.testLanguages","en_us").split(",");
+    private static int languageIndex;
+    private static java.util.concurrent.CompletableFuture<Void> reload;
+    private static boolean languageReady;
+    private static String language() { return LANGUAGES[languageIndex]; }
+    private static void checkLanguage(Minecraft mc) throws Exception {
+        var resource=mc.getResourceManager().getResource(dev.upgrade.Ids.of("upgrade","lang/"+language()+".json")).orElseThrow();
+        try (var reader=resource.openAsReader()) {
+            var values=com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
+            for (var entry:values.entrySet()) {
+                if (!entry.getValue().getAsString().equals(net.minecraft.locale.Language.getInstance().getOrDefault(entry.getKey())))
+                    throw new AssertionError("Language resource not loaded: "+language()+" "+entry.getKey());
+            }
+        }
+        String received=L10n.text("upgrade.received","DIAMOND",42);
+        if (!received.contains("DIAMOND") || !received.contains("42") || received.contains("%"))
+            throw new AssertionError("Localized result placeholders failed: "+language());
+        if (L10n.text("upgrade.stale").equals("upgrade.stale")) throw new AssertionError("Untranslated rejection");
+        if (!L10n.text("upgrade.missing_test_key").equals("upgrade.missing_test_key"))
+            throw new AssertionError("Unknown-key fallback changed");
+    }
     private static void field(UpgradeScreen screen,String name,Object value) throws ReflectiveOperationException {
         var f=UpgradeScreen.class.getDeclaredField(name); f.setAccessible(true); f.set(screen,value);
     }
@@ -36,6 +57,14 @@ public final class ClientSmokeTest implements net.fabricmc.api.ClientModInitiali
         Minecraft mc=Minecraft.getInstance();
         if (mc.screen!=null && mc.screen.getClass().getSimpleName().equals("AccessibilityOnboardingScreen")) mc.setScreen(new TitleScreen());
         if (!opened && mc.screen instanceof TitleScreen && mc.getOverlay()==null) {
+            if (!languageReady) {
+                if (reload==null) {
+                    mc.getLanguageManager().setSelected(language()); mc.options.languageCode=language();
+                    reload=mc.reloadResourcePacks(); return;
+                }
+                if (!reload.isDone()) return;
+                reload.join(); reload=null; languageReady=true; checkLanguage(mc);
+            }
             opened=true; token=UUID.randomUUID();
             org.lwjgl.glfw.GLFW.glfwSetWindowSize(mc.getWindow().getWindow(),1280,800);
             mc.options.guiScale().set(2); mc.resizeDisplay();
@@ -51,28 +80,44 @@ public final class ClientSmokeTest implements net.fabricmc.api.ClientModInitiali
         }
         if (!opened || !(mc.screen instanceof UpgradeScreen screen)) return;
         ticks++;
-        if (ticks==15||ticks==20||ticks==25) Screenshot.grab(mc.gameDirectory,"upgrade-tooltip-"+ticks+".png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
-        if (ticks==30) Screenshot.grab(mc.gameDirectory,"upgrade-ready.png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
+        if (ticks==15||ticks==20||ticks==25) Screenshot.grab(mc.gameDirectory,language()+"-upgrade-tooltip-"+ticks+".png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
+        if (ticks==30) Screenshot.grab(mc.gameDirectory,language()+"-upgrade-ready.png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
         if (ticks==33) { var m=UpgradeScreen.class.getDeclaredMethod("switchView",boolean.class); m.setAccessible(true); m.invoke(screen,false); }
-        if (ticks==38) Screenshot.grab(mc.gameDirectory,"upgrade-catalog.png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
+        if (ticks==38) Screenshot.grab(mc.gameDirectory,language()+"-upgrade-catalog.png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
         if (ticks==40) {
             field(screen,"outcome",new Network.Outcome(token,true,true,.204,.1,""));
             field(screen,"started",Util.getMillis()-4000);
             field(screen,"settled",new Network.Settled(token,true,"minecraft:diamond",8));
-            field(screen,"status","Предмет добавлен в инвентарь");
+            field(screen,"status",L10n.text("upgrade.received",net.minecraft.world.item.Items.DIAMOND.getDescription().getString(),8));
         }
-        if (ticks==55) Screenshot.grab(mc.gameDirectory,"upgrade-win.png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
+        if (ticks==55) Screenshot.grab(mc.gameDirectory,language()+"-upgrade-win.png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
         if (ticks==65) {
             field(screen,"settled",new Network.Settled(token,false,"minecraft:diamond",8));
-            field(screen,"status","Ставка потрачена. Можно попробовать ещё раз");
+            field(screen,"status",L10n.text("upgrade.lost"));
         }
-        if (ticks==80) Screenshot.grab(mc.gameDirectory,"upgrade-loss.png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
+        if (ticks==80) Screenshot.grab(mc.gameDirectory,language()+"-upgrade-loss.png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
         if (ticks==90) {
             org.lwjgl.glfw.GLFW.glfwSetWindowSize(mc.getWindow().getWindow(),640,480);
             mc.options.guiScale().set(2); mc.resizeDisplay();
         }
-        if (ticks==105) Screenshot.grab(mc.gameDirectory,"upgrade-compact.png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
-        if (ticks==120) { java.nio.file.Files.writeString(mc.gameDirectory.toPath().resolve("upgrade-ui-passed.txt"),"PASS\n"); Upgrade.LOGGER.info("CLIENT SMOKE PASS"); mc.stop(); }
+        if (ticks==105) Screenshot.grab(mc.gameDirectory,language()+"-upgrade-compact.png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
+        if (ticks==110) {
+            field(screen,"settled",null); field(screen,"outcome",null);
+            UpgradeScreen.receive(new Network.Outcome(token,false,false,0,0,"upgrade.stale"));
+            var status=UpgradeScreen.class.getDeclaredField("status"); status.setAccessible(true);
+            if (!L10n.text("upgrade.stale").equals(status.get(screen))) throw new AssertionError("Rejection not localized");
+        }
+        if (ticks==115) Screenshot.grab(mc.gameDirectory,language()+"-upgrade-rejection.png",mc.getMainRenderTarget(),c -> Upgrade.LOGGER.info(c.getString()));
+        if (ticks==120) {
+            Upgrade.LOGGER.info("LOCALIZED CLIENT PASS {}",language());
+            languageIndex++;
+            if (languageIndex<LANGUAGES.length) {
+                ticks=0; opened=false; languageReady=false; mc.setScreen(new TitleScreen());
+            } else {
+                java.nio.file.Files.writeString(mc.gameDirectory.toPath().resolve("upgrade-ui-passed.txt"),"PASS "+String.join(",",LANGUAGES)+"\n");
+                Upgrade.LOGGER.info("CLIENT SMOKE PASS"); mc.stop();
+            }
+        }
     }
     private static java.util.List<Network.InventoryEntry> inventory() {
         var result=new java.util.ArrayList<Network.InventoryEntry>();

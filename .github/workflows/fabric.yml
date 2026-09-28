@@ -34,8 +34,21 @@ jobs:
       - name: Real dedicated-server integration tests
         timeout-minutes: 10
         run: ./gradlew -p fabric -Pminecraft_version=${{ matrix.minecraft }} runTestServer --console=plain
+      - name: Render and verify all 22 languages at normal and compact sizes
+        timeout-minutes: 15
+        run: xvfb-run -a ./gradlew -p fabric -Pminecraft_version=${{ matrix.minecraft }} -Dupgrade.testLanguages=ar_sa,de_de,en_us,es_es,es_mx,fr_fr,hi_in,id_id,it_it,ja_jp,ko_kr,nl_nl,pl_pl,pt_br,pt_pt,ru_ru,th_th,tr_tr,uk_ua,vi_vn,zh_cn,zh_tw runTestClient --console=plain
+      - uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          retention-days: 3
+          name: localization-screenshots-${{ matrix.minecraft }}
+          path: |
+            fabric/run/${{ matrix.minecraft }}/test-client/screenshots/*.png
+            fabric/run/${{ matrix.minecraft }}/test-client/upgrade-ui-passed.txt
+            fabric/run/${{ matrix.minecraft }}/test-client/logs/latest.log
       - uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
           name: upgrade-fabric-${{ matrix.minecraft }}
-          path: fabric/build/${{ matrix.minecraft }}/libs/upgrade-fabric-${{ matrix.minecraft }}-0.6.4-alpha.jar
+          path: fabric/build/${{ matrix.minecraft }}/libs/upgrade-fabric-${{ matrix.minecraft }}-0.6.5.jar
