@@ -26,7 +26,7 @@ Choose the file for **exactly your Minecraft version**. Install Fabric Loader, F
 
 Open your inventory and press the upgrade-arrow button. Choose your stake, switch to the reward catalog, select the reward and count, then review the displayed chance before spinning.
 
-The interface is currently primarily **Russian**. Item names follow Minecraft’s selected language. This is an **alpha** release.
+The interface is currently primarily **Russian**. Item names follow Minecraft’s selected language. Version 0.6.4 is the first public **Release**; please report compatibility issues through GitHub so they can be fixed in updates.
 
 ## Modpacks and balance
 
