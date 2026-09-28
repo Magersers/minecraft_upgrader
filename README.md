@@ -9,10 +9,10 @@
 [![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader/files/all)
 [![Minecraft 1.21.1](https://img.shields.io/badge/Minecraft-1.21.1-62B47A?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader/files/all)
 [![Fabric](https://img.shields.io/badge/Loader-Fabric-DBD0B4?style=flat-square)](https://fabricmc.net/)
-[![Release 0.6.5](https://img.shields.io/badge/Release-0.6.5-FF9A00?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader)
+[![Release 0.6.5](https://img.shields.io/badge/Release-0.6.5-FF9A00?style=flat-square)](https://github.com/Magersers/minecraft_upgrader/releases/tag/v0.6.5)
 [![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-8A2BE2?style=flat-square)](LICENSE)
 
-[Download on CurseForge](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader) · [English publishing text](docs/publishing/description-en.md) · [Русское описание](docs/publishing/description-ru.md)
+[Download 0.6.5 on GitHub](https://github.com/Magersers/minecraft_upgrader/releases/tag/v0.6.5) · [CurseForge](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader) · [English publishing text](docs/publishing/description-en.md) · [Русское описание](docs/publishing/description-ru.md)
 
 </div>
 
