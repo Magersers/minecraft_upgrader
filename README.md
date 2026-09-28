@@ -9,10 +9,10 @@
 [![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader/files/all)
 [![Minecraft 1.21.1](https://img.shields.io/badge/Minecraft-1.21.1-62B47A?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader/files/all)
 [![Fabric](https://img.shields.io/badge/Loader-Fabric-DBD0B4?style=flat-square)](https://fabricmc.net/)
-[![Release 0.6.4](https://img.shields.io/badge/Release-0.6.4-FF9A00?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader)
+[![Release 0.6.5](https://img.shields.io/badge/Release-0.6.5-FF9A00?style=flat-square)](https://github.com/Magersers/minecraft_upgrader/releases/tag/v0.6.5)
 [![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-8A2BE2?style=flat-square)](LICENSE)
 
-[Download on CurseForge](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader) · [English publishing text](docs/publishing/description-en.md) · [Русское описание](docs/publishing/description-ru.md)
+[Download 0.6.5 on GitHub](https://github.com/Magersers/minecraft_upgrader/releases/tag/v0.6.5) · [CurseForge](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader) · [English publishing text](docs/publishing/description-en.md) · [Русское описание](docs/publishing/description-ru.md)
 
 </div>
 
@@ -20,7 +20,7 @@ Magersers' Upgrader adds an inventory-based upgrade wheel to Minecraft. Choose a
 
 A successful roll delivers the reward after the animation. A failed roll consumes the stake. The system uses ordinary in-game items only—there are no purchases, premium currencies, or real-money mechanics.
 
-> The interface is currently primarily Russian. Item names follow the language selected in Minecraft.
+> The interface, tooltips, results, and server messages follow Minecraft’s selected language, with 22 supported locales and English fallback. See [supported languages and translation guide](docs/localization.md). Item names use Minecraft’s own translations.
 
 ## How it works
 
@@ -69,8 +69,8 @@ Install the matching JAR on **both the client and the server**. Single-player is
 
 | Minecraft | Java | Fabric Loader | Fabric API | Release file |
 |---|---:|---:|---|---|
-| 1.20.1 | 17+ | 0.17.2+ | 0.92.12+1.20.1 or compatible | `upgrade-fabric-1.20.1-0.6.4.jar` |
-| 1.21.1 | 21+ | 0.17.2+ | 0.116.17+1.21.1 or compatible | `upgrade-fabric-1.21.1-0.6.4.jar` |
+| 1.20.1 | 17+ | 0.17.2+ | 0.92.12+1.20.1 or compatible | `upgrade-fabric-1.20.1-0.6.5.jar` |
+| 1.21.1 | 21+ | 0.17.2+ | 0.116.17+1.21.1 or compatible | `upgrade-fabric-1.21.1-0.6.5.jar` |
 
 Use only the file made for your exact Minecraft version. The 1.20.1 and 1.21.1 JARs are not interchangeable, and every player must run the same Upgrader version as the server.
 

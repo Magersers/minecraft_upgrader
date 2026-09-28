@@ -2,14 +2,14 @@
   "title": "Magersers' Upgrader",
   "summary": "Risk spare items for better rewards with an inventory upgrade wheel and recipe-based item values.",
   "author": "Magersers",
-  "version": "0.6.4-alpha",
-  "release_type": "alpha",
+  "version": "0.6.5",
+  "release_type": "release",
   "license": "LicenseRef-Magersers-Proprietary",
   "license_name": "Magersers Proprietary License — All Rights Reserved",
   "license_file": "LICENSE",
   "client_side": "required",
   "server_side": "required",
-  "ui_language": "primarily Russian",
+  "ui_language": "Minecraft language setting; English fallback",
   "ai_disclosure": {
     "code": true,
     "page_text": true,
@@ -21,7 +21,7 @@
   "modrinth_status": "blocked_pending_platform_eligibility_clarification",
   "files": [
     {
-      "file": "upgrade-fabric-1.20.1-0.6.4-alpha.jar",
+      "file": "upgrade-fabric-1.20.1-0.6.5.jar",
       "minecraft": "1.20.1",
       "loader": "fabric",
       "fabric_loader_min": "0.17.2",
@@ -29,12 +29,36 @@
       "fabric_api_min": "0.92.12+1.20.1"
     },
     {
-      "file": "upgrade-fabric-1.21.1-0.6.4-alpha.jar",
+      "file": "upgrade-fabric-1.21.1-0.6.5.jar",
       "minecraft": "1.21.1",
       "loader": "fabric",
       "fabric_loader_min": "0.17.2",
       "java_min": 21,
       "fabric_api_min": "0.116.17+1.21.1"
     }
+  ],
+  "ui_locales": [
+    "ar_sa",
+    "de_de",
+    "en_us",
+    "es_es",
+    "es_mx",
+    "fr_fr",
+    "hi_in",
+    "id_id",
+    "it_it",
+    "ja_jp",
+    "ko_kr",
+    "nl_nl",
+    "pl_pl",
+    "pt_br",
+    "pt_pt",
+    "ru_ru",
+    "th_th",
+    "tr_tr",
+    "uk_ua",
+    "vi_vn",
+    "zh_cn",
+    "zh_tw"
   ]
 }

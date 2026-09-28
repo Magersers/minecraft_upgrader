@@ -27,7 +27,7 @@ jobs:
             echo eula=true > "fabric/run/$mc/test-server/eula.txt"
             printf 'online-mode=false\nserver-port=0\nlevel-type=minecraft:flat\nview-distance=2\nsimulation-distance=2\n' > "fabric/run/$mc/test-server/server.properties"
             ./gradlew -p fabric -Pminecraft_version="$mc" build runTestServer --console=plain
-            cp "fabric/build/$mc/libs/upgrade-fabric-$mc-0.6.4-alpha.jar" release/
+            cp "fabric/build/$mc/libs/upgrade-fabric-$mc-0.6.5.jar" release/
           done
           (cd release && sha256sum *.jar > SHA256SUMS.txt)
       - name: Verify BetterX acquisition chains
@@ -41,12 +41,20 @@ jobs:
           python scripts/prepare-betterx.py "$RUNNER_TEMP/techreborn" fabric/test-mods/techreborn-1.20.1.json
           mv fabric/run/1.20.1/test-server/world "$RUNNER_TEMP/betterx-world"
           ./gradlew -p fabric -Pminecraft_version=1.20.1 -PcompatMods="$RUNNER_TEMP/techreborn" runTestServer --console=plain
+      - name: Verify multilingual client rendering
+        timeout-minutes: 15
+        run: |
+          for mc in 1.20.1 1.21.1; do
+            xvfb-run -a ./gradlew -p fabric -Pminecraft_version="$mc" -Dupgrade.testLanguages=en_us,ru_ru,de_de,zh_cn,ar_sa,hi_in runTestClient --console=plain
+          done
+      - name: Verify packaged release languages and version
+        run: python scripts/verify-release.py release
       - name: Publish Fabric files and release notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          gh release create fabric-v0.6.4-alpha release/*.jar release/SHA256SUMS.txt \
+          gh release create v0.6.5 release/*.jar release/SHA256SUMS.txt \
             --target "$GITHUB_SHA" \
-            --title 'Upgrader Fabric 0.6.4-alpha — 1.20.1 / 1.21.1' \
-            --notes-file docs/releases/fabric-0.6.4.md --prerelease
+            --title "Magersers' Upgrader 0.6.5 — Multilingual" \
+            --notes-file docs/releases/fabric-0.6.5.md --latest
