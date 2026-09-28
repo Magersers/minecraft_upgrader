@@ -29,7 +29,7 @@
   "upgrade.select_item": "वस्तु चुनें",
   "upgrade.no_value": "मूल्यांकन नहीं हुआ",
   "upgrade.select_catalog": "सूची से चुनें",
-  "upgrade.chance": "सफलता की संभावना",
+  "upgrade.chance": "संभावना",
   "upgrade.win": "✦ आप जीत गए! ✦",
   "upgrade.loss": "आप हार गए",
   "upgrade.loading": "लोड हो रहा है…",

@@ -191,6 +191,14 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         spin.active=enabled&&chance()>0; spin.setMessage(t(busy()?text("upgrade.spinning_button"):text("upgrade.upgrade")));
     }
     private void label(GuiGraphics g,String text,int center,int yy,int maxWidth,int color) { g.drawCenteredString(font,font.plainSubstrByWidth(text,maxWidth),center,yy,color); }
+    private void chanceLabel(GuiGraphics g,int cx,int yy) {
+        String caption=text("upgrade.chance");
+        float scale=Math.min(1f,(compact?52f:68f)/Math.max(1,font.width(caption)));
+        g.pose().pushPose();
+        g.pose().translate(cx,yy,0); g.pose().scale(scale,scale,1);
+        g.drawCenteredString(font,caption,0,0,MUTED);
+        g.pose().popPose();
+    }
     private static void vertex(BufferBuilder b,Matrix4f matrix,double xx,double yy,int color) { RenderSupport.vertex(b,matrix,(float)xx,(float)yy,color); }
     private static void triangle(BufferBuilder b,Matrix4f m,double ax,double ay,double bx,double by,double cx,double cy,int color) {
         vertex(b,m,ax,ay,color); vertex(b,m,bx,by,color); vertex(b,m,cx,cy,color);
@@ -242,7 +250,7 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         if (settled!=null && settled.won()) {
             g.pose().pushPose(); g.pose().translate(cx-12,cy-13,0); g.pose().scale(1.5f,1.5f,1); g.renderItem(item(settled.target()),0,0); g.pose().popPose();
             g.drawCenteredString(font,"× "+settled.count(),cx,cy+14,GOLD);
-        } else { g.drawCenteredString(font,(p>0 && p<.00001?"<0.001%":String.format(Locale.ROOT,p<.01?"%.3f%%":"%.1f%%",p*100)),cx,cy-6,TEXT); g.drawCenteredString(font,text("upgrade.chance"),cx,cy+7,MUTED); }
+        } else { g.drawCenteredString(font,(p>0 && p<.00001?"<0.001%":String.format(Locale.ROOT,p<.01?"%.3f%%":"%.1f%%",p*100)),cx,cy-6,TEXT); chanceLabel(g,cx,cy+7); }
         if (settled!=null) {
             g.fillGradient(x+12,y+statusY-3,x+panelWidth-12,y+tabsY-4,settled.won()?0xFF214C40:0xFF512D40,0xAA172238);
             label(g,settled.won()?text("upgrade.win"):text("upgrade.loss"),cx,y+statusY,panelWidth-28,settled.won()?GREEN:RED);
