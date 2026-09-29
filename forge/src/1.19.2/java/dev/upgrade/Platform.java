@@ -13,6 +13,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import java.util.List;
 
 public final class Platform {
+    public static void success(net.minecraft.commands.CommandSourceStack source,java.util.function.Supplier<net.minecraft.network.chat.Component> message,boolean broadcast) { source.sendSuccess(message.get(),broadcast); }
     public static double foodValue(ItemStack stack) {
         try {
         var food=stack.getItem().getFoodProperties();

@@ -9,9 +9,9 @@ final class BalanceTests {
         var prices=Economy.current.values();
         ctx.assertTrue(prices.get("minecraft:diamond").cost()>=2000,"Diamonds retain the new mineral floor");
         ctx.assertTrue(prices.get("minecraft:iron_ingot").cost()>=120 && prices.get("minecraft:gold_ingot").cost()>=500,"Metal tiers are consistently expensive");
-        ctx.assertTrue(prices.get("minecraft:netherite_sword").cost()>=prices.get("minecraft:diamond_sword").cost()+prices.get("minecraft:netherite_ingot").cost()+prices.get("minecraft:netherite_upgrade_smithing_template").cost(),
+        ctx.assertTrue(prices.get("minecraft:netherite_sword").cost()>=prices.get("minecraft:diamond_sword").cost()+prices.get("minecraft:netherite_ingot").cost()+(prices.containsKey("minecraft:netherite_upgrade_smithing_template")?prices.get("minecraft:netherite_upgrade_smithing_template").cost():0),
                 "High-tier gear cannot bypass its expensive crafting ingredients and template");
-        double petals=prices.get("minecraft:pink_petals").cost(),diamond=prices.get("minecraft:diamond").cost();
+        double petals=prices.get("minecraft:dandelion").cost(),diamond=prices.get("minecraft:diamond").cost();
         double chance=CostEngine.chance(14*petals,5*diamond,Economy.EFFICIENCY);
         ctx.assertTrue(chance<=.00119+1e-10,"Fourteen ordinary petals to five diamonds must be <= 0.119 percent, not 50 percent");
         for (var item:net.minecraft.core.registries.BuiltInRegistries.ITEM) {

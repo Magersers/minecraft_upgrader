@@ -18,6 +18,8 @@ dependencies {
     testImplementation 'com.google.code.gson:gson:2.10.1'
 }
 def sharedSources = tasks.register('sharedSources', Sync) {
+    filteringCharset='UTF-8'
+    inputs.file('legacy.gradle')
     from('../fabric/src/main/java') {
         exclude 'dev/upgrade/Upgrade.java', 'dev/upgrade/LoaderPlatform.java',
             'dev/upgrade/client/ClientEvents.java', 'dev/upgrade/compat/EnergyCompat.java',
@@ -59,6 +61,8 @@ sourceSets {
 }
 if (mc=='1.19.2') {
     def legacyTests=tasks.register('legacyTests',Sync) {
+        filteringCharset='UTF-8'
+        inputs.file('legacy.gradle')
         from('src/testmod/java')
         filter { line -> legacyLine(line) }
         into layout.buildDirectory.dir('generated/testmod')

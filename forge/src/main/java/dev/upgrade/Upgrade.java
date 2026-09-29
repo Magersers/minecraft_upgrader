@@ -11,17 +11,16 @@ public final class Upgrade {
     public static final Logger LOGGER=LoggerFactory.getLogger(ID);
     public Upgrade() {
         ServerTransport.register();
-        net.minecraftforge.fml.DistExecutor.safeRunWhenOn(net.minecraftforge.api.distmarker.Dist.CLIENT, () -> dev.upgrade.client.ClientEvents::new);
         var bus=net.minecraftforge.common.MinecraftForge.EVENT_BUS;
         bus.addListener((net.minecraftforge.event.RegisterCommandsEvent event) -> event.getDispatcher().register(
                 Commands.literal("upgrade").then(Commands.literal("hard").requires(source->source.hasPermission(2))
                         .then(Commands.argument("enabled",com.mojang.brigadier.arguments.BoolArgumentType.bool()).executes(ctx->{
                             boolean enabled=com.mojang.brigadier.arguments.BoolArgumentType.getBool(ctx,"enabled");
                             try { PricingPolicy.setHard(enabled); Economy.rebuild(ctx.getSource().getServer()); Network.clear();
-                                ctx.getSource().sendSuccess(()->net.minecraft.network.chat.Component.translatable(enabled?"upgrade.hard_on":"upgrade.hard_off"),true); return 1;
+                                Platform.success(ctx.getSource(),()->net.minecraft.network.chat.Component.translatable(enabled?"upgrade.hard_on":"upgrade.hard_off"),true); return 1;
                             } catch (java.io.IOException ex) { ctx.getSource().sendFailure(net.minecraft.network.chat.Component.translatable("upgrade.save_failed")); return 0; }
                         }))).then(Commands.literal("audit").requires(source->source.hasPermission(2)).executes(ctx->{
-                    try { var path=EconomyAudit.write(); ctx.getSource().sendSuccess(()->net.minecraft.network.chat.Component.translatable("upgrade.audit",path.toString()),false); return 1; }
+                    try { var path=EconomyAudit.write(); Platform.success(ctx.getSource(),()->net.minecraft.network.chat.Component.translatable("upgrade.audit",path.toString()),false); return 1; }
                     catch (java.io.IOException ex) { ctx.getSource().sendFailure(net.minecraft.network.chat.Component.translatable("upgrade.audit_failed",ex.getMessage())); return 0; }
                 })).executes(ctx -> { Network.catalog(ctx.getSource().getPlayerOrException(),true); return Command.SINGLE_SUCCESS; })));
         bus.addListener((net.minecraftforge.event.server.ServerStartedEvent event) -> Economy.rebuild(event.getServer()));

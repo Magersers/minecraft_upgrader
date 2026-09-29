@@ -17,7 +17,7 @@ import net.minecraft.world.item.Items;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.client.event.ClientTickEvent;
+import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 
 /** Drives widgets in a real connected client; never fabricates Catalog/Outcome/Settled. */
@@ -43,7 +43,8 @@ public final class LiveUpgradeTest {
     private static void button(UpgradeScreen screen,String name) throws Exception { click(screen,(Button)get(screen,name)); }
 
     @SubscribeEvent
-    public static void tick(ClientTickEvent.Post event) {
+    public static void tick(ClientTickEvent event) {
+        if(event.phase!=net.minecraftforge.event.TickEvent.Phase.END) return;
         if (!Boolean.getBoolean("upgrade.e2eClient") || finished) return;
         try { step(); }
         catch (Throwable ex) {

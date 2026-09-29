@@ -11,7 +11,10 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 
 
+@net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid="upgrade",value=net.minecraftforge.api.distmarker.Dist.CLIENT,bus=net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.MOD)
 public final class ClientEvents {
+    @net.minecraftforge.eventbus.api.SubscribeEvent
+    public static void setup(net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) { new ClientEvents(); }
     public ClientEvents() {
         dev.upgrade.ServerTransport.clientReceiver=ClientEvents::receive;
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.client.event.ScreenEvent.Init.Post event) -> {
