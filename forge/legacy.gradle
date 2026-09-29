@@ -22,6 +22,8 @@ ext.legacyLine = { String line ->
         .replace('getLanguageManager().getSelected()', 'getLanguageManager().getSelected().getCode()')
         .replace('action::accept', 'b -> action.accept((Button)b)')
         .replace('SmithingTransformRecipe', 'UpgradeRecipe')
+        .replace('new ServerData("Upgrader E2E",address,false),false', 'new ServerData("Upgrader E2E",address,false)')
+        .replace('new GameProfile(UUID.randomUUID(),"UpgradeTest"))', 'new GameProfile(UUID.randomUUID(),"UpgradeTest"),null)')
         .replace('table.getRandomItems(params,0x52FA1234L+i*104729L)', 'table.getRandomItems(builder.withRandom(net.minecraft.util.RandomSource.create(0x52FA1234L+i*104729L)).create(LootContextParamSets.BLOCK))')
         .replace('net.minecraft.world.item.Items.PINK_PETALS','net.minecraft.world.item.Items.DANDELION')
         .replace('SoundEvents.NOTE_BLOCK_HAT.value()', 'SoundEvents.NOTE_BLOCK_HAT')

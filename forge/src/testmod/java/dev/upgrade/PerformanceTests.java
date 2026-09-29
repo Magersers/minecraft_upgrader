@@ -58,7 +58,8 @@ final class PerformanceTests {
             var log=new ItemStack(Items.OAK_LOG); double target=Economy.target(player,log).cost();
             PricingPolicy.hard=true;
             ctx.assertTrue(Economy.usable(player,log).cost()<=1 && Economy.target(player,log).cost()==target,"Hard mode lowers stakes but not reward prices");
-            ctx.assertTrue(Economy.target(player,new ItemStack(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE)).cost()>=14000,"Template includes seven-diamond marginal copy cost");
+            var template=net.minecraft.core.registries.BuiltInRegistries.ITEM.get(Ids.of("minecraft:netherite_upgrade_smithing_template"));
+            if(template!=Items.AIR) ctx.assertTrue(Economy.target(player,new ItemStack(template)).cost()>=14000,"Template includes seven-diamond marginal copy cost");
         } finally { Economy.current=original; PricingPolicy.hard=hard; }
     }
     private static void energy(TestContext ctx,net.minecraft.server.MinecraftServer server) throws Exception {

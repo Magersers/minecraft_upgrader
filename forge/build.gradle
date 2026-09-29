@@ -33,12 +33,18 @@ sourceSets.main.java.srcDir(sharedSources)
 sourceSets.main.java.srcDir("src/${mc}/java")
 sourceSets.test.java.srcDirs('../src/test/java','../fabric/src/test/java')
 processResources {
+    filteringCharset='UTF-8'
     from('../fabric/src/main/resources') { include 'assets/**', 'data/**' }
     from('../src/main/resources/data') { into 'data' }
     from('../LICENSE')
     from('../licenses') { into 'licenses' }
     inputs.properties(version: project.version, minecraft: mc, forge: targets[mc], loader: targets[mc].tokenize('.')[0])
     filesMatching('META-INF/mods.toml') { expand(version: project.version, minecraft: mc, forge: targets[mc], loader: targets[mc].tokenize('.')[0]) }
+    // Forge's broad cobblestone tag also contains creative-only infested blocks.
+    // This acquisition anchor describes ordinary cobblestone, not recipe substitutes.
+    filesMatching('**/upgrade_values/baseline.json') {
+        filter { line -> line.replace('"tag": "forge:cobblestone"','"item": "minecraft:cobblestone"') }
+    }
 }
 tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8'; options.release=17 }
 tasks.withType(AbstractArchiveTask).configureEach { preserveFileTimestamps=false; reproducibleFileOrder=true }
