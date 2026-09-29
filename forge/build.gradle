@@ -77,7 +77,10 @@ if (mc=='1.19.2') {
 }
 processTestmodResources {
     from('../fabric/src/testmod/resources') { include 'data/**' }
-    from('../fabric/src/1.20.1/testmodresources') { include 'data/**' }
+    from('../fabric/src/1.20.1/testmodresources') {
+        include 'data/**'
+        if(mc=='1.19.2') exclude '**/petals.json'
+    }
 }
 minecraft.runs {
     client { workingDirectory file("run/${mc}/client"); mods { upgrade { source sourceSets.main } } }

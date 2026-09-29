@@ -18,6 +18,8 @@
 
 [Download NeoForge 0.7.0 — Minecraft 1.21.1 / 1.21](https://github.com/Magersers/minecraft_upgrader/releases/tag/neoforge-v0.7.0)
 
+[Download Forge 0.7.0 — Minecraft 1.20.1 / 1.19.2](https://github.com/Magersers/minecraft_upgrader/releases/tag/forge-v0.7.0)
+
 </div>
 
 Modded Item Upgrader adds an inventory-based upgrade wheel to Minecraft. Choose an item from your inventory as the stake, select the reward and quantity you want, review the exact success chance, and spin.
@@ -80,6 +82,15 @@ Install the matching JAR on **both the client and the server**. Single-player is
 
 NeoForge uses the current gameplay and all 22 languages, with native networking, persistent player data, and capability queries. Fabric API is not required. Choose the file for your exact Minecraft version and loader. See [NeoForge release notes and testing limits](docs/releases/neoforge-0.7.0.md).
 
+### Forge 0.7.0
+
+| Minecraft | Java | Forge | Release file |
+|---|---:|---|---|
+| **1.20.1** | 17 | 47.4.10+ | `upgrade-forge-1.20.1-0.7.0.jar` |
+| 1.19.2 | 17 | 43.5.0+ | `upgrade-forge-1.19.2-0.7.0.jar` |
+
+The current Forge port includes all 22 languages, native networking and persistent payouts. Install on client and server. See [Forge release notes and verification](docs/releases/forge-0.7.0.md).
+
 ### Fabric 0.6.5
 
 | Minecraft | Java | Fabric Loader | Fabric API | Release file |
@@ -102,6 +113,15 @@ This project does not claim automatic compatibility with every item in every mod
 ## Building from source
 
 The Fabric project is located in `fabric/` and shares one economy core across supported Minecraft versions.
+
+The current Forge project is in `forge/`. With JDK 17, build each version separately:
+
+```sh
+./gradlew -p forge -Pminecraft_version=1.20.1 build
+./gradlew -p forge -Pminecraft_version=1.19.2 build
+```
+
+Outputs are in `forge/build/<minecraft-version>/libs/`. The `Forge current verification and release` workflow gates publication on both versions' unit, server, localization, rendering and real multiplayer spin tests. Test classes are never shipped. The repository root retains the historical Forge 0.3.0 source.
 
 The NeoForge project in `neoforge/` compiles the same gameplay/UI sources with loader-specific adapters. Build with JDK 21:
 
