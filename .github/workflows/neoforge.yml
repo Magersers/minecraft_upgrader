@@ -1,0 +1,71 @@
+name: NeoForge verification and release
+on:
+  push:
+    branches: [main, codex/neoforge-0.7.0]
+    paths: ['neoforge/**', 'fabric/src/**', 'src/main/java/dev/upgrade/core/**', 'src/main/resources/data/**', 'src/test/**', 'scripts/verify-neoforge-release.py', '.github/workflows/neoforge.yml']
+  pull_request:
+    paths: ['neoforge/**', 'fabric/src/**', 'src/main/java/dev/upgrade/core/**', 'src/main/resources/data/**', 'src/test/**', 'scripts/verify-neoforge-release.py', '.github/workflows/neoforge.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: neoforge-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build and run dedicated-server assertions for each version
+        run: |
+          for mc in 1.21.1 1.21; do
+            mkdir -p "neoforge/run/$mc/test-server"
+            echo eula=true > "neoforge/run/$mc/test-server/eula.txt"
+            printf 'online-mode=false\nserver-port=0\nlevel-type=minecraft:flat\nview-distance=2\nsimulation-distance=2\n' > "neoforge/run/$mc/test-server/server.properties"
+            ./gradlew -p neoforge -Pminecraft_version="$mc" build runTestServer --console=plain
+          done
+      - name: Render client UI in all 22 languages
+        timeout-minutes: 15
+        run: |
+          for mc in 1.21.1 1.21; do
+            xvfb-run -a ./gradlew -p neoforge -Pminecraft_version="$mc" -Dupgrade.testLanguages=ar_sa,de_de,en_us,es_es,es_mx,fr_fr,hi_in,id_id,it_it,ja_jp,ko_kr,nl_nl,pl_pl,pt_br,pt_pt,ru_ru,th_th,tr_tr,uk_ua,vi_vn,zh_cn,zh_tw runTestClient --console=plain
+          done
+      - name: Verify release archives
+        run: python scripts/verify-neoforge-release.py
+      - name: Publish the verified NeoForge release
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view neoforge-v0.7.0 >/dev/null 2>&1; then
+            echo 'NeoForge 0.7.0 is already published; its assets are immutable.'
+            exit 0
+          fi
+          mkdir -p release-neoforge
+          cp neoforge/build/*/libs/upgrade-neoforge-*-0.7.0.jar release-neoforge/
+          (cd release-neoforge && sha256sum *.jar > SHA256SUMS.txt)
+          gh release create neoforge-v0.7.0 release-neoforge/*.jar release-neoforge/SHA256SUMS.txt \
+            --target "$GITHUB_SHA" \
+            --title "Modded Item Upgrader 0.7.0 — NeoForge 1.21.1 / 1.21" \
+            --notes-file docs/releases/neoforge-0.7.0.md --latest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: neoforge-verification
+          retention-days: 3
+          path: |
+            neoforge/run/*/test-client/screenshots/*.png
+            neoforge/run/*/test-client/upgrade-ui-passed.txt
+            neoforge/run/*/test-server/upgrade-tests-passed.txt
+            neoforge/run/*/test-*/logs/latest.log
+            neoforge/build/*/libs/*.jar

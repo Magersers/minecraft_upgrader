@@ -1,7 +1,6 @@
 package dev.upgrade;
 
 import com.google.gson.*;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import java.nio.file.*;
 import java.util.*;
@@ -17,7 +16,7 @@ public final class PricingPolicy {
             Map.entry("double_jump",1500d),Map.entry("water_breathing",600d),Map.entry("night_vision",250d),
             Map.entry("poison",1200d),Map.entry("wither",2400d),Map.entry("regeneration",3000d),
             Map.entry("fire_immunity",1800d),Map.entry("fire_extinguish",600d),Map.entry("shield",120d),Map.entry("speed",800d));
-    private static Path path() { return FabricLoader.getInstance().getConfigDir().resolve("upgrade-economy.json"); }
+    private static Path path() { return LoaderPlatform.configDir().resolve("upgrade-economy.json"); }
     private static JsonObject config=new JsonObject();
     public static void load(MinecraftServer server) {
         try {

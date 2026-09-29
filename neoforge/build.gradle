@@ -1,0 +1,107 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.moddev' version '2.0.147'
+}
+
+group = 'dev.upgrade'
+version = '0.7.0'
+def mc = project.property('minecraft_version')
+def targets = ['1.21.1': '21.1.252', '1.21': '21.0.167']
+if (!targets.containsKey(mc)) throw new GradleException("Unsupported Minecraft version: ${mc}; use ${targets.keySet()}")
+base { archivesName = "upgrade-neoforge-${mc}" }
+layout.buildDirectory = file("build/${mc}")
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+repositories { mavenCentral() }
+dependencies { testImplementation 'com.google.code.gson:gson:2.10.1' }
+
+// Compile the current gameplay/UI sources, with explicit loader adapters below.
+// Sync keeps removed shared files from surviving in a later build.
+def sharedSources = tasks.register('sharedSources', Sync) {
+    from('../fabric/src/main/java') {
+        exclude 'dev/upgrade/Upgrade.java', 'dev/upgrade/LoaderPlatform.java',
+                'dev/upgrade/client/ClientEvents.java', 'dev/upgrade/compat/EnergyCompat.java',
+                'dev/upgrade/mixin/**', 'dev/upgrade/PersistentPlayer.java'
+    }
+    from('../fabric/src/1.21.1/java') {
+        include 'dev/upgrade/Payloads.java', 'dev/upgrade/client/UpgradeBaseScreen.java',
+                'dev/upgrade/client/RenderSupport.java'
+    }
+    into layout.buildDirectory.dir('generated/shared')
+}
+sourceSets.main.java.srcDir(sharedSources)
+sourceSets.main.java.srcDir('../src/main/java/dev/upgrade/core')
+sourceSets.test.java.srcDirs('../src/test/java', '../fabric/src/test/java')
+
+processResources {
+    from('../fabric/src/main/resources') { include 'assets/**' }
+    from('../src/main/resources/data') { into 'data' }
+    from('../LICENSE')
+    from('../licenses') { into 'licenses' }
+    inputs.properties(version: project.version, minecraft: mc, neo: targets[mc])
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand(version: project.version, minecraft: mc, neo: targets[mc])
+    }
+    filesMatching('**/upgrade_values/baseline.json') {
+        filter { line -> line.replace('"forge:cobblestone"', '"c:cobblestones/normal"').replace('"forge:', '"c:') }
+    }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 21 }
+['coreTest': 'dev.upgrade.core.CostEngineTest', 'localizationTest': 'dev.upgrade.LocalizationTest'].each { taskName, entry ->
+    tasks.register(taskName, JavaExec) {
+        dependsOn testClasses
+        classpath = sourceSets.test.runtimeClasspath
+        mainClass = entry
+        if (taskName == 'localizationTest') workingDir = file('../fabric')
+        javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+    }
+    check.dependsOn taskName
+}
+
+sourceSets {
+    testmod {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+configurations.testmodImplementation.extendsFrom configurations.implementation
+configurations.testmodRuntimeOnly.extendsFrom configurations.runtimeOnly
+tasks.named('processTestmodResources') {
+    from('../fabric/src/testmod/resources') { include 'data/**' }
+    from('../fabric/src/1.21.1/testmodresources') { include 'data/**' }
+}
+neoForge {
+    version = targets[mc]
+    addModdingDependenciesTo(sourceSets.testmod)
+    mods {
+        upgrade { sourceSet sourceSets.main }
+        upgrade_test { sourceSet sourceSets.testmod }
+    }
+    runs {
+        client { client(); gameDirectory = file("run/${mc}/client") }
+        server { server(); gameDirectory = file("run/${mc}/server"); programArgument '--nogui' }
+        testServer {
+            server()
+            sourceSet = sourceSets.testmod
+            gameDirectory = file("run/${mc}/test-server")
+            systemProperty 'upgrade.serverTests', 'true'
+            programArgument '--nogui'
+        }
+        testClient {
+            client()
+            sourceSet = sourceSets.testmod
+            gameDirectory = file("run/${mc}/test-client")
+            systemProperty 'upgrade.uiSmoke', 'true'
+            systemProperty 'upgrade.testLanguages', System.getProperty('upgrade.testLanguages', 'en_us,ru_ru')
+        }
+    }
+}
+['runTestServer': ['test-server', 'upgrade-tests-passed.txt'],
+ 'runTestClient': ['test-client', 'upgrade-ui-passed.txt']].each { taskName, output ->
+    tasks.named(taskName) {
+        doFirst { file("run/${mc}/${output[0]}/${output[1]}").delete() }
+        doLast {
+            if (!file("run/${mc}/${output[0]}/${output[1]}").isFile())
+                throw new GradleException("${taskName} did not complete its assertions; inspect the game log")
+        }
+    }
+}

@@ -3,7 +3,7 @@ package dev.upgrade.client;
 import static dev.upgrade.client.L10n.text;
 
 import dev.upgrade.Platform;
-import net.fabricmc.loader.api.FabricLoader;
+import dev.upgrade.LoaderPlatform;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -63,7 +63,7 @@ final class ItemDetails {
 
     private static String modName(String namespace) {
         if (namespace.equals("minecraft")) return "Minecraft";
-        return FabricLoader.getInstance().getModContainer(namespace).map(mod->mod.getMetadata().getName())
+        return LoaderPlatform.modName(namespace)
                 .orElseGet(()->{
                     String words=namespace.replace('_',' ').replace('-',' ');
                     return words.isEmpty()?text("upgrade.mod"):Character.toUpperCase(words.charAt(0))+words.substring(1);

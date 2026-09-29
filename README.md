@@ -9,10 +9,14 @@
 [![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader/files/all)
 [![Minecraft 1.21.1](https://img.shields.io/badge/Minecraft-1.21.1-62B47A?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader/files/all)
 [![Fabric](https://img.shields.io/badge/Loader-Fabric-DBD0B4?style=flat-square)](https://fabricmc.net/)
+[![NeoForge](https://img.shields.io/badge/Loader-NeoForge-F28C28?style=flat-square)](https://neoforged.net/)
+[![NeoForge 0.7.0](https://img.shields.io/badge/NeoForge-0.7.0-FF9A00?style=flat-square)](https://github.com/Magersers/minecraft_upgrader/releases/tag/neoforge-v0.7.0)
 [![Release 0.6.5](https://img.shields.io/badge/Release-0.6.5-FF9A00?style=flat-square)](https://github.com/Magersers/minecraft_upgrader/releases/tag/v0.6.5)
 [![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-8A2BE2?style=flat-square)](LICENSE)
 
 [Download 0.6.5 on GitHub](https://github.com/Magersers/minecraft_upgrader/releases/tag/v0.6.5) · [CurseForge](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader) · [English publishing text](docs/publishing/description-en.md) · [Русское описание](docs/publishing/description-ru.md)
+
+[Download NeoForge 0.7.0 — Minecraft 1.21.1 / 1.21](https://github.com/Magersers/minecraft_upgrader/releases/tag/neoforge-v0.7.0)
 
 </div>
 
@@ -67,6 +71,17 @@ The reward must be more valuable than the stake. For example, a 100 E stake agai
 
 Install the matching JAR on **both the client and the server**. Single-player is supported through Minecraft's integrated server.
 
+### NeoForge 0.7.0
+
+| Minecraft | Java | NeoForge | Release file |
+|---|---:|---|---|
+| **1.21.1 (recommended)** | 21+ | 21.1.252+ | `upgrade-neoforge-1.21.1-0.7.0.jar` |
+| 1.21 | 21+ | 21.0.167+ | `upgrade-neoforge-1.21-0.7.0.jar` |
+
+NeoForge uses the current gameplay and all 22 languages, with native networking, persistent player data, and capability queries. Fabric API is not required. Choose the file for your exact Minecraft version and loader. See [NeoForge release notes and testing limits](docs/releases/neoforge-0.7.0.md).
+
+### Fabric 0.6.5
+
 | Minecraft | Java | Fabric Loader | Fabric API | Release file |
 |---|---:|---:|---|---|
 | 1.20.1 | 17+ | 0.17.2+ | 0.92.12+1.20.1 or compatible | `upgrade-fabric-1.20.1-0.6.5.jar` |
@@ -87,6 +102,17 @@ This project does not claim automatic compatibility with every item in every mod
 ## Building from source
 
 The Fabric project is located in `fabric/` and shares one economy core across supported Minecraft versions.
+
+The NeoForge project in `neoforge/` compiles the same gameplay/UI sources with loader-specific adapters. Build with JDK 21:
+
+```sh
+./gradlew -p neoforge -Pminecraft_version=1.21.1 build
+./gradlew -p neoforge -Pminecraft_version=1.21 build
+```
+
+NeoForge JARs are written to `neoforge/build/<minecraft-version>/libs/`. The `NeoForge verification and release` workflow also runs isolated dedicated-server assertions and client rendering checks. Test mods are excluded from release JARs.
+
+For Fabric:
 
 ```sh
 ./gradlew -p fabric -Pminecraft_version=1.20.1 build
