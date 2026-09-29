@@ -1,0 +1,97 @@
+name: Forge current verification and release
+on:
+  push:
+    branches: [main, codex/forge-0.7.0]
+    paths: ['forge/**', 'scripts/verify-forge-release.py', '.github/workflows/forge-current.yml', 'docs/releases/forge-0.7.0.md']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: forge-current-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        minecraft: ['1.20.1', '1.19.2']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build and test economy, localization and dedicated server
+        run: |
+          mc='${{ matrix.minecraft }}'
+          dir="forge/run/$mc/test-server"
+          mkdir -p "$dir"
+          echo eula=true > "$dir/eula.txt"
+          printf 'online-mode=false\nserver-ip=127.0.0.1\nserver-port=0\nlevel-type=minecraft:flat\nview-distance=2\nsimulation-distance=2\n' > "$dir/server.properties"
+          ./gradlew -p forge -Pminecraft_version="$mc" build runTestServer --console=plain
+          python scripts/verify-forge-release.py "$mc"
+      - name: Render client in all 22 languages
+        timeout-minutes: 9
+        run: xvfb-run -a ./gradlew -p forge -Pminecraft_version=${{ matrix.minecraft }} -Dupgrade.testLanguages=ar_sa,de_de,en_us,es_es,es_mx,fr_fr,hi_in,id_id,it_it,ja_jp,ko_kr,nl_nl,pl_pl,pt_br,pt_pt,ru_ru,th_th,tr_tr,uk_ua,vi_vn,zh_cn,zh_tw runTestClient --console=plain
+      - name: Verify real multiplayer clicks, wheel animation, stakes and payouts
+        timeout-minutes: 8
+        run: |
+          mc='${{ matrix.minecraft }}'
+          ./gradlew -p forge -Pminecraft_version="$mc" prepareRunE2eServer prepareRunE2eClient --console=plain
+          dir="forge/run/$mc/e2e-server"
+          mkdir -p "$dir"
+          echo eula=true > "$dir/eula.txt"
+          printf 'online-mode=false\nenforce-secure-profile=false\nserver-ip=127.0.0.1\nserver-port=25577\nlevel-type=minecraft:flat\nview-distance=2\nsimulation-distance=2\ndifficulty=peaceful\nspawn-protection=0\n' > "$dir/server.properties"
+          ./gradlew -p forge -Pminecraft_version="$mc" runE2eServer --console=plain > server-console.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 120); do
+            if [ -f "$dir/upgrade-e2e-ready.txt" ]; then break; fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then cat server-console.log; exit 1; fi
+            sleep 1
+          done
+          test -f "$dir/upgrade-e2e-ready.txt"
+          xvfb-run -a ./gradlew -p forge -Pminecraft_version="$mc" runE2eClient --console=plain
+          cat "forge/run/$mc/e2e-client/upgrade-e2e-passed.txt"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forge-verification-${{ matrix.minecraft }}
+          retention-days: 7
+          path: |
+            forge/build/*/libs/*.jar
+            forge/run/*/*/screenshots/*.png
+            forge/run/*/*/upgrade-*.txt
+            forge/run/*/*/logs/latest.log
+            server-console.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forge-release-${{ matrix.minecraft }}
+          path: forge/build/${{ matrix.minecraft }}/libs/upgrade-forge-${{ matrix.minecraft }}-0.7.0.jar
+  publish:
+    if: github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: forge-release-*
+          merge-multiple: true
+          path: release-forge
+      - name: Publish only after both versions pass all tests
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view forge-v0.7.0 >/dev/null 2>&1; then
+            echo 'Release already exists; assets are immutable.'
+            exit 0
+          fi
+          (cd release-forge && sha256sum *.jar > SHA256SUMS.txt)
+          gh release create forge-v0.7.0 release-forge/*.jar release-forge/SHA256SUMS.txt --target "$GITHUB_SHA" --title 'Modded Item Upgrader 0.7.0 — Forge 1.20.1 / 1.19.2' --notes-file docs/releases/forge-0.7.0.md --latest

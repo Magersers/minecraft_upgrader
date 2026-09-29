@@ -1,0 +1,107 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '6.0.54'
+}
+group = 'dev.upgrade'
+version = '0.7.0'
+def mc = project.property('minecraft_version')
+apply from: 'legacy.gradle'
+def targets = ['1.20.1':'47.4.10', '1.19.2':'43.5.0']
+if (!targets.containsKey(mc)) throw new GradleException("Unsupported Minecraft version: ${mc}")
+base { archivesName = "upgrade-forge-${mc}" }
+layout.buildDirectory = file("build/${mc}")
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+minecraft { mappings channel: 'official', version: mc }
+repositories { mavenCentral() }
+dependencies {
+    minecraft "net.minecraftforge:forge:${mc}-${targets[mc]}"
+    testImplementation 'com.google.code.gson:gson:2.10.1'
+}
+def sharedSources = tasks.register('sharedSources', Sync) {
+    from('../fabric/src/main/java') {
+        exclude 'dev/upgrade/Upgrade.java', 'dev/upgrade/LoaderPlatform.java',
+            'dev/upgrade/client/ClientEvents.java', 'dev/upgrade/compat/EnergyCompat.java',
+            'dev/upgrade/mixin/**', 'dev/upgrade/PersistentPlayer.java'
+    }
+    from('../src/main/java/dev/upgrade/core') { into 'dev/upgrade/core' }
+    if (mc=='1.19.2') filter { line -> legacyLine(line) }
+    into layout.buildDirectory.dir('generated/shared')
+}
+sourceSets.main.java.srcDir(sharedSources)
+sourceSets.main.java.srcDir("src/${mc}/java")
+sourceSets.test.java.srcDirs('../src/test/java','../fabric/src/test/java')
+processResources {
+    from('../fabric/src/main/resources') { include 'assets/**', 'data/**' }
+    from('../src/main/resources/data') { into 'data' }
+    from('../LICENSE')
+    from('../licenses') { into 'licenses' }
+    inputs.properties(version: project.version, minecraft: mc, forge: targets[mc], loader: targets[mc].tokenize('.')[0])
+    filesMatching('META-INF/mods.toml') { expand(version: project.version, minecraft: mc, forge: targets[mc], loader: targets[mc].tokenize('.')[0]) }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8'; options.release=17 }
+tasks.withType(AbstractArchiveTask).configureEach { preserveFileTimestamps=false; reproducibleFileOrder=true }
+jar.finalizedBy 'reobfJar'
+['coreTest':'dev.upgrade.core.CostEngineTest','localizationTest':'dev.upgrade.LocalizationTest'].each { name, entry ->
+    tasks.register(name, JavaExec) {
+        dependsOn testClasses
+        classpath=sourceSets.test.runtimeClasspath
+        mainClass=entry
+        if (name=='localizationTest') workingDir=file('../fabric')
+    }
+    check.dependsOn name
+}
+sourceSets {
+    testmod {
+        java.srcDir "src/${mc}/testmod"
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+if (mc=='1.19.2') {
+    def legacyTests=tasks.register('legacyTests',Sync) {
+        from('src/testmod/java')
+        filter { line -> legacyLine(line) }
+        into layout.buildDirectory.dir('generated/testmod')
+    }
+    sourceSets.testmod.java.setSrcDirs([legacyTests, 'src/1.19.2/testmod'])
+}
+processTestmodResources {
+    from('../fabric/src/testmod/resources') { include 'data/**' }
+    from('../fabric/src/1.20.1/testmodresources') { include 'data/**' }
+}
+minecraft.runs {
+    client { workingDirectory file("run/${mc}/client"); mods { upgrade { source sourceSets.main } } }
+    server { workingDirectory file("run/${mc}/server"); args '--nogui'; mods { upgrade { source sourceSets.main } } }
+    testServer {
+        parent minecraft.runs.server
+        workingDirectory file("run/${mc}/test-server")
+        property 'upgrade.serverTests','true'
+        mods { upgrade { source sourceSets.main; source sourceSets.testmod } }
+    }
+    testClient {
+        parent minecraft.runs.client
+        workingDirectory file("run/${mc}/test-client")
+        property 'upgrade.uiSmoke','true'
+        property 'upgrade.testLanguages',System.getProperty('upgrade.testLanguages','en_us,ru_ru')
+        mods { upgrade { source sourceSets.main; source sourceSets.testmod } }
+    }
+    e2eServer {
+        parent minecraft.runs.server
+        workingDirectory file("run/${mc}/e2e-server")
+        property 'upgrade.e2eServer','true'
+        mods { upgrade { source sourceSets.main; source sourceSets.testmod } }
+    }
+    e2eClient {
+        parent minecraft.runs.client
+        workingDirectory file("run/${mc}/e2e-client")
+        property 'upgrade.e2eClient','true'
+        mods { upgrade { source sourceSets.main; source sourceSets.testmod } }
+    }
+}
+['runTestServer':['test-server','upgrade-tests-passed.txt'], 'runTestClient':['test-client','upgrade-ui-passed.txt'],
+ 'runE2eClient':['e2e-client','upgrade-e2e-passed.txt']].each { name, output ->
+    tasks.matching { it.name==name }.configureEach {
+        doFirst { file("run/${mc}/${output[0]}/${output[1]}").delete() }
+        doLast { if (!file("run/${mc}/${output[0]}/${output[1]}").isFile()) throw new GradleException("${name} assertions did not finish") }
+    }
+}

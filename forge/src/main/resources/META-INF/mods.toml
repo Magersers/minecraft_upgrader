@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[${loader},)"
+license="All Rights Reserved"
+issueTrackerURL="https://github.com/Magersers/minecraft_upgrader/issues"
+
+[[mods]]
+modId="upgrade"
+version="${version}"
+displayName="Modded Item Upgrader"
+authors="Magersers"
+description='''Stake ordinary in-game items for a chance to win a more valuable reward. Recipe-aware economy, persistent payouts, and 22 languages.'''
+
+[[dependencies.upgrade]]
+modId="forge"
+mandatory=true
+versionRange="[${forge},)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.upgrade]]
+modId="minecraft"
+mandatory=true
+versionRange="[${minecraft}]"
+ordering="NONE"
+side="BOTH"
