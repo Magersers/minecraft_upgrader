@@ -7,11 +7,12 @@ import io.netty.buffer.Unpooled;
 import java.util.UUID;
 
 /** Runs only in the isolated development test mod, never shipped in the release jar. */
-@net.neoforged.fml.common.Mod("upgrade_test")
+@net.neoforged.fml.common.EventBusSubscriber(modid="upgrade")
 public final class NeoForgeServerTests {
- public NeoForgeServerTests() {
+ @net.neoforged.bus.api.SubscribeEvent
+ public static void run(net.neoforged.neoforge.event.server.ServerStartedEvent event) {
   if (!Boolean.getBoolean("upgrade.serverTests")) return;
-  net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStartedEvent event) -> { var server=event.getServer(); server.execute(() -> {
+  var server=event.getServer(); server.execute(() -> {
    try {
     Economy.rebuild(server);
     EconomyAudit.write();
@@ -49,8 +50,10 @@ public final class NeoForgeServerTests {
     NetworkGameTests.wearAndHardMode(ctx);
     var player=TestPlatform.player(server.overworld());
     Platform.data(player).putString("saved-test","preserved");
-    var save=new CompoundTag(); player.addAdditionalSaveData(save);
-    var restored=TestPlatform.player(server.overworld()); restored.readAdditionalSaveData(save);
+    // NeoForge persists entity data in the full save/load lifecycle, outside
+    // Player.addAdditionalSaveData (where Fabric's mixin used to run).
+    var save=new CompoundTag(); player.saveWithoutId(save);
+    var restored=TestPlatform.player(server.overworld()); restored.load(save);
     ctx.assertTrue(Platform.data(restored).getString("saved-test").equals("preserved"),"NeoForge must persist player data");
     var itemBuffer=TestPlatform.buffer(server.overworld());
     try {
@@ -73,7 +76,7 @@ public final class NeoForgeServerTests {
     java.nio.file.Files.writeString(java.nio.file.Path.of("upgrade-tests-passed.txt"),"PASS\n");
     server.halt(false);
    } catch (Throwable failure) { Upgrade.LOGGER.error("NEOFORGE SERVER TESTS FAILED",failure); server.halt(false); }
-  }); });
+  });
  }
  private static void price(TestContext ctx,String id,double expected) {
   var value=Economy.current.values().get("minecraft:"+id);

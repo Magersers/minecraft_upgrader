@@ -10,21 +10,20 @@ import java.util.List;
 import java.util.UUID;
 
 /** Opt-in renderer smoke test. Test classes/resources are never included in the release JAR. */
-@net.neoforged.fml.common.Mod(value="upgrade_test", dist=net.neoforged.api.distmarker.Dist.CLIENT)
+@net.neoforged.fml.common.EventBusSubscriber(modid="upgrade", value=net.neoforged.api.distmarker.Dist.CLIENT)
 public final class ClientSmokeTest {
-    public ClientSmokeTest() {
-        var bus=net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
-        bus.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post event) -> {
+    @net.neoforged.bus.api.SubscribeEvent
+    public static void onTick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
             try { tick(); } catch (Exception ex) { throw new RuntimeException(ex); }
-        });
-        bus.addListener((net.neoforged.neoforge.client.event.ScreenEvent.Render.Post event) -> {
+    }
+    @net.neoforged.bus.api.SubscribeEvent
+    public static void onRender(net.neoforged.neoforge.client.event.ScreenEvent.Render.Post event) {
             if (!(event.getScreen() instanceof UpgradeScreen view) || ticks<10 || ticks>26) return;
             var item=ticks<17?net.minecraft.world.item.Items.DIAMOND_SWORD:
                     ticks<22?net.minecraft.world.item.Items.DIAMOND_CHESTPLATE:net.minecraft.world.item.Items.PINK_PETALS;
             double value=ticks<17?4000.5:ticks<22?16000:1;
             event.getGuiGraphics().renderComponentTooltip(Minecraft.getInstance().font,
                     ItemDetails.lines(new net.minecraft.world.item.ItemStack(item),value,false,true), view.width/2,view.height/2);
-        });
     }
     private static int ticks;
     private static UUID token;

@@ -21,6 +21,8 @@ for mc in ('1.21.1', '1.21'):
         assert 'LICENSE' in names
         assert 'dev/upgrade/Upgrade.class' in names
         assert 'dev/upgrade/client/ClientEvents.class' in names
+        for policy in ('upgrade_balance/policy', 'upgrade_inheritance/policy'):
+            assert f'data/upgrade/{policy}.json' in names
         locales = {Path(n).stem for n in names if n.startswith('assets/upgrade/lang/') and n.endswith('.json')}
         assert locales == LOCALES, locales
         baseline = json.loads(z.read('data/upgrade/upgrade_values/baseline.json'))
