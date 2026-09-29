@@ -98,13 +98,16 @@ minecraft.runs {
         property 'upgrade.testLanguages',System.getProperty('upgrade.testLanguages','en_us,ru_ru')
         mods { upgrade { source sourceSets.main; source sourceSets.testmod } }
     }
-    e2eServer {
+    // ForgeGradle resolves parents in run-name order: place derived runs after server.
+    testE2eServer {
+        taskName 'runE2eServer'
         parent minecraft.runs.server
         workingDirectory file("run/${mc}/e2e-server")
         property 'upgrade.e2eServer','true'
         mods { upgrade { source sourceSets.main; source sourceSets.testmod } }
     }
-    e2eClient {
+    testE2eClient {
+        taskName 'runE2eClient'
         parent minecraft.runs.client
         workingDirectory file("run/${mc}/e2e-client")
         property 'upgrade.e2eClient','true'
