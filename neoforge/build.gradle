@@ -96,10 +96,24 @@ neoForge {
             systemProperty 'upgrade.uiSmoke', 'true'
             systemProperty 'upgrade.testLanguages', System.getProperty('upgrade.testLanguages', 'en_us,ru_ru')
         }
+        e2eServer {
+            server()
+            sourceSet = sourceSets.testmod
+            gameDirectory = file("run/${mc}/e2e-server")
+            systemProperty 'upgrade.e2eServer', 'true'
+            programArgument '--nogui'
+        }
+        e2eClient {
+            client()
+            sourceSet = sourceSets.testmod
+            gameDirectory = file("run/${mc}/e2e-client")
+            systemProperty 'upgrade.e2eClient', 'true'
+        }
     }
 }
 ['runTestServer': ['test-server', 'upgrade-tests-passed.txt'],
- 'runTestClient': ['test-client', 'upgrade-ui-passed.txt']].each { taskName, output ->
+ 'runTestClient': ['test-client', 'upgrade-ui-passed.txt'],
+ 'runE2eClient': ['e2e-client', 'upgrade-e2e-passed.txt']].each { taskName, output ->
     tasks.named(taskName) {
         doFirst { file("run/${mc}/${output[0]}/${output[1]}").delete() }
         doLast {

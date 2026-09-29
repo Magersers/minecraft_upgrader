@@ -1,0 +1,54 @@
+name: NeoForge live multiplayer upgrade
+on:
+  push:
+    branches: [main, codex/neoforge-0.7.0]
+    paths: ['neoforge/**', '.github/workflows/neoforge-e2e.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        minecraft: ['1.21.1', '1.21']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Prepare client and server
+        run: ./gradlew -p neoforge -Pminecraft_version=${{ matrix.minecraft }} prepareE2eServerRun prepareE2eClientRun compileTestmodJava processTestmodResources --console=plain
+      - name: Click upgrade in a real connected client and verify animation and inventory
+        timeout-minutes: 6
+        run: |
+          mc='${{ matrix.minecraft }}'
+          dir="neoforge/run/$mc/e2e-server"
+          mkdir -p "$dir"
+          echo eula=true > "$dir/eula.txt"
+          printf 'online-mode=false\nenforce-secure-profile=false\nserver-ip=127.0.0.1\nserver-port=25577\nlevel-type=minecraft:flat\nview-distance=2\nsimulation-distance=2\ndifficulty=peaceful\nspawn-protection=0\n' > "$dir/server.properties"
+          ./gradlew -p neoforge -Pminecraft_version="$mc" runE2eServer --console=plain > server-console.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 120); do
+            if [ -f "$dir/upgrade-e2e-ready.txt" ]; then break; fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then cat server-console.log; exit 1; fi
+            sleep 1
+          done
+          test -f "$dir/upgrade-e2e-ready.txt"
+          xvfb-run -a ./gradlew -p neoforge -Pminecraft_version="$mc" runE2eClient --console=plain
+          cat "neoforge/run/$mc/e2e-client/upgrade-e2e-passed.txt"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-upgrade-${{ matrix.minecraft }}
+          retention-days: 7
+          path: |
+            neoforge/run/*/e2e-client/screenshots/*.png
+            neoforge/run/*/e2e-client/upgrade-e2e-*.txt
+            neoforge/run/*/e2e-*/logs/latest.log
+            server-console.log
