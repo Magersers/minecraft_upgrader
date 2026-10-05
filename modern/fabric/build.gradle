@@ -1,0 +1,56 @@
+plugins { id 'net.fabricmc.fabric-loom' version '1.18.2' }
+group = 'dev.upgrade'
+version = '0.8.0'
+base { archivesName = 'upgrade-fabric-26.3' }
+java { toolchain.languageVersion = JavaLanguageVersion.of(25); withSourcesJar() }
+repositories { mavenCentral() }
+dependencies {
+ minecraft 'com.mojang:minecraft:26.3'
+ implementation 'net.fabricmc:fabric-loader:0.19.5'
+ implementation 'net.fabricmc.fabric-api:fabric-api:0.161.0+26.3'
+}
+sourceSets.main.java.srcDirs('../shared/src/main/java','../../src/main/java/dev/upgrade/core')
+sourceSets.main.resources.srcDir('../../fabric/src/main/resources')
+sourceSets.test.java.srcDirs('../../src/test/java','../../fabric/src/test/java')
+processResources {
+ from('../../src/main/resources/data') { into 'data' }
+ from('../../LICENSE')
+ from('../../licenses') { into 'licenses' }
+ filesMatching('fabric.mod.json') { expand(version:project.version,minecraft:'26.3',java:25,api:'0.161.0+26.3'); filter { it.replace('>=0.17.2','>=0.19.5') } }
+ filesMatching('upgrade.mixins.json') { filter { it.replace('JAVA_17','JAVA_25') } }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8'; options.release=25; options.compilerArgs += ['-Xmaxerrs','500'] }
+['coreTest':'dev.upgrade.core.CostEngineTest','localizationTest':'dev.upgrade.LocalizationTest'].each { n,c ->
+ tasks.register(n,JavaExec) { dependsOn testClasses; classpath=sourceSets.test.runtimeClasspath; mainClass=c; workingDir=file('../../fabric') }
+ check.dependsOn n
+}
+loom { runs { client { client(); runDir 'run/client' }; server { server(); runDir 'run/server'; programArg 'nogui' } } }
+
+// Assertion suites are JavaExec tasks, not JUnit discovery.
+test { enabled=false }
+
+if(project.hasProperty('devTests')) {
+ sourceSets.main.java.srcDirs('../test/src/main/java','src/dev/java')
+ processResources { filesMatching('fabric.mod.json') { filter { it.replace('"dev.upgrade.Upgrade"','"dev.upgrade.Upgrade", "dev.upgrade.FabricProbe"') } } }
+}
+
+processResources { inputs.property 'devTests', project.hasProperty('devTests') }
+
+if(project.hasProperty('devTests')) {
+ processResources { filesMatching('fabric.mod.json') { filter { it.replace('"dev.upgrade.client.ClientEvents"','"dev.upgrade.client.ClientEvents", "dev.upgrade.FabricClientProbe"') } } }
+ loom.runs.client { vmArg '-Dupgrade.uiSmoke=true'; vmArg '-Dupgrade.testLanguages=en_us,ru_ru' }
+}
+
+processResources { inputs.file('build.gradle') }
+
+if(project.hasProperty('keepServer')) { loom.runs.server { vmArg '-Dupgrade.keepServer=true' } }
+
+if(project.hasProperty('e2e')) { loom.runs.client { vmArg '-Dupgrade.e2eClient=true' } }
+
+processResources {
+ filesMatching('**/upgrade_values/baseline.json') {
+  filter { line -> line.replace('forge:cobblestone','c:cobblestones/normal').replace('forge:string','c:strings').replace('forge:leather','c:leathers').replace('forge:', 'c:') }
+ }
+}
+
+apply from: '../verify-runs.gradle'

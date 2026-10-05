@@ -1,0 +1,42 @@
+plugins { id 'java'; id 'net.neoforged.moddev' version '2.0.147' }
+group='dev.upgrade'
+version='0.8.0'
+base { archivesName='upgrade-neoforge-26.3' }
+java { toolchain.languageVersion=JavaLanguageVersion.of(25); withSourcesJar() }
+repositories { mavenCentral() }
+def shared = tasks.register('sharedSources', Sync) {
+ from('../shared/src/main/java') { exclude 'dev/upgrade/Upgrade.java','dev/upgrade/LoaderPlatform.java','dev/upgrade/Platform.java','dev/upgrade/ServerTransport.java','dev/upgrade/client/ClientTransport.java','dev/upgrade/client/ClientEvents.java','dev/upgrade/compat/EnergyCompat.java','dev/upgrade/mixin/**','dev/upgrade/PersistentPlayer.java' }
+ into layout.buildDirectory.dir('generated/shared')
+}
+sourceSets.main.java.srcDirs(shared,'../../src/main/java/dev/upgrade/core')
+processResources {
+ from('../../fabric/src/main/resources') { include 'assets/**','data/**' }
+ from('../../src/main/resources/data') { into 'data' }
+ from('../../LICENSE')
+ from('../../licenses') { into 'licenses' }
+ filesMatching('META-INF/neoforge.mods.toml') { expand(version:project.version,minecraft:'26.3',neo:'26.3.0.48-beta') }
+}
+neoForge {
+ version='26.3.0.48-beta'
+ mods { upgrade { sourceSet sourceSets.main } }
+ runs { client { client(); gameDirectory=file('run/client') }; server { server(); gameDirectory=file('run/server'); programArgument '--nogui' } }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8'; options.release=25; options.compilerArgs += ['-Xmaxerrs','500'] }
+
+if(project.hasProperty('devTests')) {
+ sourceSets.main.java.srcDirs('../test/src/main/java','src/dev/java')
+ neoForge.runs.client { systemProperty 'upgrade.uiSmoke','true'; systemProperty 'upgrade.testLanguages','en_us,ru_ru' }
+}
+
+if(project.hasProperty('keepServer')) { neoForge.runs.server { systemProperty 'upgrade.keepServer','true' } }
+neoForge.runs.client { systemProperty 'upgrade.testAddress','127.0.0.1:25634' }
+
+if(project.hasProperty('e2e')) { neoForge.runs.client { systemProperty 'upgrade.e2eClient','true' } }
+
+processResources {
+ filesMatching('**/upgrade_values/baseline.json') {
+  filter { line -> line.replace('forge:cobblestone','c:cobblestones/normal').replace('forge:string','c:strings').replace('forge:leather','c:leathers').replace('forge:', 'c:') }
+ }
+}
+
+apply from: '../verify-runs.gradle'

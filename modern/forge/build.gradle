@@ -1,0 +1,39 @@
+plugins { id 'java'; id 'net.minecraftforge.gradle' version '7.0.17' }
+group='dev.upgrade'
+version='0.8.0'
+base { archivesName='upgrade-forge-26.3' }
+java { toolchain.languageVersion=JavaLanguageVersion.of(25); withSourcesJar() }
+repositories { minecraft.mavenizer(it); maven fg.forgeMaven; maven fg.minecraftLibsMaven; mavenCentral() }
+dependencies { implementation minecraft.dependency('net.minecraftforge:forge:26.3-66.0.9') }
+def shared = tasks.register('sharedSources', Sync) {
+ from('../shared/src/main/java') { exclude 'dev/upgrade/Upgrade.java','dev/upgrade/LoaderPlatform.java','dev/upgrade/Platform.java','dev/upgrade/ServerTransport.java','dev/upgrade/client/ClientTransport.java','dev/upgrade/client/ClientEvents.java','dev/upgrade/compat/EnergyCompat.java','dev/upgrade/mixin/**','dev/upgrade/PersistentPlayer.java' }
+ into layout.buildDirectory.dir('generated/shared')
+}
+sourceSets.main.java.srcDirs(shared,'../../src/main/java/dev/upgrade/core')
+processResources {
+ from('../../fabric/src/main/resources') { include 'assets/**','data/**' }
+ from('../../src/main/resources/data') { into 'data' }
+ from('../../LICENSE')
+ from('../../licenses') { into 'licenses' }
+ filesMatching('META-INF/mods.toml') { expand(version:project.version,minecraft:'26.3',forge:'66.0.9',loader:'66') }
+}
+minecraft { runs { register('client'); register('server') { args '--nogui' } } }
+tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8'; options.release=25; options.compilerArgs += ['-Xmaxerrs','500'] }
+
+
+
+if(project.hasProperty('devTests')) { sourceSets.main.java.srcDirs('../test/src/main/java','src/dev/java') }
+minecraft.runs {
+ named('server') { workingDir=layout.projectDirectory.dir('run/server'); if(project.hasProperty('keepServer')) systemProperty 'upgrade.keepServer','true' }
+ named('client') { workingDir=layout.projectDirectory.dir('run/client'); systemProperty 'upgrade.uiSmoke','true'; systemProperty 'upgrade.testLanguages','en_us,ru_ru'; systemProperty 'upgrade.testAddress','127.0.0.1:25635' }
+}
+
+if(project.hasProperty('e2e')) { minecraft.runs.named('client') { systemProperty 'upgrade.e2eClient','true' } }
+
+processResources {
+ filesMatching('**/upgrade_values/baseline.json') {
+  filter { line -> line.replace('forge:cobblestone','c:cobblestones/normal').replace('forge:string','c:strings').replace('forge:leather','c:leathers').replace('forge:', 'c:') }
+ }
+}
+
+apply from: '../verify-runs.gradle'

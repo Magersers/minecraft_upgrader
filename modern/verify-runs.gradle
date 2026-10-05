@@ -1,0 +1,19 @@
+// Game processes can exit with code 0 even after a startup failure.
+if (project.hasProperty('devTests')) {
+ ['runServer':'server','runClient':'client'].each { taskName,side ->
+  tasks.matching { it.name == taskName }.configureEach {
+   def marker = side == 'server' ? 'tests' : (project.hasProperty('e2e') ? 'e2e' : 'ui')
+   def passFile = file("run/${side}/upgrade-${marker}-passed.txt")
+   doFirst {
+    passFile.delete()
+    file("run/${side}/upgrade-${marker}-failed.txt").delete()
+   }
+   doLast {
+    if (!(side == 'server' && project.hasProperty('keepServer')) && !passFile.isFile()) {
+     throw new GradleException("Minecraft ${side} test did not pass; inspect run/${side}/logs/latest.log")
+    }
+   }
+  }
+ }
+}
+

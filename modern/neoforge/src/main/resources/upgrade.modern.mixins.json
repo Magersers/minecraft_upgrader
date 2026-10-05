@@ -1,0 +1,1 @@
+{"required":true,"package":"dev.upgrade.mixin","compatibilityLevel":"JAVA_25","client":["ContainerScreenAccessor"],"injectors":{"defaultRequire":1}}

@@ -1,0 +1,33 @@
+Modded Item Upgrader 0.8.0 / Minecraft 26.3
+Tested 2026-10-05 on Windows, Java 25.0.4.1
+
+Production clean builds: Fabric, NeoForge, Forge PASS
+Core engine: 10,145 assertions PASS
+Localization: 22 locales, 73 keys each PASS
+Fabric renderer smoke: en_us and ru_ru PASS
+
+FABRIC
+PASS 26.3 server upgrade flow; 1193 priced items
+Roll 1: WIN +8 planks, stake -1 log, animation steps=53, elapsed=5001 ms
+Roll 2: WIN +8 planks, stake -1 log, animation steps=53, elapsed=5048 ms
+Roll 3: LOSS +0 planks, stake -1 log, animation steps=54, elapsed=4906 ms
+
+NEOFORGE
+PASS 26.3 server upgrade flow; 1194 priced items
+Roll 1: WIN +8 planks, stake -1 log, animation steps=54, elapsed=4995 ms
+Roll 2: LOSS +0 planks, stake -1 log, animation steps=55, elapsed=4904 ms
+Roll 3: LOSS +0 planks, stake -1 log, animation steps=54, elapsed=4995 ms
+
+FORGE
+PASS 26.3 server upgrade flow; 1195 priced items
+Roll 1: LOSS +0 planks, stake -1 log, animation steps=55, elapsed=4901 ms
+Roll 2: WIN +8 planks, stake -1 log, animation steps=53, elapsed=4949 ms
+Roll 3: WIN +8 planks, stake -1 log, animation steps=53, elapsed=4907 ms
+
+The connected client tests used the real inventory button, server catalog, network packets, animation completion and inventory synchronization. Three rolls per loader included both winning and losing outcomes. No synthetic outcomes were used in these live tests.
+
+Final server runs additionally passed after conventional tag resource migration. Dev fixtures are absent from all final JARs.
+
+NeoForge 26.3.0.48-beta is a beta loader. Fabric needs Fabric API 0.161.0+26.3. Java 25 is required.
+
+Not tested: every third-party modpack or an in-place upgrade of a production world.
