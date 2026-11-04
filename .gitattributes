@@ -1,3 +1,6 @@
-# Preserve the checked-in Windows wrappers without checkout/staging conversion.
-/gradlew.bat -text
-/modern/gradlew.bat -text
+* text=auto
+gradlew text eol=lf
+# Preserve the original Windows wrapper bytes without staging conversion.
+gradlew.bat -text
+*.jar binary
+*.zip binary
