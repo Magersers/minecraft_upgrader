@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Modo difícil: ativado",
   "upgrade.hard_off": "Modo difícil: desativado",
   "upgrade.audit": "Relatório de valores: %s",
-  "upgrade.audit_failed": "Não foi possível gravar o relatório: %s"
+  "upgrade.audit_failed": "Não foi possível gravar o relatório: %s",
+  "upgrade.multiplier_hint": "Buscar valor de %s. Seleciona uma recompensa sem iniciar a melhoria.",
+  "upgrade.marker_hint": "Arraste pelo círculo ou role para mover a seta. A chance não muda.",
+  "upgrade.marker_rotate": "Girar a seta 15° no sentido horário (também com Tab e Enter)",
+  "upgrade.marker_reset": "Voltar a seta para o topo",
+  "upgrade.value_risk": "Valor ×%s · %s de risco de perder a aposta"
 }

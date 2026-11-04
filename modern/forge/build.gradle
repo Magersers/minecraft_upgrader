@@ -1,6 +1,6 @@
 plugins { id 'java'; id 'net.minecraftforge.gradle' version '7.0.17' }
 group='dev.upgrade'
-version='0.8.0'
+version = '0.9.0'
 base { archivesName='upgrade-forge-26.3' }
 java { toolchain.languageVersion=JavaLanguageVersion.of(25); withSourcesJar() }
 repositories { minecraft.mavenizer(it); maven fg.forgeMaven; maven fg.minecraftLibsMaven; mavenCentral() }

@@ -70,28 +70,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: forge-release-${{ matrix.minecraft }}
-          path: forge/build/${{ matrix.minecraft }}/libs/upgrade-forge-${{ matrix.minecraft }}-0.7.0.jar
-  publish:
-    if: github.ref == 'refs/heads/main'
-    needs: verify
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: forge-release-*
-          merge-multiple: true
-          path: release-forge
-      - name: Publish only after both versions pass all tests
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          if gh release view forge-v0.7.0 >/dev/null 2>&1; then
-            echo 'Release already exists; assets are immutable.'
-            exit 0
-          fi
-          (cd release-forge && sha256sum *.jar > SHA256SUMS.txt)
-          gh release create forge-v0.7.0 release-forge/*.jar release-forge/SHA256SUMS.txt --target "$GITHUB_SHA" --title 'Modded Item Upgrader 0.7.0 — Forge 1.20.1 / 1.19.2' --notes-file docs/releases/forge-0.7.0.md --latest
+          path: forge/build/${{ matrix.minecraft }}/libs/upgrade-forge-${{ matrix.minecraft }}-0.9.0.jar

@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 group = 'dev.upgrade'
-version = '0.6.5'
+version = '0.9.0'
 def mc = project.property('minecraft_version')
 def targets = ['1.20.1': [java: 17, api: '0.92.12+1.20.1'], '1.21.1': [java: 21, api: '0.116.17+1.21.1']]
 if (!targets.containsKey(mc)) throw new GradleException("Unsupported Minecraft version: ${mc}; use ${targets.keySet()}")
@@ -112,3 +112,10 @@ tasks.withType(JavaExec).configureEach {
         }
     }
 }
+
+tasks.register('uiTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'dev.upgrade.client.UpgradeUiMathTest'
+}
+check.dependsOn uiTest

@@ -136,7 +136,7 @@ public final class PerformancePricing {
             try {
                 var utility=utility(stack,gates); if (utility!=null) equipmentAnchors.put(id,utility);
                 if (simpleResource(stack) || decorative(stack,inputs)) cheap.add(id);
-                if (decorative(stack,inputs)) {
+                if (old==null && decorative(stack,inputs)) {
                     var block=((BlockItem)item).getBlock(); double hardness=block.defaultBlockState().getDestroySpeed(server.overworld(),BlockPos.ZERO);
                     if (hardness>=0 && Double.isFinite(hardness)) anchors.put(id,new CostEngine.Value(1+Math.pow(hardness,1.5),.85,
                             "Приблизительная оценка строительного блока по твёрдости "+hardness+"; не является ингредиентом известных рецептов",gates));

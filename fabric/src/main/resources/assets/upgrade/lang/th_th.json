@@ -71,5 +71,10 @@
   "upgrade.hard_on": "โหมดยาก: เปิด",
   "upgrade.hard_off": "โหมดยาก: ปิด",
   "upgrade.audit": "รายงานมูลค่า: %s",
-  "upgrade.audit_failed": "เขียนรายงานไม่สำเร็จ: %s"
+  "upgrade.audit_failed": "เขียนรายงานไม่สำเร็จ: %s",
+  "upgrade.multiplier_hint": "เลือกของรางวัลมูลค่าประมาณ %s โดยไม่เริ่มอัปเกรด",
+  "upgrade.marker_hint": "ลากรอบวงหรือเลื่อนเพื่อย้ายลูกศร โอกาสสำเร็จไม่เปลี่ยน",
+  "upgrade.marker_rotate": "หมุนลูกศรตามเข็มนาฬิกา 15° (ใช้ Tab และ Enter ได้ด้วย)",
+  "upgrade.marker_reset": "คืนตำแหน่งลูกศรไว้ด้านบน",
+  "upgrade.value_risk": "มูลค่า ×%s · โอกาสเสียของเดิมพัน %s"
 }

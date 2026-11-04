@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Hard mode: enabled",
   "upgrade.hard_off": "Hard mode: disabled",
   "upgrade.audit": "Value report: %s",
-  "upgrade.audit_failed": "Could not write the report: %s"
+  "upgrade.audit_failed": "Could not write the report: %s",
+  "upgrade.multiplier_hint": "Aim for %s value. Selects a reward; does not start an upgrade.",
+  "upgrade.marker_hint": "Drag around the ring or scroll to position the arrow. Odds stay the same.",
+  "upgrade.marker_rotate": "Rotate arrow 15° clockwise (also works with Tab and Enter)",
+  "upgrade.marker_reset": "Reset arrow to the top",
+  "upgrade.value_risk": "%s× value · %s chance of losing the stake"
 }

@@ -89,7 +89,7 @@ public final class NaturalInheritance {
         }
         int mobs=0;
         if (enabled(policy,"mob_drops")) for (var type:BuiltInRegistries.ENTITY_TYPE) {
-            var key=BuiltInRegistries.ENTITY_TYPE.getKey(type); if (key.getNamespace().equals("minecraft")) continue;
+            var key=BuiltInRegistries.ENTITY_TYPE.getKey(type);
             try {
                 if (!(type.create(server.overworld(),net.minecraft.world.entity.EntitySpawnReason.COMMAND) instanceof Mob mob)) continue;
                 double hp=mob.getMaxHealth(),armor=mob.getArmorValue();
@@ -105,7 +105,7 @@ public final class NaturalInheritance {
         }
         int chests=0;
         if (enabled(policy,"chest_loot")) for (var table:Platform.lootKeys(server)) {
-            if (!table.getPath().startsWith("chests/") || table.getNamespace().equals("minecraft")) continue;
+            if (!table.getPath().startsWith("chests/")) continue;
             try {
                 for (var drop:EncounterProfiles.drops(server,table).entrySet()) if (!known.containsKey(drop.getKey()) && !denied.contains(drop.getKey()) && drop.getValue()>0) {
                     var value=new CostEngine.Value(policy.get("chest_effort").getAsDouble()/drop.getValue(),.85,
@@ -164,6 +164,14 @@ public final class NaturalInheritance {
         var map=policy.getAsJsonObject("namespace_gates"); String namespace=id.split(":",2)[0];
         Set<String> result=new TreeSet<>();
         if (map!=null && map.has(namespace)) for (JsonElement e:map.getAsJsonArray(namespace)) result.add(e.getAsString());
+        // Vanilla acquisition from another dimension must retain that dimension's gate.
+        if (namespace.equals("minecraft")) {
+            String path=id.substring(id.indexOf(':')+1);
+            if (path.startsWith("chests/end_city") || Set.of("dragon_breath","dragon_head","chorus_flower","chorus_plant",
+                    "elytra","shulker_shell","shulker","ender_dragon").contains(path)) result.add("minecraft:story/enter_the_end");
+            if (path.startsWith("chests/bastion") || path.equals("chests/nether_bridge") || Set.of("blaze","ghast","magma_cube",
+                    "wither_skeleton","strider").contains(path)) result.add("minecraft:story/enter_the_nether");
+        }
         return result;
     }
     // Only genuinely generated overworld flowers, not every BushBlock (boss drops and Nether plants differ).

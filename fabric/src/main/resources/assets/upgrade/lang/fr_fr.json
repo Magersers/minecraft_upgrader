@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Mode difficile : activé",
   "upgrade.hard_off": "Mode difficile : désactivé",
   "upgrade.audit": "Rapport des valeurs : %s",
-  "upgrade.audit_failed": "Impossible d’écrire le rapport : %s"
+  "upgrade.audit_failed": "Impossible d’écrire le rapport : %s",
+  "upgrade.multiplier_hint": "Viser une valeur de %s. Sélectionne une récompense sans lancer l’amélioration.",
+  "upgrade.marker_hint": "Glissez autour du cercle ou faites défiler pour déplacer la flèche. Les chances restent identiques.",
+  "upgrade.marker_rotate": "Tourner la flèche de 15° vers la droite (aussi avec Tab et Entrée)",
+  "upgrade.marker_reset": "Replacer la flèche en haut",
+  "upgrade.value_risk": "Valeur ×%s · %s de risque de perdre la mise"
 }

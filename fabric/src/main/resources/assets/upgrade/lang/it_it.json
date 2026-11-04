@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Modalità difficile: attivata",
   "upgrade.hard_off": "Modalità difficile: disattivata",
   "upgrade.audit": "Rapporto dei valori: %s",
-  "upgrade.audit_failed": "Impossibile scrivere il rapporto: %s"
+  "upgrade.audit_failed": "Impossibile scrivere il rapporto: %s",
+  "upgrade.multiplier_hint": "Cerca un valore di %s. Seleziona una ricompensa senza avviare il miglioramento.",
+  "upgrade.marker_hint": "Trascina sull’anello o scorri per spostare la freccia. La probabilità non cambia.",
+  "upgrade.marker_rotate": "Ruota la freccia di 15° in senso orario (anche con Tab e Invio)",
+  "upgrade.marker_reset": "Riporta la freccia in alto",
+  "upgrade.value_risk": "Valore ×%s · %s di rischio di perdere la puntata"
 }

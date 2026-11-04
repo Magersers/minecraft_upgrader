@@ -2,7 +2,7 @@
   "title": "Modded Item Upgrader",
   "summary": "Risk spare items for better rewards with an inventory upgrade wheel and recipe-based item values.",
   "author": "Magersers",
-  "version": "0.6.5",
+  "version": "0.9.0",
   "release_type": "release",
   "license": "LicenseRef-Magersers-Proprietary",
   "license_name": "Magersers Proprietary License — All Rights Reserved",
@@ -16,25 +16,65 @@
     "icon_artwork": true,
     "runtime_ai_service": false
   },
-  "curseforge_project_id": null,
-  "published_urls": [],
+  "curseforge_project_id": 1715812,
+  "published_urls": [
+    "https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader"
+  ],
   "modrinth_status": "blocked_pending_platform_eligibility_clarification",
   "files": [
     {
-      "file": "upgrade-fabric-1.20.1-0.6.5.jar",
       "minecraft": "1.20.1",
-      "loader": "fabric",
-      "fabric_loader_min": "0.17.2",
       "java_min": 17,
-      "fabric_api_min": "0.92.12+1.20.1"
+      "loader": "fabric",
+      "file": "upgrade-fabric-1.20.1-0.9.0.jar"
     },
     {
-      "file": "upgrade-fabric-1.21.1-0.6.5.jar",
       "minecraft": "1.21.1",
-      "loader": "fabric",
-      "fabric_loader_min": "0.17.2",
       "java_min": 21,
-      "fabric_api_min": "0.116.17+1.21.1"
+      "loader": "fabric",
+      "file": "upgrade-fabric-1.21.1-0.9.0.jar"
+    },
+    {
+      "minecraft": "1.19.2",
+      "java_min": 17,
+      "loader": "forge",
+      "file": "upgrade-forge-1.19.2-0.9.0.jar"
+    },
+    {
+      "minecraft": "1.20.1",
+      "java_min": 17,
+      "loader": "forge",
+      "file": "upgrade-forge-1.20.1-0.9.0.jar"
+    },
+    {
+      "minecraft": "1.21",
+      "java_min": 21,
+      "loader": "neoforge",
+      "file": "upgrade-neoforge-1.21-0.9.0.jar"
+    },
+    {
+      "minecraft": "1.21.1",
+      "java_min": 21,
+      "loader": "neoforge",
+      "file": "upgrade-neoforge-1.21.1-0.9.0.jar"
+    },
+    {
+      "minecraft": "26.3",
+      "java_min": 25,
+      "loader": "fabric",
+      "file": "upgrade-fabric-26.3-0.9.0.jar"
+    },
+    {
+      "minecraft": "26.3",
+      "java_min": 25,
+      "loader": "forge",
+      "file": "upgrade-forge-26.3-0.9.0.jar"
+    },
+    {
+      "minecraft": "26.3",
+      "java_min": 25,
+      "loader": "neoforge",
+      "file": "upgrade-neoforge-26.3-0.9.0.jar"
     }
   ],
   "ui_locales": [

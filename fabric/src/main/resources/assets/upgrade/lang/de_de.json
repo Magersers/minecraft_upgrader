@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Schwerer Modus: aktiviert",
   "upgrade.hard_off": "Schwerer Modus: deaktiviert",
   "upgrade.audit": "Wertbericht: %s",
-  "upgrade.audit_failed": "Bericht konnte nicht geschrieben werden: %s"
+  "upgrade.audit_failed": "Bericht konnte nicht geschrieben werden: %s",
+  "upgrade.multiplier_hint": "Zielwert %s. Wählt eine Belohnung, startet kein Upgrade.",
+  "upgrade.marker_hint": "Pfeil am Ring ziehen oder scrollen. Die Chancen bleiben gleich.",
+  "upgrade.marker_rotate": "Pfeil um 15° im Uhrzeigersinn drehen (auch mit Tab und Enter)",
+  "upgrade.marker_reset": "Pfeil nach oben zurücksetzen",
+  "upgrade.value_risk": "%s× Wert · %s Risiko, den Einsatz zu verlieren"
 }

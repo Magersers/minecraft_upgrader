@@ -71,5 +71,10 @@
   "upgrade.hard_on": "하드 모드: 켜짐",
   "upgrade.hard_off": "하드 모드: 꺼짐",
   "upgrade.audit": "가치 보고서: %s",
-  "upgrade.audit_failed": "보고서를 작성하지 못했습니다: %s"
+  "upgrade.audit_failed": "보고서를 작성하지 못했습니다: %s",
+  "upgrade.multiplier_hint": "가치가 약 %s인 보상을 선택합니다. 업그레이드는 시작하지 않습니다.",
+  "upgrade.marker_hint": "원을 따라 드래그하거나 스크롤해 화살표를 옮기세요. 확률은 변하지 않습니다.",
+  "upgrade.marker_rotate": "화살표를 시계 방향으로 15° 회전 (Tab과 Enter로도 가능)",
+  "upgrade.marker_reset": "화살표를 위로 초기화",
+  "upgrade.value_risk": "가치 ×%s · 투입 아이템을 잃을 확률 %s"
 }

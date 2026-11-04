@@ -40,23 +40,6 @@ jobs:
           done
       - name: Verify release archives
         run: python scripts/verify-neoforge-release.py
-      - name: Publish the verified NeoForge release
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          if gh release view neoforge-v0.7.0 >/dev/null 2>&1; then
-            echo 'NeoForge 0.7.0 is already published; its assets are immutable.'
-            exit 0
-          fi
-          mkdir -p release-neoforge
-          cp neoforge/build/*/libs/upgrade-neoforge-*-0.7.0.jar release-neoforge/
-          (cd release-neoforge && sha256sum *.jar > SHA256SUMS.txt)
-          gh release create neoforge-v0.7.0 release-neoforge/*.jar release-neoforge/SHA256SUMS.txt \
-            --target "$GITHUB_SHA" \
-            --title "Modded Item Upgrader 0.7.0 — NeoForge 1.21.1 / 1.21" \
-            --notes-file docs/releases/neoforge-0.7.0.md --latest
       - uses: actions/upload-artifact@v4
         if: always()
         continue-on-error: true

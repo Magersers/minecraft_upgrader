@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Moeilijke modus: aan",
   "upgrade.hard_off": "Moeilijke modus: uit",
   "upgrade.audit": "Waardenrapport: %s",
-  "upgrade.audit_failed": "Kan het rapport niet schrijven: %s"
+  "upgrade.audit_failed": "Kan het rapport niet schrijven: %s",
+  "upgrade.multiplier_hint": "Streef naar %s waarde. Selecteert een beloning zonder de upgrade te starten.",
+  "upgrade.marker_hint": "Sleep rond de ring of scrol om de pijl te plaatsen. De kans blijft gelijk.",
+  "upgrade.marker_rotate": "Draai de pijl 15° met de klok mee (ook met Tab en Enter)",
+  "upgrade.marker_reset": "Zet de pijl terug bovenaan",
+  "upgrade.value_risk": "%s× waarde · %s kans om de inzet te verliezen"
 }

@@ -71,5 +71,10 @@
   "upgrade.hard_on": "ハードモード：有効",
   "upgrade.hard_off": "ハードモード：無効",
   "upgrade.audit": "評価レポート：%s",
-  "upgrade.audit_failed": "レポートを書き込めませんでした：%s"
+  "upgrade.audit_failed": "レポートを書き込めませんでした：%s",
+  "upgrade.multiplier_hint": "価値が約 %s の報酬を選択します。アップグレードは開始しません。",
+  "upgrade.marker_hint": "円周上をドラッグまたはスクロールして矢印を移動します。確率は変わりません。",
+  "upgrade.marker_rotate": "矢印を時計回りに15°回転（TabとEnterでも操作可能）",
+  "upgrade.marker_reset": "矢印を上に戻す",
+  "upgrade.value_risk": "価値 ×%s · 投入アイテムを失う確率 %s"
 }

@@ -31,7 +31,15 @@ import org.lwjgl.glfw.GLFW;
 import java.util.*;
 
 public class UpgradeScreen extends UpgradeBaseScreen {
-    private static final int GREEN=0xFF90EDC1, MUTED=0xFF99ABC5, TEXT=0xFFF0F5FF, RED=0xFFFF8199, GOLD=0xFFFFD68A;
+    private static final int GREEN=0xFF80D9BC, MUTED=0xFFA6ADBA, TEXT=0xFFF5F2EA, RED=0xFFEF8E99, GOLD=0xFFE6C98A;
+    private static final double[] MULTIPLIERS={1.5,2,5,10};
+    private final List<Button> styledButtons=new ArrayList<>();
+    private final Map<Button,String> buttonHints=new IdentityHashMap<>();
+    private final List<Button> multiplierButtons=new ArrayList<>();
+    private Button markerRotate,markerReset;
+    private double markerAngle=WheelPreferences.load(Minecraft.getInstance().gameDirectory.toPath());
+    private double selectedMultiplier;
+    private boolean draggingMarker;
     private Network.Catalog catalog;
     private final List<Network.Entry> entries=new ArrayList<>();
     private List<Network.Entry> filtered=List.of();
@@ -45,7 +53,7 @@ public class UpgradeScreen extends UpgradeBaseScreen {
     private int searchY,gridY,cell,controlsY,spinY,statusY,tabsY;
     private long started,requested,lastCatalogRequest;
     private boolean rejected;
-    private boolean pending,finishSent,onlyAvailable=true,descending,loading=true,inventoryView=true,compact;
+    private boolean pending,finishSent,onlyAvailable=false,descending,loading=true,inventoryView=true,compact;
     private String status=text("upgrade.select_stake");
 
     public UpgradeScreen(Network.Catalog catalog) { super(t(text("upgrade.title"))); this.catalog=catalog; selectedSlot=catalog.selectedSlot(); }
@@ -54,6 +62,7 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         if (packet.open()) mc.setScreen(new UpgradeScreen(packet));
         if (!(mc.screen instanceof UpgradeScreen screen) || screen.busy()) return;
         if (packet.offset()==0) {
+            screen.selectedMultiplier=0;
             screen.lastCatalogRequest=Util.getMillis(); screen.catalog=packet; screen.entries.clear(); screen.loading=true;
             screen.amount=Math.max(1,Math.min(screen.amount,Math.min(64,screen.stake().stack().getCount())));
         }
@@ -92,6 +101,7 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         try { return CostEngine.chance(stake().value()*amount,target.value()*rewardAmount,Economy.EFFICIENCY); }
         catch (IllegalArgumentException ex) { return 0; }
     }
+    private double displayChance() { return outcome!=null&&settled==null?outcome.chance():chance(); }
     private void requestCatalog() { loading=true; lastCatalogRequest=Util.getMillis(); ClientTransport.send(new Network.Query(false)); }
     private ItemStack item(String id) {
         return stacks.computeIfAbsent(id,key -> {
@@ -121,15 +131,57 @@ public class UpgradeScreen extends UpgradeBaseScreen {
     private int pageSize() { return Math.max(1,gridColumns()*rows); }
     private int pages() { int size=inventoryView?catalog.inventory().size():filtered.size(); return Math.max(1,(size+pageSize()-1)/pageSize()); }
     private void resetResult() { outcome=null; settled=null; rejected=false; }
-    private void changeAmount(int value) { amount=Math.max(1,Math.min(Math.max(1,Math.min(64,stake().stack().getCount())),value)); resetResult(); filter(); }
-    private void changeReward(int value) { rewardAmount=Math.max(1,Math.min(rewardLimit(),value)); resetResult(); }
+    private void changeAmount(int value) { selectedMultiplier=0; amount=Math.max(1,Math.min(Math.max(1,Math.min(64,stake().stack().getCount())),value)); resetResult(); filter(); }
+    private void changeReward(int value) { selectedMultiplier=0; rewardAmount=Math.max(1,Math.min(rewardLimit(),value)); resetResult(); }
     private void switchView(boolean inventory) { inventoryView=inventory; page=0; search.setVisible(!inventory); available.visible=!inventory; sorting.visible=!inventory; }
     private Button button(String text,int xx,int yy,int w,java.util.function.Consumer<Button> action) {
-        return addRenderableWidget(Button.builder(t(text),action::accept).bounds(xx,yy,w,18).build());
+        Button result=addWidget(Button.builder(t(text),action::accept).bounds(xx,yy,w,18).build());
+        styledButtons.add(result); return result;
+    }
+    private List<Component> hintLines(String message) {
+        List<Component> lines=new ArrayList<>(); int limit=Math.max(80,Math.min(250,width-32));
+        while (!message.isEmpty()) {
+            String part=font.plainSubstrByWidth(message,limit);
+            if (part.isEmpty()) break;
+            if (part.length()<message.length()) {
+                int space=part.lastIndexOf(' '); if (space>part.length()/2) part=part.substring(0,space);
+            }
+            lines.add(t(part)); message=message.substring(part.length()).stripLeading();
+        }
+        return lines;
+    }
+    private void hint(Button button,String message) { button.setTooltip(Tooltip.create(t(message))); buttonHints.put(button,message); }
+    private int wheelX() { return x+panelWidth/2; }
+    private int wheelY() { return y+(compact?62:71); }
+    private double wheelRadius() { return compact?29:38; }
+    private boolean overMarkerTrack(double mx,double my) {
+        return UpgradeUiMath.onTrack(mx-wheelX(),my-wheelY(),wheelRadius());
+    }
+    private void setMarker(double mx,double my) { resetResult(); markerAngle=UpgradeUiMath.angleAt(mx-wheelX(),my-wheelY()); }
+    private void saveMarker() { WheelPreferences.save(Minecraft.getInstance().gameDirectory.toPath(),markerAngle); }
+    private void rotateMarker() { resetResult(); markerAngle=UpgradeUiMath.normalize(markerAngle+Math.PI/12); saveMarker(); }
+    private void chooseMultiplier(double multiplier) {
+        if (busy()||loading||stake().value()<=0) return;
+        double stakeTotal=stake().value()*amount,bestScore=Double.POSITIVE_INFINITY;
+        Network.Entry best=null; int count=1;
+        for (var entry:entries) {
+            if (!entry.available()||!Double.isFinite(entry.value())||entry.value()<=0) continue;
+            int candidate=UpgradeUiMath.nearestCount(stakeTotal,multiplier,entry.value(),Math.min(64,item(entry.id()).getMaxStackSize()));
+            if (candidate==0) continue;
+            double score=UpgradeUiMath.distance(stakeTotal,multiplier,entry.value()*candidate);
+            if (score<bestScore || score==bestScore && best!=null && entry.id().compareTo(best.id())<0) {
+                bestScore=score; best=entry; count=candidate;
+            }
+        }
+        if (best==null) return;
+        resetResult(); target=best; rewardAmount=count; selectedMultiplier=multiplier;
+        search.setValue(""); switchView(false); filter();
+        int index=filtered.indexOf(target); if (index>=0) page=index/pageSize();
     }
     @Override protected void init() {
         String query=search==null?"":search.getValue();
-        panelWidth=Math.min(540,width-12); panelHeight=Math.min(380,height-12); compact=panelHeight<290;
+        styledButtons.clear(); buttonHints.clear(); multiplierButtons.clear(); draggingMarker=false;
+        panelWidth=Math.min(568,width-12); panelHeight=Math.min(400,height-12); compact=panelHeight<290||panelWidth<390;
         x=(width-panelWidth)/2; y=(height-panelHeight)/2;
         controlsY=compact?83:98; spinY=compact?105:122; statusY=compact?128:149;
         tabsY=compact?141:185; searchY=tabsY+22; gridY=searchY+24; cell=compact?18:24;
@@ -141,12 +193,23 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         rewardLess=button("−",right+4,y+controlsY,18,b -> changeReward(rewardAmount-1));
         rewardMore=button("+",right+46,y+controlsY,18,b -> changeReward(rewardAmount+1));
         rewardMax=button(text("upgrade.max"),right+68,y+controlsY,Math.max(24,card-72),b -> changeReward(rewardLimit()));
-        rewardMax.setTooltip(Tooltip.create(t(text("upgrade.max_hint"))));
-        spin=button(text("upgrade.upgrade"),x+panelWidth/2-68,y+spinY,136,b -> {
+        hint(rewardMax,text("upgrade.max_hint"));
+        spin=button(text("upgrade.upgrade"),x+12,y+spinY,card,b -> {
             if (chance()<=0 || busy() || loading) return;
             pending=true; finishSent=false; resetResult(); requested=Util.getMillis(); status=text("upgrade.waiting");
             ClientTransport.send(new Network.Spin(catalog.token(),target.id(),amount,selectedSlot,rewardAmount));
         });
+        int presetWidth=Math.max(24,Math.min(36,(card-6)/4));
+        int presetsX=x+panelWidth-12-(presetWidth*4+6);
+        for (int i=0;i<MULTIPLIERS.length;i++) {
+            double value=MULTIPLIERS[i];
+            String caption=String.format(Locale.ROOT,value==1.5?"%.1f×":"%.0f×",value);
+            Button preset=button(caption,presetsX+i*(presetWidth+2),y+spinY,presetWidth,b -> chooseMultiplier(value));
+            hint(preset,text("upgrade.multiplier_hint",caption)); multiplierButtons.add(preset);
+        }
+        markerRotate=button("↻",x+panelWidth-52,y+6,18,b -> rotateMarker());
+        markerReset=button("○",x+panelWidth-30,y+6,18,b -> { resetResult(); markerAngle=0; saveMarker(); });
+        hint(markerRotate,text("upgrade.marker_rotate")); hint(markerReset,text("upgrade.marker_reset"));
         inventoryTab=button(text("upgrade.inventory"),x+12,y+tabsY,(panelWidth-28)/2,b -> switchView(true));
         targetsTab=button(text("upgrade.catalog"),x+16+(panelWidth-28)/2,y+tabsY,(panelWidth-28)/2,b -> switchView(false));
         search=new EditBox(font,x+12,y+searchY,panelWidth-174,18,t(text("upgrade.search")));
@@ -155,14 +218,14 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         available=button(onlyAvailable?text("upgrade.available"):text("upgrade.all"),x+panelWidth-156,y+searchY,86,b -> {
             onlyAvailable=!onlyAvailable; b.setMessage(t(onlyAvailable?text("upgrade.available"):text("upgrade.all"))); page=0; filter();
         });
-        available.setTooltip(Tooltip.create(t(text("upgrade.available_hint"))));
+        hint(available,text("upgrade.available_hint"));
         sorting=button(descending?text("upgrade.price_down"):text("upgrade.price_up"),x+panelWidth-66,y+searchY,54,b -> {
             descending=!descending; b.setMessage(t(descending?text("upgrade.price_down"):text("upgrade.price_up"))); page=0; filter();
         });
         previous=button("‹",x+12,y+panelHeight-22,22,b -> page=Math.max(0,page-1));
         next=button("›",x+104,y+panelHeight-22,22,b -> page=Math.min(pages()-1,page+1));
         refresh=button(text("upgrade.refresh"),x+panelWidth-96,y+panelHeight-22,84,b -> requestCatalog());
-        refresh.setTooltip(Tooltip.create(t(text("upgrade.refresh_hint"))));
+        hint(refresh,text("upgrade.refresh_hint"));
         switchView(inventoryView); filter();
     }
     @Override public void tick() {
@@ -188,6 +251,8 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         rewardLess.active=enabled&&rewardAmount>1; rewardMore.active=rewardMax.active=enabled&&target!=null&&rewardAmount<rewardLimit();
         refresh.active=enabled&&Util.getMillis()-lastCatalogRequest>=600;
         inventoryTab.active=enabled&&!inventoryView; targetsTab.active=enabled&&inventoryView;
+        for (Button preset:multiplierButtons) preset.active=enabled&&stake().value()>0;
+        markerRotate.active=markerReset.active=!busy();
         spin.active=enabled&&chance()>0; spin.setMessage(t(busy()?text("upgrade.spinning_button"):text("upgrade.upgrade")));
     }
     private void label(GuiGraphics g,String text,int center,int yy,int maxWidth,int color) { g.drawCenteredString(font,font.plainSubstrByWidth(text,maxWidth),center,yy,color); }
@@ -203,9 +268,13 @@ public class UpgradeScreen extends UpgradeBaseScreen {
     private static void triangle(BufferBuilder b,Matrix4f m,double ax,double ay,double bx,double by,double cx,double cy,int color) {
         vertex(b,m,ax,ay,color); vertex(b,m,bx,by,color); vertex(b,m,cx,cy,color);
     }
-    private static void ring(BufferBuilder b,Matrix4f m,int cx,int cy,double inner,double outer,double chance) {
-        for (int d=0;d<360;d+=2) {
-            double a=Math.toRadians(d-90),z=Math.toRadians(d+2-90); int color=d<chance*360?GREEN:0xFF344861;
+    private void ring(BufferBuilder b,Matrix4f m,int cx,int cy,double inner,double outer,double chance) {
+        arc(b,m,cx,cy,inner,outer,0,360,0xFF343944);
+        if (chance>0) arc(b,m,cx,cy,inner,outer,0,Math.min(1,chance)*360,GREEN);
+    }
+    private void arc(BufferBuilder b,Matrix4f m,int cx,int cy,double inner,double outer,double start,double end,int color) {
+        for (double d=start;d<end;d+=2) {
+            double a=Math.toRadians(d-90)+markerAngle,z=Math.toRadians(Math.min(d+2,end)-90)+markerAngle;
             triangle(b,m,cx+Math.cos(a)*inner,cy+Math.sin(a)*inner,cx+Math.cos(a)*outer,cy+Math.sin(a)*outer,cx+Math.cos(z)*outer,cy+Math.sin(z)*outer,color);
             triangle(b,m,cx+Math.cos(a)*inner,cy+Math.sin(a)*inner,cx+Math.cos(z)*outer,cy+Math.sin(z)*outer,cx+Math.cos(z)*inner,cy+Math.sin(z)*inner,color);
         }
@@ -221,19 +290,21 @@ public class UpgradeScreen extends UpgradeBaseScreen {
             double a=Math.toRadians(d-90),r=radius-11;
             triangle(b,m,cx+Math.cos(a)*r,cy+Math.sin(a)*r,cx+Math.cos(a-.025)*(r-2),cy+Math.sin(a-.025)*(r-2),cx+Math.cos(a+.025)*(r-2),cy+Math.sin(a+.025)*(r-2),0xFF536A88);
         }
-        double turns=outcome==null?0:RollTiming.turns(RollTiming.progress(elapsed()),outcome.roll());
-        double a=-Math.PI/2+turns*Math.PI*2,rx=Math.cos(a),ry=Math.sin(a),base=radius+12;
+        double turns=outcome==null||settled!=null?0:RollTiming.turns(RollTiming.progress(elapsed()),outcome.roll());
+        double a=-Math.PI/2+markerAngle+turns*Math.PI*2,rx=Math.cos(a),ry=Math.sin(a),base=radius+12;
         triangle(b,m,cx+rx*(radius-2)+1,cy+ry*(radius-2)+1,cx+rx*base-ry*5+1,cy+ry*base+rx*5+1,cx+rx*base+ry*5+1,cy+ry*base-rx*5+1,0xFF080E18);
         triangle(b,m,cx+rx*(radius-2),cy+ry*(radius-2),cx+rx*base-ry*5,cy+ry*base+rx*5,cx+rx*base+ry*5,cy+ry*base-rx*5,GOLD);
         RenderSupport.finish(b); RenderSystem.enableCull(); RenderSystem.disableBlend();
     }
     @Override public void render(GuiGraphics g,int mx,int my,float partial) {
         drawBackground(g,mx,my,partial);
-        g.fillGradient(x,y,x+panelWidth,y+panelHeight,0xFD172238,0xFD0B111E); g.fill(x,y,x+panelWidth,y+2,GREEN);
-        g.drawString(font,"UPGRADER",x+12,y+10,TEXT); label(g,text("upgrade.heading"),x+100+(panelWidth-112)/2,y+11,panelWidth-112,MUTED);
+        g.fillGradient(x,y,x+panelWidth,y+panelHeight,0xFE1A1D25,0xFE0E1016); g.fill(x,y,x+panelWidth,y+1,GOLD);
+        g.fill(x,y+1,x+1,y+panelHeight,0xFF45403A); g.fill(x+panelWidth-1,y+1,x+panelWidth,y+panelHeight,0xFF45403A);
+        g.fill(x,y+panelHeight-1,x+panelWidth,y+panelHeight,0xFF45403A);
+        g.drawString(font,"UPGRADER",x+12,y+10,TEXT); label(g,text("upgrade.heading"),x+98+(panelWidth-158)/2,y+11,panelWidth-158,MUTED);
         int card=Math.min(150,(panelWidth-106)/2),right=x+panelWidth-12-card,cx=x+panelWidth/2,cy=y+(compact?62:71),top=compact?26:31;
-        g.fillGradient(x+12,y+top,x+12+card,y+controlsY+20,0xFF24374F,0xFF18283C);
-        g.fillGradient(right,y+top,right+card,y+controlsY+20,0xFF303B53,0xFF1D2B41);
+        g.fillGradient(x+12,y+top,x+12+card,y+controlsY+20,0xFF242B32,0xFF181D25);
+        g.fillGradient(right,y+top,right+card,y+controlsY+20,0xFF302D28,0xFF201F22);
         label(g,text("upgrade.stake"),x+12+card/2,y+top+4,card-6,MUTED); label(g,text("upgrade.reward"),right+card/2,y+top+4,card-6,GOLD);
         var stake=stake(); ItemStack stakeItem=stake.stack();
         g.renderItem(stakeItem,x+12+card/2-8,y+top+17);
@@ -246,19 +317,17 @@ public class UpgradeScreen extends UpgradeBaseScreen {
             label(g,name(target.id()),right+card/2,y+top+36,card-8,TEXT);
             label(g,target.value()>0?String.format(Locale.ROOT,"%.2f E",target.value()*rewardAmount):text("upgrade.no_value"),right+card/2,y+top+47,card-8,target.available()?GOLD:RED);
         } else label(g,text("upgrade.select_catalog"),right+card/2,y+top+35,card-8,MUTED);
-        double p=outcome!=null?outcome.chance():chance(); wheel(g,cx,cy,p);
-        if (settled!=null && settled.won()) {
-            g.pose().pushPose(); g.pose().translate(cx-12,cy-13,0); g.pose().scale(1.5f,1.5f,1); g.renderItem(item(settled.target()),0,0); g.pose().popPose();
-            g.drawCenteredString(font,"× "+settled.count(),cx,cy+14,GOLD);
-        } else { g.drawCenteredString(font,(p>0 && p<.00001?"<0.001%":String.format(Locale.ROOT,p<.01?"%.3f%%":"%.1f%%",p*100)),cx,cy-6,TEXT); chanceLabel(g,cx,cy+7); }
+        double p=displayChance(); wheel(g,cx,cy,p);
+        g.drawCenteredString(font,(p>0 && p<.00001?"<0.001%":String.format(Locale.ROOT,p<.01?"%.3f%%":"%.1f%%",p*100)),cx,cy-6,TEXT);
+        chanceLabel(g,cx,cy+7);
         if (settled!=null) {
             g.fillGradient(x+12,y+statusY-3,x+panelWidth-12,y+tabsY-4,settled.won()?0xFF214C40:0xFF512D40,0xAA172238);
             label(g,settled.won()?text("upgrade.win"):text("upgrade.loss"),cx,y+statusY,panelWidth-28,settled.won()?GREEN:RED);
             if (!compact) label(g,status,cx,y+statusY+16,panelWidth-28,MUTED);
         } else {
-            String hint=rejected?status:loading?text("upgrade.loading"):busy()?status:stake.value()<=0?text("upgrade.valued_stake"):target==null?text("upgrade.select_reward"):chance()>0?text("upgrade.ready"):text("upgrade.more_value");
+            String hint=rejected?status:loading?text("upgrade.loading"):busy()?status:stake.value()<=0?text("upgrade.valued_stake"):target==null?text("upgrade.select_reward"):chance()>0?text("upgrade.value_risk",String.format(Locale.ROOT,"%.2f",target.value()*rewardAmount/(stake.value()*amount)),String.format(Locale.ROOT,"%.1f%%",(1-chance())*100)):text("upgrade.more_value");
             label(g,hint,cx,y+statusY,panelWidth-24,MUTED);
-            if (!compact) label(g,text("upgrade.formula"),cx,y+statusY+17,panelWidth-24,0xFF627D9F);
+            if (!compact) label(g,text("upgrade.formula"),cx,y+statusY+17,panelWidth-24,0xFF858B98);
         }
         if (inventoryView) label(g,text("upgrade.inventory_hint"),cx,y+searchY+5,panelWidth-28,MUTED);
         Network.Entry hovered=null; Network.InventoryEntry hoveredSlot=null;
@@ -269,7 +338,7 @@ public class UpgradeScreen extends UpgradeBaseScreen {
             int sx=gridX()+(i%cols)*cell,sy=y+gridY+(i/cols)*cell;
             boolean selected=inventoryView?slot.slot()==selectedSlot:target!=null&&target.id().equals(entry.id()),over=mx>=sx&&mx<sx+cell-1&&my>=sy&&my<sy+cell-1;
             boolean usable=inventoryView?slot.value()>0:entry.available(); ItemStack stack=inventoryView?slot.stack():item(entry.id());
-            g.fill(sx,sy,sx+cell-1,sy+cell-1,selected?0xFF467B70:over?0xFF3C5472:0xFF24344C);
+            g.fill(sx,sy,sx+cell-1,sy+cell-1,selected?0xFF786747:over?0xFF3B414C:0xFF272C35);
             int pad=(cell-16)/2;
             g.renderItem(stack,sx+pad,sy+pad); if (inventoryView) g.renderItemDecorations(font,stack,sx+pad,sy+pad);
             if (!compact && !stack.isEmpty()) g.fill(sx+2,sy+cell-3,sx+cell-3,sy+cell-2,usable?GREEN:0xFF8C5065);
@@ -282,12 +351,34 @@ public class UpgradeScreen extends UpgradeBaseScreen {
         g.drawCenteredString(font,(page+1)+" / "+pages(),x+69,y+panelHeight-17,MUTED);
         if (panelWidth>350) label(g,inventoryView?text("upgrade.slots"):text("upgrade.targets",filtered.size()),cx,y+panelHeight-17,panelWidth-260,MUTED);
         super.render(g,mx,my,partial);
-        if (hoveredSlot!=null) g.renderComponentTooltip(font,ItemDetails.lines(hoveredSlot.stack(),hoveredSlot.value(),true,hoveredSlot.value()>0),mx,my);
+        renderButtons(g,mx,my);
+        Button hoveredButton=styledButtons.stream().filter(b -> b.visible&&mx>=b.getX()&&mx<b.getX()+b.getWidth()&&my>=b.getY()&&my<b.getY()+b.getHeight()).findFirst().orElse(null);
+        if (hoveredButton!=null&&buttonHints.containsKey(hoveredButton)) g.renderComponentTooltip(font,hintLines(buttonHints.get(hoveredButton)),mx,my);
+        else if (overMarkerTrack(mx,my)) g.renderComponentTooltip(font,hintLines(text("upgrade.marker_hint")),mx,my);
+        else if (hoveredSlot!=null) g.renderComponentTooltip(font,ItemDetails.lines(hoveredSlot.stack(),hoveredSlot.value(),true,hoveredSlot.value()>0),mx,my);
         else if (hovered!=null) g.renderComponentTooltip(font,ItemDetails.lines(item(hovered.id()),hovered.value(),false,hovered.available()),mx,my);
         else if (mx>=x+12&&mx<x+12+card&&my>=y+top&&my<y+controlsY) g.renderComponentTooltip(font,ItemDetails.lines(stakeItem,stake.value(),true,stake.value()>0),mx,my);
         else if (target!=null&&mx>=right&&mx<right+card&&my>=y+top&&my<y+controlsY) g.renderComponentTooltip(font,ItemDetails.lines(item(target.id()),target.value(),false,target.available()),mx,my);
     }
+    private void renderButtons(GuiGraphics g,int mx,int my) {
+        for (Button b:styledButtons) {
+            if (!b.visible) continue;
+            int bx=b.getX(),by=b.getY(),bw=b.getWidth(),bh=b.getHeight();
+            boolean hover=mx>=bx&&mx<bx+bw&&my>=by&&my<by+bh,focus=b.isFocused();
+            boolean chosen=b==inventoryTab&&inventoryView || b==targetsTab&&!inventoryView;
+            int preset=multiplierButtons.indexOf(b);
+            if (preset>=0) chosen=selectedMultiplier==MULTIPLIERS[preset];
+            int border=b.active&&(hover||focus)?GOLD:chosen?0xFF9B8458:0xFF454A55;
+            int fill=b==spin&&b.active?(hover?0xFFF0D8A4:GOLD):chosen?0xFF35332F:b.active&&hover?0xFF343A45:0xFF232832;
+            g.fill(bx,by,bx+bw,by+bh,border); g.fill(bx+1,by+1,bx+bw-1,by+bh-1,fill);
+            int color=!b.active&&!chosen?0xFF858B98:b==spin&&b.active?0xFF191B21:chosen?GOLD:TEXT;
+            label(g,b.getMessage().getString(),bx+bw/2,by+(bh-8)/2,bw-4,color);
+        }
+    }
     @Override public boolean mouseClicked(double mx,double my,int button) {
+        if (!busy()&&button==0&&overMarkerTrack(mx,my)) {
+            draggingMarker=true; setMarker(mx,my); return true;
+        }
         if (!busy()&&!loading&&button==0) {
             int from=page*pageSize(),size=inventoryView?inventory().size():filtered.size(),cols=gridColumns();
             for (int i=0;i<pageSize()&&from+i<size;i++) {
@@ -295,14 +386,23 @@ public class UpgradeScreen extends UpgradeBaseScreen {
                 if (mx>=sx&&mx<sx+cell-1&&my>=sy&&my<sy+cell-1) {
                     resetResult();
                     if (inventoryView) { var slot=inventory().get(from+i); if (!slot.stack().isEmpty()) { selectedSlot=slot.slot(); changeAmount(1); } }
-                    else { target=filtered.get(from+i); rewardAmount=Math.min(rewardAmount,rewardLimit()); }
+                    else { selectedMultiplier=0; target=filtered.get(from+i); rewardAmount=Math.min(rewardAmount,rewardLimit()); }
                     return true;
                 }
             }
         }
         return super.mouseClicked(mx,my,button);
     }
+    @Override public boolean mouseDragged(double mx,double my,int button,double dx,double dy) {
+        if (draggingMarker&&!busy()) { setMarker(mx,my); return true; }
+        return super.mouseDragged(mx,my,button,dx,dy);
+    }
+    @Override public boolean mouseReleased(double mx,double my,int button) {
+        if (draggingMarker) { draggingMarker=false; saveMarker(); return true; }
+        return super.mouseReleased(mx,my,button);
+    }
     @Override protected boolean scroll(double mx,double my,double delta) {
+        if (!busy()&&overMarkerTrack(mx,my)) { resetResult(); markerAngle=UpgradeUiMath.normalize(markerAngle+Math.signum(delta)*Math.PI/36); saveMarker(); return true; }
         if (!busy()&&!loading&&my>=y+gridY) { page=Math.max(0,Math.min(pages()-1,page+(delta>0?-1:1))); return true; }
         return false;
     }

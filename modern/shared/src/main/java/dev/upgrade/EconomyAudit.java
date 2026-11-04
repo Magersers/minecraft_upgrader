@@ -17,6 +17,7 @@ public final class EconomyAudit {
             String status=Economy.current.denied().contains(id)||!Economy.plain(item.getDefaultInstance())?"excluded":value==null?"unknown":"valued";
             int[] count=counts.computeIfAbsent(mod,k->new int[3]); count[status.equals("valued")?0:status.equals("unknown")?1:2]++;
             row.addProperty("status",status);
+            row.addProperty("registry_estimate",CatalogPricing.estimated.contains(id));
             if (value!=null) { row.addProperty("cost",value.cost()); row.addProperty("pristine_stake_cost",Math.min(value.cost(),Math.min(PerformancePricing.stakeLimits.getOrDefault(id,value.cost()),PricingPolicy.hard && PerformancePricing.simple.contains(id)?PricingPolicy.simpleCap:Double.POSITIVE_INFINITY))); row.addProperty("confidence",value.confidence()); row.add("gates",new Gson().toJsonTree(value.gates())); }
             row.addProperty("reason",Economy.current.explanations().getOrDefault(id,"")); items.add(row);
         }

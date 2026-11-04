@@ -43,8 +43,12 @@ public final class Economy {
         Set<String> denied = new HashSet<>(Set.of("minecraft:air", "minecraft:barrier", "minecraft:command_block",
                 "minecraft:chain_command_block", "minecraft:repeating_command_block", "minecraft:structure_block",
                 "minecraft:structure_void", "minecraft:jigsaw", "minecraft:debug_stick", "minecraft:light",
-                "minecraft:bedrock", "minecraft:end_portal_frame", "minecraft:spawner", "minecraft:dragon_egg"));
+                "minecraft:bedrock", "minecraft:end_portal_frame", "minecraft:spawner", "minecraft:dragon_egg",
+                "minecraft:command_block_minecart", "minecraft:knowledge_book", "minecraft:trial_spawner", "minecraft:vault"));
         BuiltInRegistries.ITEM.keySet().stream().filter(k->k.getPath().startsWith("debug/")).forEach(k->denied.add(k.toString()));
+        for (var item:BuiltInRegistries.ITEM) if (item instanceof BlockItem block
+                && block.getBlock() instanceof net.minecraft.world.level.block.InfestedBlock)
+            denied.add(BuiltInRegistries.ITEM.getKey(item).toString());
         var profiles = server.getResourceManager().listResources("upgrade_values", p -> p.getPath().endsWith(".json"));
         // Validate each complete profile before applying it. One broken optional pack must
         // not disable every item in the economy or leave a half-applied profile behind.
@@ -146,6 +150,20 @@ public final class Economy {
                 routes.add(new CostEngine.Route(recipeRef.id().toString(), id(output), output.getCount(), inputs, overhead, .9, Set.of()));
             } catch (Exception ex) { Upgrade.LOGGER.warn("Cannot import recipe {}", recipeRef.id(), ex); }
         }
+        // Silk-touch ore and stripped Nether/bamboo blocks are real acquisition
+        // variants, not unknown low-stake fallbacks. Keep their material tiers coherent.
+        for (var bound:BalancePolicy.floors.entrySet()) {
+            String id=bound.getKey();
+            if (id.startsWith("minecraft:") && id.endsWith("_ore") && BuiltInRegistries.ITEM.containsKey(Ids.of(id)))
+                seeds.putIfAbsent(id,new CostEngine.Value(bound.getValue(),.9,"Цена руды по настроенному уровню материала",
+                        id.startsWith("minecraft:nether_")?Set.of("minecraft:story/enter_the_nether"):Set.of()));
+        }
+        for (String material:List.of("crimson_stem","warped_stem","bamboo_block")) {
+            var source=seeds.get("minecraft:"+material); String stripped="minecraft:stripped_"+material;
+            if (source!=null && BuiltInRegistries.ITEM.containsKey(Ids.of(stripped))) seeds.putIfAbsent(stripped,source);
+        }
+        routes.addAll(dev.upgrade.core.VanillaAcquisition.routes(
+                BuiltInRegistries.ITEM.keySet().stream().map(Object::toString).collect(java.util.stream.Collectors.toSet()),seeds,BalancePolicy.floors));
         denied.forEach(seeds::remove);
         // A legacy/loot estimate for a prepared meal must not undercut its ingredients.
         // Keep raw commodities anchored, and keep fallback sources if a recipe cannot be resolved.
@@ -179,7 +197,8 @@ public final class Economy {
                     route.overhead(), route.confidence(), route.gates()));
         }
         var acquisition = BalancePolicy.solve(seeds, filtered, 128);
-        var solved = PerformancePricing.apply(server,acquisition,seeds,filtered,denied);
+        var calibrated = PerformancePricing.apply(server,acquisition,seeds,filtered,denied);
+        var solved = CatalogPricing.complete(calibrated,filtered,denied);
         Map<String, List<CostEngine.Route>> byOutput = new HashMap<>();
         filtered.forEach(r -> byOutput.computeIfAbsent(r.output(), k -> new ArrayList<>()).add(r));
         Map<String, String> explanations = new HashMap<>();
@@ -232,6 +251,7 @@ public final class Economy {
             if (quote!=null&&!unlocked(player,quote)) return "Нужен этап: "+String.join(", ",quote.gates());
             return TinkersCompat.reason(Platform.pricingCopy(stack,Set.of()),current.values(),current.explanations())+(stack.isDamaged()?String.format(Locale.ROOT," · Износ: ставка × %.3f",PerformanceMath.wear(stack.getDamageValue(),stack.getMaxDamage())):"");
         }
+        if (stack.getItem() instanceof SpawnEggItem || stack.getItem() instanceof GameMasterBlockItem) return "Служебный предмет или яйцо призыва: исключён из выживания.";
         if (!stakeData(stack)) return "Особые данные или содержимое: нужен профиль этого предмета.";
         var value = current.values().get(id);
         if (value != null && !unlocked(player, value)) return "Нужен этап: " + String.join(", ", value.gates());
@@ -249,8 +269,7 @@ public final class Economy {
     // normal item data, not a custom NBT payload, and must not exclude all equipment.
     private static boolean ordinaryData(ItemStack stack) { return Platform.ordinaryData(stack); }
     public static boolean plain(ItemStack stack) {
-        return !stack.isEmpty() && !TinkersCompat.special(stack) && ordinaryData(stack) && !stack.isDamaged() && !(stack.getItem() instanceof SpawnEggItem) && !(stack.getItem() instanceof GameMasterBlockItem)
-                && !Platform.hasStorage(stack);
+        return !stack.isEmpty() && !TinkersCompat.special(stack) && ordinaryData(stack) && !stack.isDamaged() && !(stack.getItem() instanceof SpawnEggItem) && !(stack.getItem() instanceof GameMasterBlockItem);
     }
     public static boolean unlocked(ServerPlayer player, CostEngine.Value value) {
         return Platform.unlocked(player,value);

@@ -1,4 +1,4 @@
-# Modded Item Upgrader 0.8.0 — Minecraft 26.3
+# Modded Item Upgrader 0.9.0 — Minecraft 26.3
 
 Separate Java 25 ports for Fabric, NeoForge and Forge. Install exactly one loader-specific JAR on both client and server. These files do not support earlier Minecraft versions.
 

@@ -71,5 +71,10 @@
   "upgrade.hard_on": "الوضع الصعب: مفعّل",
   "upgrade.hard_off": "الوضع الصعب: معطّل",
   "upgrade.audit": "تقرير القيم: %s",
-  "upgrade.audit_failed": "تعذّرت كتابة التقرير: %s"
+  "upgrade.audit_failed": "تعذّرت كتابة التقرير: %s",
+  "upgrade.multiplier_hint": "استهداف قيمة %s. يختار مكافأة دون بدء الترقية.",
+  "upgrade.marker_hint": "اسحب حول الحلقة أو مرر لتحريك السهم. لا تتغير الاحتمالات.",
+  "upgrade.marker_rotate": "تدوير السهم 15° مع عقارب الساعة (أيضًا عبر Tab وEnter)",
+  "upgrade.marker_reset": "إعادة السهم إلى الأعلى",
+  "upgrade.value_risk": "قيمة ×%s · احتمال خسارة الرهان %s"
 }

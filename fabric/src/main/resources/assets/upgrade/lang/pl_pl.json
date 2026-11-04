@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Tryb trudny: włączony",
   "upgrade.hard_off": "Tryb trudny: wyłączony",
   "upgrade.audit": "Raport wycen: %s",
-  "upgrade.audit_failed": "Nie udało się zapisać raportu: %s"
+  "upgrade.audit_failed": "Nie udało się zapisać raportu: %s",
+  "upgrade.multiplier_hint": "Cel: wartość %s. Wybiera nagrodę bez rozpoczynania ulepszenia.",
+  "upgrade.marker_hint": "Przeciągnij po okręgu lub przewiń, aby przesunąć strzałkę. Szansa się nie zmienia.",
+  "upgrade.marker_rotate": "Obróć strzałkę o 15° w prawo (również Tab i Enter)",
+  "upgrade.marker_reset": "Przywróć strzałkę na górę",
+  "upgrade.value_risk": "Wartość ×%s · %s ryzyka utraty stawki"
 }

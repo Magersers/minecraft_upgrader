@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Mode sulit: aktif",
   "upgrade.hard_off": "Mode sulit: nonaktif",
   "upgrade.audit": "Laporan nilai: %s",
-  "upgrade.audit_failed": "Gagal menulis laporan: %s"
+  "upgrade.audit_failed": "Gagal menulis laporan: %s",
+  "upgrade.multiplier_hint": "Target nilai %s. Memilih hadiah tanpa memulai peningkatan.",
+  "upgrade.marker_hint": "Seret di sepanjang lingkaran atau gulir untuk memindahkan panah. Peluang tidak berubah.",
+  "upgrade.marker_rotate": "Putar panah 15° searah jarum jam (juga dengan Tab dan Enter)",
+  "upgrade.marker_reset": "Atur ulang panah ke atas",
+  "upgrade.value_risk": "Nilai ×%s · peluang kehilangan taruhan %s"
 }

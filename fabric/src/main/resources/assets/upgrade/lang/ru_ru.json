@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Хард-режим: включён",
   "upgrade.hard_off": "Хард-режим: выключен",
   "upgrade.audit": "Отчёт цен: %s",
-  "upgrade.audit_failed": "Не удалось записать отчёт: %s"
+  "upgrade.audit_failed": "Не удалось записать отчёт: %s",
+  "upgrade.multiplier_hint": "Подобрать награду стоимостью %s от ставки. Улучшение не запускается.",
+  "upgrade.marker_hint": "Перетаскивайте стрелку по кругу или крутите колёсико. Шанс не меняется.",
+  "upgrade.marker_rotate": "Повернуть стрелку на 15° по часовой (также Tab и Enter)",
+  "upgrade.marker_reset": "Вернуть стрелку наверх",
+  "upgrade.value_risk": "Стоимость ×%s · риск потери ставки %s"
 }

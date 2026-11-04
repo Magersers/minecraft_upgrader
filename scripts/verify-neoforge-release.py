@@ -7,12 +7,12 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 LOCALES = set('ar_sa de_de en_us es_es es_mx fr_fr hi_in id_id it_it ja_jp ko_kr nl_nl pl_pl pt_br pt_pt ru_ru th_th tr_tr uk_ua vi_vn zh_cn zh_tw'.split())
 for mc in ('1.21.1', '1.21'):
-    jar = ROOT / f'neoforge/build/{mc}/libs/upgrade-neoforge-{mc}-0.7.0.jar'
+    jar = ROOT / f'neoforge/build/{mc}/libs/upgrade-neoforge-{mc}-0.9.0.jar'
     with zipfile.ZipFile(jar) as z:
         names = set(z.namelist())
         metadata = tomllib.loads(z.read('META-INF/neoforge.mods.toml').decode())
         assert metadata['mods'][0]['modId'] == 'upgrade'
-        assert metadata['mods'][0]['version'] == '0.7.0'
+        assert metadata['mods'][0]['version'] == '0.9.0'
         deps = {d['modId']: d for d in metadata['dependencies']['upgrade']}
         assert deps['minecraft']['versionRange'] == f'[{mc}]'
         assert deps['neoforge']['type'] == 'required'

@@ -71,5 +71,10 @@
   "upgrade.hard_on": "困難模式：已開啟",
   "upgrade.hard_off": "困難模式：已關閉",
   "upgrade.audit": "估值報告：%s",
-  "upgrade.audit_failed": "無法寫入報告：%s"
+  "upgrade.audit_failed": "無法寫入報告：%s",
+  "upgrade.multiplier_hint": "選擇價值約為 %s 的獎勵，不會開始升級。",
+  "upgrade.marker_hint": "沿圓環拖曳或捲動以調整箭頭位置。成功率不變。",
+  "upgrade.marker_rotate": "將箭頭順時針旋轉 15°（也可使用 Tab 與 Enter）",
+  "upgrade.marker_reset": "將箭頭重設至頂端",
+  "upgrade.value_risk": "價值 ×%s · 損失投入物品的機率 %s"
 }

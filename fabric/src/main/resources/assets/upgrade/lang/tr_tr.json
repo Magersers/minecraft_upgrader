@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Zor mod: açık",
   "upgrade.hard_off": "Zor mod: kapalı",
   "upgrade.audit": "Değer raporu: %s",
-  "upgrade.audit_failed": "Rapor yazılamadı: %s"
+  "upgrade.audit_failed": "Rapor yazılamadı: %s",
+  "upgrade.multiplier_hint": "Hedef değer: %s. Ödül seçer, yükseltmeyi başlatmaz.",
+  "upgrade.marker_hint": "Oku yerleştirmek için çemberde sürükleyin veya kaydırın. Olasılık değişmez.",
+  "upgrade.marker_rotate": "Oku saat yönünde 15° döndür (Tab ve Enter ile de çalışır)",
+  "upgrade.marker_reset": "Oku yukarıya sıfırla",
+  "upgrade.value_risk": "%s× değer · bahsi kaybetme olasılığı %s"
 }

@@ -1,156 +1,73 @@
-<div align="center">
+# Modded Item Upgrader 0.9.0
 
-<img src="docs/media/upgrader-mods-logo.png" alt="Modded Item Upgrader logo" width="460">
+Choose a stake, compare a reward and its exact success chance, then spin the upgrade wheel. Uses Minecraft items only; no purchases or real-money currency.
 
-# Modded Item Upgrader
+[CurseForge](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader) · [GitHub releases](https://github.com/Magersers/minecraft_upgrader/releases) · [Report an issue](https://github.com/Magersers/minecraft_upgrader/issues)
 
-**Risk the items you have for a chance to win something better.**
+## What's new
 
-[![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader/files/all)
-[![Minecraft 1.21.1](https://img.shields.io/badge/Minecraft-1.21.1-62B47A?style=flat-square)](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader/files/all)
-[![Fabric](https://img.shields.io/badge/Loader-Fabric-DBD0B4?style=flat-square)](https://fabricmc.net/)
-[![NeoForge](https://img.shields.io/badge/Loader-NeoForge-F28C28?style=flat-square)](https://neoforged.net/)
-[![NeoForge 0.7.0](https://img.shields.io/badge/NeoForge-0.7.0-FF9A00?style=flat-square)](https://github.com/Magersers/minecraft_upgrader/releases/tag/neoforge-v0.7.0)
-[![Release 0.6.5](https://img.shields.io/badge/Release-0.6.5-FF9A00?style=flat-square)](https://github.com/Magersers/minecraft_upgrader/releases/tag/v0.6.5)
-[![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-8A2BE2?style=flat-square)](LICENSE)
+- A charcoal and champagne interface with clearer selection, value and outcome states.
+- Drag the wheel marker around its circumference. Its position is remembered; keyboard controls also rotate and reset it. Moving the marker changes presentation only, never the server's probability or result.
+- **1.5×, 2×, 5× and 10×** shortcuts beneath the reward find a feasible reward stack near the requested value ratio. Check the actual reward and probability before pressing Upgrade.
+- Expanded registry coverage for ordinary vanilla and modded items, including pristine fluid containers. Recipe and acquisition prices remain the preferred source. Items without supported acquisition data receive conservative fallback reward prices and low stake values.
+- Balance fixes for expensive crafted blocks, filled buckets and rare vanilla rewards, including the modern 26.3 ports.
 
-[Download 0.6.5 on GitHub](https://github.com/Magersers/minecraft_upgrader/releases/tag/v0.6.5) · [CurseForge](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader) · [English publishing text](docs/publishing/description-en.md) · [Русское описание](docs/publishing/description-ru.md)
+[Release details](docs/releases/0.9.0.md).
 
-[Download NeoForge 0.7.0 — Minecraft 1.21.1 / 1.21](https://github.com/Magersers/minecraft_upgrader/releases/tag/neoforge-v0.7.0)
+## Supported editions
 
-[Download Forge 0.7.0 — Minecraft 1.20.1 / 1.19.2](https://github.com/Magersers/minecraft_upgrader/releases/tag/forge-v0.7.0)
+All nine editions use version **0.9.0**. Install the exact matching JAR on both client and server.
 
-</div>
+| Minecraft | Loader | Java | Additional requirement |
+| --- | --- | --- | --- |
+| 1.19.2 | Forge 43.5.0+ | 17 | — |
+| 1.20.1 | Forge 47.4.10+ | 17 | — |
+| 1.20.1 | Fabric 0.17.2+ | 17 | Fabric API 0.92.12+1.20.1 |
+| 1.21 | NeoForge 21.0.167+ | 21 | — |
+| 1.21.1 | NeoForge 21.1.252+ | 21 | — |
+| 1.21.1 | Fabric 0.17.2+ | 21 | Fabric API 0.116.17+1.21.1 |
+| 26.3 | Forge 66.0.9+ | 25 | — |
+| 26.3 | NeoForge 26.3.0.48-beta | 25 | This loader version is beta |
+| 26.3 | Fabric 0.19.5+ | 25 | Fabric API 0.161.0+26.3 |
 
-Modded Item Upgrader adds an inventory-based upgrade wheel to Minecraft. Choose an item from your inventory as the stake, select the reward and quantity you want, review the exact success chance, and spin.
+## Play
 
-A successful roll delivers the reward after the animation. A failed roll consumes the stake. The system uses ordinary in-game items only—there are no purchases, premium currencies, or real-money mechanics.
+1. Press the upgrade arrow in the inventory, or run `/upgrade` in Survival.
+2. Select a stake from your main inventory, hotbar or off-hand and choose its quantity.
+3. Search the reward catalog by translated item name or registry ID. Choose a reward and quantity, or use a multiplier shortcut.
+4. Review the displayed values and probability, then press Upgrade.
 
-> The interface, tooltips, results, and server messages follow Minecraft’s selected language, with 22 supported locales and English fallback. See [supported languages and translation guide](docs/localization.md). Item names use Minecraft’s own translations.
+A failed upgrade consumes the stake. A successful upgrade delivers the reward after the animation. Accepted rewards survive reconnects and deaths until delivered. The server checks inventory contents, quantities, item data and progression gates.
 
-## How it works
+The probability remains `min(95%, 85% × stake value / reward value)`. The reward must cost more than the stake; a 100 E stake against a 200 E reward has a 42.5% chance. Changing the wheel marker has no effect on this calculation.
 
-1. Open your inventory and press the green **upgrade arrow**, or run `/upgrade` in Survival mode.
-2. Choose a stake from your main inventory, hotbar, or off-hand and set its quantity.
-3. Search the reward catalog by localized name or item ID, then choose the reward quantity.
-4. Review the chance and press **Upgrade**.
+The interface follows Minecraft's language setting, with 22 locales and English fallback. Item names use the installed game and mods' translations.
 
-The chance is calculated from the total value of the selected stake and reward stack:
+## Catalog and modpack balance
 
-```text
-chance = min(95%, 85% × stake value / reward value)
-```
+The catalog evaluates registered item IDs using supported recipes, tags, attributes and acquisition sources. Unresolved ordinary items can now appear with conservative fallback pricing. Fallback estimates are visible in `/upgrade audit` output and can be replaced through datapack profiles; their stake value is deliberately limited and that limit propagates through supported recipes.
 
-The reward must be more valuable than the stake. For example, a 100 E stake against a 200 E reward gives a 42.5% chance.
+Administrative blocks, spawn eggs, explicitly excluded items and quarantined unsafe recipe cycles remain excluded. A default registered item is different from every possible enchantment, potion, custom NBT or component combination: unusual variants and unsupported machines may still need a dedicated adapter or value profile. Containers with stored inventories or custom item data are not treated as pristine items; ordinary fluid buckets remain supported. Test your modpack's economy before changing an existing server's profiles.
 
-## See it in action
+Run `/upgrade audit` to write `logs/upgrade-economy.json`; use `/reload` after changing datapack profiles. Optional hard mode reduces the stake value of abundant resources.
 
-<table>
-  <tr>
-    <td width="50%" align="center"><strong>Choose a stake from your inventory</strong><br><br><img src="docs/media/inventory.png" alt="Inventory stake selection"></td>
-    <td width="50%" align="center"><strong>Browse rewards and compare values</strong><br><br><img src="docs/media/catalog.png" alt="Searchable reward catalog"></td>
-  </tr>
-  <tr>
-    <td width="50%" align="center"><strong>Inspect item stats, source mod, and value</strong><br><br><img src="docs/media/item-details.png" alt="Detailed item tooltip"></td>
-    <td width="50%" align="center"><strong>Receive the result when the wheel stops</strong><br><br><img src="docs/media/win.png" alt="Successful upgrade result"></td>
-  </tr>
-</table>
+## Build
 
-## Features
-
-- Direct stake selection from all 37 player inventory slots, including the hotbar and off-hand.
-- Searchable reward catalog with filters, sorting, pages, and stack-size controls.
-- Animated upgrade wheel with sound effects and clear win/loss feedback.
-- Recipe-aware values based on ingredients, output counts, alternative materials, and processing costs.
-- Mod-aware tooltips showing the source mod, combat or armor stats, and per-item value.
-- Automatic value reduction for worn equipment, up to 99% depending on damage.
-- Server-side validation of the selected slot, quantities, item data, progression gates, and payout.
-- Persistent delayed rewards: accepted wins survive reconnects and deaths until delivered.
-- Datapack balance profiles and `/upgrade audit` reports for modpack authors and server administrators.
-- Optional hard mode that lowers the stake value of simple building resources.
-
-## Requirements
-
-Install the matching JAR on **both the client and the server**. Single-player is supported through Minecraft's integrated server.
-
-### NeoForge 0.7.0
-
-| Minecraft | Java | NeoForge | Release file |
-|---|---:|---|---|
-| **1.21.1 (recommended)** | 21+ | 21.1.252+ | `upgrade-neoforge-1.21.1-0.7.0.jar` |
-| 1.21 | 21+ | 21.0.167+ | `upgrade-neoforge-1.21-0.7.0.jar` |
-
-NeoForge uses the current gameplay and all 22 languages, with native networking, persistent player data, and capability queries. Fabric API is not required. Choose the file for your exact Minecraft version and loader. See [NeoForge release notes and testing limits](docs/releases/neoforge-0.7.0.md).
-
-### Forge 0.7.0
-
-| Minecraft | Java | Forge | Release file |
-|---|---:|---|---|
-| **1.20.1** | 17 | 47.4.10+ | `upgrade-forge-1.20.1-0.7.0.jar` |
-| 1.19.2 | 17 | 43.5.0+ | `upgrade-forge-1.19.2-0.7.0.jar` |
-
-The current Forge port includes all 22 languages, native networking and persistent payouts. Install on client and server. See [Forge release notes and verification](docs/releases/forge-0.7.0.md).
-
-### Fabric 0.6.5
-
-| Minecraft | Java | Fabric Loader | Fabric API | Release file |
-|---|---:|---:|---|---|
-| 1.20.1 | 17+ | 0.17.2+ | 0.92.12+1.20.1 or compatible | `upgrade-fabric-1.20.1-0.6.5.jar` |
-| 1.21.1 | 21+ | 0.17.2+ | 0.116.17+1.21.1 or compatible | `upgrade-fabric-1.21.1-0.6.5.jar` |
-
-Use only the file made for your exact Minecraft version. The 1.20.1 and 1.21.1 JARs are not interchangeable, and every player must run the same Upgrader version as the server.
-
-## Modded items and modpacks
-
-Upgrader reads supported recipes, tags, item attributes, and acquisition data from the installed game. Material costs can flow through normal crafting chains and supported modded processing systems instead of giving every unknown item an arbitrary price.
-
-Fabric 1.20.1 integration has been checked with BetterEnd, BetterNether, BCLib, TechReborn, and Hephaestus-related content. Custom machines, unusual item data, hidden abilities, contextual loot, energy, or fluid recipes may still require a datapack value profile or dedicated adapter.
-
-Server administrators can run `/upgrade audit` to generate `logs/upgrade-economy.json`, including unavailable or excluded items and the reason for every result. Balance data can be replaced or extended with datapacks and reloaded with `/reload`.
-
-This project does not claim automatic compatibility with every item in every modpack. Please report reproducible compatibility problems through [GitHub Issues](https://github.com/Magersers/minecraft_upgrader/issues).
-
-## Building from source
-
-The Fabric project is located in `fabric/` and shares one economy core across supported Minecraft versions.
-
-The current Forge project is in `forge/`. With JDK 17, build each version separately:
-
-```sh
-./gradlew -p forge -Pminecraft_version=1.20.1 build
-./gradlew -p forge -Pminecraft_version=1.19.2 build
-```
-
-Outputs are in `forge/build/<minecraft-version>/libs/`. The `Forge current verification and release` workflow gates publication on both versions' unit, server, localization, rendering and real multiplayer spin tests. Test classes are never shipped. The repository root retains the historical Forge 0.3.0 source.
-
-The NeoForge project in `neoforge/` compiles the same gameplay/UI sources with loader-specific adapters. Build with JDK 21:
-
-```sh
-./gradlew -p neoforge -Pminecraft_version=1.21.1 build
-./gradlew -p neoforge -Pminecraft_version=1.21 build
-```
-
-NeoForge JARs are written to `neoforge/build/<minecraft-version>/libs/`. The `NeoForge verification and release` workflow also runs isolated dedicated-server assertions and client rendering checks. Test mods are excluded from release JARs.
-
-For Fabric:
+Use the matching Java version from the table. From the repository root:
 
 ```sh
 ./gradlew -p fabric -Pminecraft_version=1.20.1 build
 ./gradlew -p fabric -Pminecraft_version=1.21.1 build
+./gradlew -p forge -Pminecraft_version=1.19.2 build
+./gradlew -p forge -Pminecraft_version=1.20.1 build
+./gradlew -p neoforge -Pminecraft_version=1.21 build
+./gradlew -p neoforge -Pminecraft_version=1.21.1 build
 ```
 
-Build outputs are written to `fabric/build/<minecraft-version>/libs/`. Development requires JDK 17 for Minecraft 1.20.1 and JDK 21 for Minecraft 1.21.1.
+For 26.3, run `./gradlew -p fabric build`, `./gradlew -p forge build` or `./gradlew -p neoforge build` from `modern/` with Java 25. NeoForge tooling also needs a discoverable Java 21 installation. Developer fixture builds (`-PdevTests`) must never be distributed. [Modern build and test instructions](modern/README.md).
 
-Useful technical references:
+## License and production
 
-- [Fabric 0.6 economy, attributes, and hard mode](docs/releases/fabric-0.6.1.md)
-- [Fabric 0.6.3 balance changes](docs/releases/fabric-0.6.3.md)
-- [Publishing metadata and platform notes](docs/publishing/platforms.md)
+Created by **Magersers**. Releases starting at 0.6.4 use the [Magersers Proprietary License — All Rights Reserved](LICENSE). Earlier license grants and third-party rights are unaffected. Modpack manifests may reference the official downloads.
 
-## License and credits
-
-Created by **Magersers**. Releases starting with 0.6.4 use the [Magersers Proprietary License — All Rights Reserved](LICENSE). Gameplay and private use are allowed; reuploads and distribution of modified versions require written permission. Modpack manifests may reference the official download.
-
-Development and documentation used substantial AI assistance. The promotional logo is AI-generated artwork, not an in-game screenshot. Its Atomic Disassembler-style tool is a visual shorthand for mod compatibility; Upgrader does not add that item and is not affiliated with Mekanism. The interface images above are real captures of the rendered mod UI with BetterEnd and BetterNether loaded. The mod does not call an AI service during gameplay.
-
-Minecraft is a trademark of Microsoft. This project is not approved by or associated with Mojang or Microsoft.
+Development and documentation used substantial AI assistance. Promotional art is AI-generated; the mod does not call an AI service during gameplay. Minecraft belongs to Mojang/Microsoft; this is an independent project.

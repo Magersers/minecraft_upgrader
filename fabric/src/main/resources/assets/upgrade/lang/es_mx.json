@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Modo difícil: activado",
   "upgrade.hard_off": "Modo difícil: desactivado",
   "upgrade.audit": "Informe de valores: %s",
-  "upgrade.audit_failed": "No se pudo escribir el informe: %s"
+  "upgrade.audit_failed": "No se pudo escribir el informe: %s",
+  "upgrade.multiplier_hint": "Buscar un valor de %s. Selecciona una recompensa sin iniciar la mejora.",
+  "upgrade.marker_hint": "Arrastra por el anillo o usa la rueda para mover la flecha. La probabilidad no cambia.",
+  "upgrade.marker_rotate": "Girar la flecha 15° a la derecha (también con Tab y Enter)",
+  "upgrade.marker_reset": "Restablecer la flecha arriba",
+  "upgrade.value_risk": "Valor ×%s · %s de riesgo de perder la apuesta"
 }

@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Chế độ khó: bật",
   "upgrade.hard_off": "Chế độ khó: tắt",
   "upgrade.audit": "Báo cáo giá trị: %s",
-  "upgrade.audit_failed": "Không thể ghi báo cáo: %s"
+  "upgrade.audit_failed": "Không thể ghi báo cáo: %s",
+  "upgrade.multiplier_hint": "Chọn phần thưởng có giá trị khoảng %s, không bắt đầu nâng cấp.",
+  "upgrade.marker_hint": "Kéo quanh vòng tròn hoặc cuộn để đặt mũi tên. Tỉ lệ không đổi.",
+  "upgrade.marker_rotate": "Xoay mũi tên 15° theo chiều kim đồng hồ (cũng dùng Tab và Enter)",
+  "upgrade.marker_reset": "Đặt lại mũi tên lên trên",
+  "upgrade.value_risk": "Giá trị ×%s · %s nguy cơ mất vật phẩm đặt cược"
 }

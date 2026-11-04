@@ -34,6 +34,32 @@ final class BalanceTests {
         ctx.assertTrue(unknown.values().isEmpty(),"A price floor does not invent acquisition for unknown mod items");
         double woodBudget=2*prices.get("minecraft:oak_planks").cost()+prices.get("minecraft:stick").cost();
         ctx.assertTrue(PerformancePricing.stakeLimits.get("minecraft:wooden_sword")<=woodBudget+1e-8,"Crafting a wooden sword must not mint hundreds of stake value");
+        for (var item:net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            var stack=item.getDefaultInstance(); String id=Economy.id(stack);
+            if (Economy.plain(stack) && !Economy.current.denied().contains(id))
+                ctx.assertTrue(prices.containsKey(id),"Every eligible registry item has a price: "+id);
+        }
+        var coveragePlayer=TestPlatform.player(ctx.getLevel());
+        for (Item item:List.of(Items.BUCKET,Items.WATER_BUCKET,Items.MILK_BUCKET,Items.LAVA_BUCKET)) {
+            var stack=item.getDefaultInstance();
+            ctx.assertTrue(Economy.target(coveragePlayer,stack)!=null,"Pristine fluid containers are available: "+Economy.id(stack));
+            ctx.assertTrue(prices.get(Economy.id(stack)).cost()>=prices.get("minecraft:bucket").cost(),"Emptying a filled bucket cannot mint stake value");
+        }
+        ctx.assertTrue(Economy.target(coveragePlayer,Items.COMMAND_BLOCK_MINECART.getDefaultInstance())==null,"Registry fallback cannot enable operator items");
+        double cakeNet=3*(prices.get("minecraft:milk_bucket").cost()-prices.get("minecraft:bucket").cost())
+                +2*prices.get("minecraft:sugar").cost()+prices.get("minecraft:egg").cost()+3*prices.get("minecraft:wheat").cost();
+        ctx.assertTrue(Economy.usable(coveragePlayer,Items.CAKE.getDefaultInstance()).cost()<=cakeNet+1e-7,"Cake stake must subtract three returned buckets; reusable containers cannot mint value");
+        for (String colour:List.of("white","orange","magenta","light_blue","yellow","lime","pink","gray","light_gray","cyan","purple","blue","brown","green","red","black")) {
+            double concrete=prices.get("minecraft:"+colour+"_concrete").cost(),powder=prices.get("minecraft:"+colour+"_concrete_powder").cost();
+            ctx.assertTrue(Math.abs(concrete-powder)<1e-7,"Water hardening preserves concrete acquisition value: "+colour);
+        }
+        ctx.assertTrue(Math.abs(prices.get("minecraft:oxidized_copper").cost()-prices.get("minecraft:copper_block").cost())<1e-7,"Copper weathering preserves its material tier");
+        ctx.assertTrue(Math.abs(prices.get("minecraft:carved_pumpkin").cost()-prices.get("minecraft:pumpkin").cost())<1e-7,"Pumpkin carving does not create an expensive fallback");
+        ctx.assertTrue(PerformancePricing.stakeLimits.get("minecraft:carved_pumpkin")+4*PerformancePricing.stakeLimits.get("minecraft:pumpkin_seeds")<=PerformancePricing.stakeLimits.get("minecraft:pumpkin")+1e-7,"Carving accounts for the pumpkin block and four dropped seeds");
+        ctx.assertTrue(prices.get("minecraft:warped_nylium").gates().contains("minecraft:story/enter_the_nether"),"World conversion retains Nether progression");
+        ctx.assertTrue(prices.get("minecraft:melon_slice").cost()<=prices.get("minecraft:melon").cost()/3+1e-7,"Minimum melon drops price edible slices");
+        ctx.assertTrue(9*PerformancePricing.stakeLimits.get("minecraft:melon_slice")<=PerformancePricing.stakeLimits.get("minecraft:melon")+1e-7,"Fortune melon drops cannot mint stake value");
+        ctx.assertTrue(prices.get("minecraft:powder_snow_bucket").cost()<=prices.get("minecraft:bucket").cost()+8+1e-7,"Powder snow bucket uses configured collection premium");
         coherentRecipes(ctx);
         double baseWeapon=PerformanceMath.weapon(7,1.6,1561,0,1);
         ctx.assertTrue(Math.abs(PerformanceMath.weapon(14,1.6,1561,0,1)/baseWeapon-8)<1e-8,"Double damage costs eight times as much with other stats equal");

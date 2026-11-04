@@ -17,6 +17,7 @@ public final class BalancePolicy {
     public static Map<String,Double> floors=Map.of("minecraft:diamond",2000d);
     private static final Map<String,Double> caps=new TreeMap<>();
     private static final Set<String> usefulPlants=new HashSet<>();
+    public static Map<String,Double> catalogCaps() { return Map.copyOf(caps); }
     public static double diamond() { return floors.getOrDefault("minecraft:diamond",2000d); }
     public static double equipmentScale() { return diamond()/120; }
     public static void load(MinecraftServer server) {

@@ -71,5 +71,10 @@
   "upgrade.hard_on": "Складний режим: увімкнено",
   "upgrade.hard_off": "Складний режим: вимкнено",
   "upgrade.audit": "Звіт цін: %s",
-  "upgrade.audit_failed": "Не вдалося записати звіт: %s"
+  "upgrade.audit_failed": "Не вдалося записати звіт: %s",
+  "upgrade.multiplier_hint": "Підібрати нагороду вартістю %s від ставки. Покращення не запускається.",
+  "upgrade.marker_hint": "Перетягуйте стрілку по колу або прокручуйте. Шанс не змінюється.",
+  "upgrade.marker_rotate": "Повернути стрілку на 15° за годинниковою (також Tab і Enter)",
+  "upgrade.marker_reset": "Повернути стрілку вгору",
+  "upgrade.value_risk": "Вартість ×%s · ризик втрати ставки %s"
 }

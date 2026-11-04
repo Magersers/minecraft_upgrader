@@ -71,5 +71,10 @@
   "upgrade.hard_on": "कठिन मोड: चालू",
   "upgrade.hard_off": "कठिन मोड: बंद",
   "upgrade.audit": "मूल्य रिपोर्ट: %s",
-  "upgrade.audit_failed": "रिपोर्ट लिखी नहीं जा सकी: %s"
+  "upgrade.audit_failed": "रिपोर्ट लिखी नहीं जा सकी: %s",
+  "upgrade.multiplier_hint": "%s मूल्य का पुरस्कार चुनें। अपग्रेड शुरू नहीं होता।",
+  "upgrade.marker_hint": "तीर रखने के लिए वृत्त पर खींचें या स्क्रॉल करें। संभावना नहीं बदलती।",
+  "upgrade.marker_rotate": "तीर को घड़ी की दिशा में 15° घुमाएँ (Tab और Enter से भी)",
+  "upgrade.marker_reset": "तीर को ऊपर रीसेट करें",
+  "upgrade.value_risk": "मूल्य ×%s · दाँव खोने की संभावना %s"
 }
