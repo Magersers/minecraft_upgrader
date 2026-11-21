@@ -18,6 +18,7 @@ public class CostEngineTest {
         catalogCoverage();
         containerAccounting();
         vanillaAcquisition();
+        harvestRewards();
         var exploit=CostEngine.solve(Map.of("ingot",v(10)),List.of(r("ingot",2,"ingot",1),r("sword",1,"ingot",2)),64);
         check(exploit.quarantined().containsAll(Set.of("ingot","sword"))); check(exploit.values().isEmpty());
         near(CostEngine.solve(Map.of("ingot",v(10),"block",v(45)),packing,64).values().get("ingot").cost(),5);
@@ -70,6 +71,19 @@ public class CostEngineTest {
         for(int i=0;i<100;i++) check(RollTiming.turns((i+1)/100.0,.42)>=RollTiming.turns(i/100.0,.42));
         System.out.println("PASS: "+checks+" assertions (economy, Unicode search, payout timing)");
     }
+    private static void harvestRewards() {
+        var source = new CostEngine.Value(100, .9, "ore", Set.of("mining"));
+        var prices = CostEngine.solve(Map.of("ore",source,"drop",v(40)),List.of(),8);
+        var stakes = Map.of("ore",100d,"drop",30d);
+        var reward = VanillaAcquisition.harvestRewards(prices,stakes,List.of(
+                new VanillaAcquisition.Harvest("ore","drop",20), new VanillaAcquisition.Harvest("unknown","drop",5)));
+        near(reward.values().get("ore").cost(),600);
+        near(stakes.get("ore"),100);
+        check(reward.values().get("ore").gates().equals(Set.of("mining")));
+        check(!reward.values().containsKey("unknown"));
+        check(VanillaAcquisition.harvestRewards(prices,stakes,List.of()) == prices);
+    }
+
     private static void vanillaAcquisition() {
         Map<String,CostEngine.Value> seeds=new TreeMap<>();
         seeds.put("minecraft:white_concrete_powder",v(.8)); seeds.put("minecraft:copper_block",v(360));

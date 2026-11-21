@@ -49,6 +49,31 @@ public final class VanillaAcquisition {
         return List.copyOf(routes);
     }
 
+    public record Harvest(String block, String drop, int maximum) {
+        public Harvest {
+            if (maximum < 1) throw new IllegalArgumentException("Invalid maximum harvest");
+        }
+    }
+
+    /** A placeable reward must cover the most its drops can be staked for. Keep its own stake at acquisition cost. */
+    public static CostEngine.Result harvestRewards(CostEngine.Result catalog, Map<String,Double> stakes, List<Harvest> harvests) {
+        if (harvests.isEmpty()) return catalog;
+        var values = new TreeMap<>(catalog.values());
+        var breakdowns = new HashMap<>(catalog.breakdowns());
+        for (var harvest : harvests) {
+            var block = values.get(harvest.block());
+            var drop = catalog.values().get(harvest.drop());
+            if (block == null || drop == null) continue;
+            double unit = Math.min(drop.cost(), stakes.getOrDefault(harvest.drop(), drop.cost()));
+            double minimum = unit * harvest.maximum();
+            if (!Double.isFinite(minimum) || block.cost() >= minimum) continue;
+            String reason = String.format(Locale.ROOT, "Максимальная добыча: %d × %s по %.2f E", harvest.maximum(), harvest.drop(), unit);
+            values.put(harvest.block(), new CostEngine.Value(minimum, block.confidence(), reason, block.gates()));
+            breakdowns.remove(harvest.block());
+        }
+        return new CostEngine.Result(Map.copyOf(values), catalog.quarantined(), catalog.passes(), Map.copyOf(breakdowns));
+    }
+
     /** Maximum real drops prevent a favourable roll from minting value via world conversions. */
     public static Map<String,Double> stakeLimits(Map<String,CostEngine.Value> values,Map<String,Double> existing) {
         Map<String,Double> result=new TreeMap<>(existing);

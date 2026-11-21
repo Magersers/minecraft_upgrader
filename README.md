@@ -1,10 +1,14 @@
-# Modded Item Upgrader 0.9.0
+# Modded Item Upgrader
 
 Choose a stake, compare a reward and its exact success chance, then spin the upgrade wheel. Uses Minecraft items only; no purchases or real-money currency.
 
 [CurseForge](https://www.curseforge.com/minecraft/mc-mods/magersers-upgrader) · [GitHub releases](https://github.com/Magersers/minecraft_upgrader/releases) · [Report an issue](https://github.com/Magersers/minecraft_upgrader/issues)
 
 ## What's new
+
+Minecraft 1.18.2 is available on Forge in **0.9.1**, with economy profiles for Caves & Cliffs resources. [1.18.2 release notes](docs/releases/forge-1.18.2-0.9.1.md).
+
+Changes in 0.9.0:
 
 - A charcoal and champagne interface with clearer selection, value and outcome states.
 - Drag the wheel marker around its circumference. Its position is remembered; keyboard controls also rotate and reset it. Moving the marker changes presentation only, never the server's probability or result.
@@ -16,10 +20,11 @@ Choose a stake, compare a reward and its exact success chance, then spin the upg
 
 ## Supported editions
 
-All nine editions use version **0.9.0**. Install the exact matching JAR on both client and server.
+Use **0.9.1** for Minecraft 1.18.2 and **0.9.0** for the other editions listed below. Install the exact matching JAR on both client and server.
 
 | Minecraft | Loader | Java | Additional requirement |
 | --- | --- | --- | --- |
+| 1.18.2 | Forge 40.3.0+ | 17 | — |
 | 1.19.2 | Forge 43.5.0+ | 17 | — |
 | 1.20.1 | Forge 47.4.10+ | 17 | — |
 | 1.20.1 | Fabric 0.17.2+ | 17 | Fabric API 0.92.12+1.20.1 |
@@ -58,6 +63,7 @@ Use the matching Java version from the table. From the repository root:
 ```sh
 ./gradlew -p fabric -Pminecraft_version=1.20.1 build
 ./gradlew -p fabric -Pminecraft_version=1.21.1 build
+./gradlew -p forge -Pminecraft_version=1.18.2 build
 ./gradlew -p forge -Pminecraft_version=1.19.2 build
 ./gradlew -p forge -Pminecraft_version=1.20.1 build
 ./gradlew -p neoforge -Pminecraft_version=1.21 build

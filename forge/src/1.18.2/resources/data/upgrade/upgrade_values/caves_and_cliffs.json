@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "notes": "Minecraft 1.18.2 survival. Sources are per item. Harvest maxima use the vanilla block loot tables with Fortune III. Compressed metals, cut copper, deepslate shapes, spyglasses and tinted glass use the loaded recipes and output counts.",
+  "sources": [
+    {"item": "minecraft:deepslate", "cost": 1.2, "reason": "Глубинный сланец в нижних слоях мира. Для добычи целого блока нужно «Шёлковое касание»."},
+    {"item": "minecraft:smooth_basalt", "cost": 1, "reason": "Внешняя оболочка аметистовой жеоды."},
+    {"item": "minecraft:amethyst_block", "cost": 4, "reason": "Декоративный блок из жеоды. Осколки растут на цветущем аметисте."},
+    {"item": "minecraft:small_amethyst_bud", "cost": 4, "reason": "Начальная стадия роста на цветущем аметисте; требуется шёлковое касание."},
+    {"item": "minecraft:medium_amethyst_bud", "cost": 8, "reason": "Вторая стадия роста в жеоде; требуется шёлковое касание."},
+    {"item": "minecraft:large_amethyst_bud", "cost": 12, "reason": "Третья стадия роста в жеоде; требуется шёлковое касание."},
+    {"item": "minecraft:amethyst_cluster", "cost": 120, "reason": "Аметистовая друза даёт четыре осколка при добыче киркой подходящего уровня без чар."},
+    {"item": "minecraft:azalea", "cost": 1, "reason": "Возобновляемое растение из мха."},
+    {"item": "minecraft:flowering_azalea", "cost": 1, "reason": "Возобновляемое растение из мха."},
+    {"item": "minecraft:azalea_leaves", "cost": 1, "reason": "Листва выращенной азалии; сбор ножницами."},
+    {"item": "minecraft:flowering_azalea_leaves", "cost": 1, "reason": "Листва выращенной азалии; сбор ножницами."},
+    {"item": "minecraft:small_dripleaf", "cost": 1, "reason": "Маленькую бросянку можно собрать ножницами в пышных пещерах."},
+    {"item": "minecraft:big_dripleaf", "cost": 1, "reason": "Большую бросянку можно вырастить с помощью костной муки."},
+    {"item": "minecraft:spore_blossom", "cost": 1, "reason": "Декоративный цветок с потолков пышных пещер."},
+    {"item": "minecraft:music_disc_otherside", "cost": 4128, "reason": "Сундук сокровищницы: в среднем 2 выбора с весом пластинки 2 из 129. При бюджете поиска 128 E цена равна 128 × 129 / 4."}
+  ],
+  "harvests": [
+    {"blocks": ["minecraft:copper_ore", "minecraft:deepslate_copper_ore"], "drop": "minecraft:raw_copper", "maximum": 20},
+    {"blocks": ["minecraft:iron_ore", "minecraft:deepslate_iron_ore"], "drop": "minecraft:raw_iron", "maximum": 4},
+    {"blocks": ["minecraft:gold_ore", "minecraft:deepslate_gold_ore"], "drop": "minecraft:raw_gold", "maximum": 4},
+    {"blocks": ["minecraft:coal_ore", "minecraft:deepslate_coal_ore"], "drop": "minecraft:coal", "maximum": 4},
+    {"blocks": ["minecraft:diamond_ore", "minecraft:deepslate_diamond_ore"], "drop": "minecraft:diamond", "maximum": 4},
+    {"blocks": ["minecraft:emerald_ore", "minecraft:deepslate_emerald_ore"], "drop": "minecraft:emerald", "maximum": 4},
+    {"blocks": ["minecraft:lapis_ore", "minecraft:deepslate_lapis_ore"], "drop": "minecraft:lapis_lazuli", "maximum": 36},
+    {"blocks": ["minecraft:redstone_ore", "minecraft:deepslate_redstone_ore"], "drop": "minecraft:redstone", "maximum": 8},
+    {"blocks": ["minecraft:nether_quartz_ore"], "drop": "minecraft:quartz", "maximum": 4},
+    {"blocks": ["minecraft:nether_gold_ore"], "drop": "minecraft:gold_nugget", "maximum": 24},
+    {"blocks": ["minecraft:amethyst_cluster"], "drop": "minecraft:amethyst_shard", "maximum": 16}
+  ],
+  "deny": [
+    "minecraft:budding_amethyst",
+    "minecraft:bundle",
+    "minecraft:sculk_sensor"
+  ]
+}

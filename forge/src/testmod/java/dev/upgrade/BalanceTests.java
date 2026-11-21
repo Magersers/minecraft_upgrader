@@ -40,6 +40,7 @@ final class BalanceTests {
                 ctx.assertTrue(prices.containsKey(id),"Every eligible registry item has a price: "+id);
         }
         var coveragePlayer=TestPlatform.player(ctx.getLevel());
+        if (net.minecraft.SharedConstants.getCurrentVersion().getName().equals("1.18.2")) cavesAndCliffs(ctx, coveragePlayer);
         for (Item item:List.of(Items.BUCKET,Items.WATER_BUCKET,Items.MILK_BUCKET,Items.LAVA_BUCKET)) {
             var stack=item.getDefaultInstance();
             ctx.assertTrue(Economy.target(coveragePlayer,stack)!=null,"Pristine fluid containers are available: "+Economy.id(stack));
@@ -71,6 +72,38 @@ final class BalanceTests {
             ctx.assertTrue(enchanted!=null && enchanted.cost()>raw.cost(),"Processed enchanted petals retain their recipe cost");
         }
         Upgrade.LOGGER.info("BALANCE TESTS PASS: 14 petals -> 5 diamonds = {} percent",chance*100);
+    }
+    private static void cavesAndCliffs(TestContext ctx, net.minecraft.server.level.ServerPlayer player) {
+        var prices = Economy.current.values();
+        for (var id : List.of("amethyst_cluster", "small_amethyst_bud", "large_amethyst_bud", "azalea", "big_dripleaf",
+                "spore_blossom", "smooth_basalt", "glow_berries", "glow_ink_sac", "pointed_dripstone", "music_disc_otherside",
+                "tinted_glass", "spyglass", "lightning_rod", "raw_copper_block", "powder_snow_bucket")) {
+            String key = "minecraft:" + id;
+            var stack = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(Ids.of(key)).getDefaultInstance();
+            ctx.assertTrue(Economy.target(player, stack) != null && !CatalogPricing.estimated.contains(key), "Survival price: " + key);
+        }
+        for (var id : List.of("budding_amethyst", "bundle", "sculk_sensor")) {
+            var stack = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(Ids.of("minecraft:" + id)).getDefaultInstance();
+            ctx.assertTrue(Economy.target(player, stack) == null && Economy.usable(player, stack) == null, "Unobtainable in 1.18.2: " + id);
+        }
+        for (var material : List.of("copper", "iron", "gold")) {
+            String raw = "minecraft:raw_" + material;
+            ctx.assertTrue(Math.abs(prices.get(raw + "_block").cost() - 9 * prices.get(raw).cost()) < 1e-7,
+                    "Nine raw units survive packing/unpacking: " + material);
+        }
+        for (var rule : Map.of("deepslate_copper_ore", Map.entry("raw_copper", 20), "amethyst_cluster", Map.entry("amethyst_shard", 16),
+                "lapis_ore", Map.entry("lapis_lazuli", 36), "redstone_ore", Map.entry("redstone", 8)).entrySet()) {
+            var block = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(Ids.of("minecraft:" + rule.getKey())).getDefaultInstance();
+            var drop = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(Ids.of("minecraft:" + rule.getValue().getKey())).getDefaultInstance();
+            double reward = Economy.target(player, block).cost();
+            ctx.assertTrue(reward + 1e-7 >= rule.getValue().getValue() * Economy.usable(player, drop).cost(), "Fortune III harvest: " + rule.getKey());
+            ctx.assertTrue(Economy.usable(player, block).cost() < reward, "Mining premium must not inflate a stake: " + rule.getKey());
+        }
+        ctx.assertTrue(prices.get("minecraft:music_disc_otherside").cost() >= prices.get("minecraft:diamond").cost(),
+                "The otherside disc retains its exploration premium");
+        ctx.assertTrue(Math.abs(prices.get("minecraft:tinted_glass").cost() - (4 * prices.get("minecraft:amethyst_shard").cost()
+                + prices.get("minecraft:glass").cost()) / 2) < 1e-7, "Tinted glass is a two-item batch");
+        Upgrade.LOGGER.info("CAVES AND CLIFFS ECONOMY PASS");
     }
     private static void coherentRecipes(TestContext ctx) {
         var player=TestPlatform.player(ctx.getLevel());

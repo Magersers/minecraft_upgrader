@@ -2,6 +2,7 @@ package dev.upgrade;
 
 import com.google.gson.*;
 import dev.upgrade.core.CostEngine;
+import dev.upgrade.core.VanillaAcquisition;
 import dev.upgrade.compat.TinkersCompat;
 import dev.upgrade.compat.EncounterProfiles;
 import dev.upgrade.compat.RecipeInheritance;
@@ -39,6 +40,7 @@ public final class Economy {
         BalancePolicy.load(server);
         Map<String, CostEngine.Value> seeds = new TreeMap<>();
         List<CostEngine.Route> routes = new ArrayList<>();
+        List<VanillaAcquisition.Harvest> harvests = new ArrayList<>();
         Map<String, String> unsupported = new HashMap<>();
         Set<String> denied = new HashSet<>(Set.of("minecraft:air", "minecraft:barrier", "minecraft:command_block",
                 "minecraft:chain_command_block", "minecraft:repeating_command_block", "minecraft:structure_block",
@@ -57,6 +59,7 @@ public final class Economy {
                 JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
                 Map<String, CostEngine.Value> localSeeds = new TreeMap<>();
                 List<CostEngine.Route> localRoutes = new ArrayList<>();
+                List<VanillaAcquisition.Harvest> localHarvests = new ArrayList<>();
                 if (root.has("sources")) for (JsonElement element : root.getAsJsonArray("sources")) {
                     JsonObject s = element.getAsJsonObject();
                     double cost;
@@ -93,9 +96,17 @@ public final class Economy {
                     localRoutes.add(new CostEngine.Route(r.get("id").getAsString(), r.get("output").getAsString(),
                             number(r,"count",1), inputs, number(r,"overhead",0), number(r,"confidence",.9), strings(r,"gates")));
                 }
+                if (root.has("harvests")) for (JsonElement element : root.getAsJsonArray("harvests")) {
+                    JsonObject harvest = element.getAsJsonObject();
+                    String drop = harvest.get("drop").getAsString();
+                    int maximum = harvest.get("maximum").getAsBigDecimal().intValueExact();
+                    for (String block : strings(harvest, "blocks"))
+                        localHarvests.add(new VanillaAcquisition.Harvest(block, drop, maximum));
+                }
                 Set<String> localDenied = strings(root,"deny");
                 localSeeds.forEach((id, value) -> seeds.merge(id, value, (a,b) -> a.cost() <= b.cost() ? a : b));
                 routes.addAll(localRoutes); denied.addAll(localDenied);
+                harvests.addAll(localHarvests);
             } catch (Exception ex) { Upgrade.LOGGER.error("Skipping invalid value profile {}", entry.getKey(), ex); }
         }
         EncounterProfiles.load(server,seeds);
@@ -198,7 +209,8 @@ public final class Economy {
         }
         var acquisition = BalancePolicy.solve(seeds, filtered, 128);
         var calibrated = PerformancePricing.apply(server,acquisition,seeds,filtered,denied);
-        var solved = CatalogPricing.complete(calibrated,filtered,denied);
+        var catalog = CatalogPricing.complete(calibrated,filtered,denied);
+        var solved = VanillaAcquisition.harvestRewards(catalog, PerformancePricing.stakeLimits, harvests);
         Map<String, List<CostEngine.Route>> byOutput = new HashMap<>();
         filtered.forEach(r -> byOutput.computeIfAbsent(r.output(), k -> new ArrayList<>()).add(r));
         Map<String, String> explanations = new HashMap<>();

@@ -1,0 +1,31 @@
+// The 1.18.2 build reuses the PoseStack UI and Forge adapters from 1.19.2.
+ext.legacy118Line = { String line ->
+    line.replace('net.minecraft.network.chat.Component.translatable(', 'new net.minecraft.network.chat.TranslatableComponent(')
+        .replace('Component.translatable(', 'new net.minecraft.network.chat.TranslatableComponent(')
+        .replace('Component.literal(', 'new net.minecraft.network.chat.TextComponent(')
+        .replace('Component.empty()', 'new net.minecraft.network.chat.TextComponent("")')
+        .replace('net.minecraftforge.common.capabilities.ForgeCapabilities.FLUID_HANDLER_ITEM', 'net.minecraftforge.fluids.capability.CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY')
+        .replace('import net.minecraftforge.common.capabilities.ForgeCapabilities;', 'import net.minecraftforge.energy.CapabilityEnergy;')
+        .replace('ForgeCapabilities.ENERGY', 'CapabilityEnergy.ENERGY')
+        .replace('ScreenEvent.Init.Post', 'ScreenEvent.InitScreenEvent.Post')
+        .replace('ScreenEvent.Render.Post', 'ScreenEvent.DrawScreenEvent.Post')
+        .replace('Network.tick(event.getServer())', 'Network.tick(net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer())')
+        .replace('event.getEntity()', 'event.getPlayer()')
+        .replace('DropExperienceBlock', 'OreBlock')
+        .replace('BufferUploader.drawWithShader(b.end());', 'Tesselator.getInstance().end();')
+        .replace('net.minecraft.util.RandomSource.create(', 'new java.util.Random(')
+        .replace('server.getResourceManager()', 'new dev.upgrade.LegacyResources(server.getResourceManager())')
+        .replace('mc.getResourceManager()', 'new dev.upgrade.LegacyResources(mc.getResourceManager())')
+        .replace('new GameProfile(UUID.randomUUID(),"UpgradeTest"),null)', 'new GameProfile(UUID.randomUUID(),"UpgradeTest"))')
+        .replace('mc.options.guiScale().set(2)', 'mc.options.guiScale = 2')
+        .replace('mc.options.renderDistance().set(2)', 'mc.options.renderDistance = 2')
+}
+
+tasks.register('forge118Sources', Sync) {
+    filteringCharset = 'UTF-8'
+    inputs.file('1.18.2.gradle')
+    from('src/main/java') { exclude 'dev/upgrade/ServerTransport.java' }
+    from('src/1.19.2/java')
+    filter { line -> legacy118Line(line) }
+    into layout.buildDirectory.dir('generated/forge118')
+}
